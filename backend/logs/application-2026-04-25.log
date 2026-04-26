@@ -1,0 +1,137 @@
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T02:18:01.886Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T02:18:01.896Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T02:18:01.897Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T02:18:12.879Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T02:18:12.882Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T02:18:12.883Z"}
+{"ip":"::1","level":"error","message":"[\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"email\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"password\"\n    ],\n    \"message\": \"Required\"\n  }\n]","method":"POST","stack":"ZodError: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"email\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"password\"\n    ],\n    \"message\": \"Required\"\n  }\n]\n    at Object.get error [as error] (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\zod\\v3\\types.cjs:45:31)\n    at ZodObject.parse (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\zod\\v3\\types.cjs:120:22)\n    at AuthController.login (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\controllers\\auth.controller.ts:26:32)\n    at Layer.handle [as handle_request] (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at Route.dispatch (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\express\\lib\\router\\route.js:119:3)\n    at Layer.handle [as handle_request] (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\express\\lib\\router\\index.js:284:15\n    at router.process_params (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\express\\lib\\router\\index.js:346:12)\n    at next (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\express\\lib\\router\\index.js:280:10)","timestamp":"2026-04-26T02:22:43.395Z","url":"/api/v1/auth/login"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T02:23:03.732Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T02:23:03.735Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T02:23:03.736Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:18:24.442Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:18:24.444Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:18:24.445Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:18:46.687Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:18:46.693Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:18:46.693Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:19:15.480Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:19:15.486Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:19:15.487Z"}
+{"ip":"::1","level":"error","message":"Refresh token inválido o expirado","method":"POST","stack":"Error: Refresh token inválido o expirado\n    at AuthService.refreshToken (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\services\\auth.service.ts:183:13)\n    at async AuthController.refreshToken (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\controllers\\auth.controller.ts:41:22)","timestamp":"2026-04-26T03:19:22.462Z","url":"/api/v1/auth/refresh-token"}
+{"ip":"::1","level":"error","message":"Refresh token inválido o expirado","method":"POST","stack":"Error: Refresh token inválido o expirado\n    at AuthService.refreshToken (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\services\\auth.service.ts:183:13)\n    at async AuthController.refreshToken (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\controllers\\auth.controller.ts:41:22)","timestamp":"2026-04-26T03:19:22.492Z","url":"/api/v1/auth/refresh-token"}
+{"ip":"::1","level":"error","message":"Refresh token inválido o expirado","method":"POST","stack":"Error: Refresh token inválido o expirado\n    at AuthService.refreshToken (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\services\\auth.service.ts:183:13)\n    at async AuthController.refreshToken (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\controllers\\auth.controller.ts:41:22)","timestamp":"2026-04-26T03:20:28.488Z","url":"/api/v1/auth/refresh-token"}
+{"ip":"::1","level":"error","message":"Refresh token inválido o expirado","method":"POST","stack":"Error: Refresh token inválido o expirado\n    at AuthService.refreshToken (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\services\\auth.service.ts:183:13)\n    at async AuthController.refreshToken (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\controllers\\auth.controller.ts:41:22)","timestamp":"2026-04-26T03:20:28.512Z","url":"/api/v1/auth/refresh-token"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:24:38.998Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:24:39.002Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:24:39.003Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:24:51.445Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:24:51.447Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:24:51.448Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:30:12.468Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:30:12.473Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:30:12.474Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:31:56.533Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:31:56.536Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:31:56.536Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:32:02.042Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:32:02.048Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:32:02.049Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:33:04.367Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:33:04.373Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:33:04.374Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:33:13.022Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:33:13.024Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:33:13.025Z"}
+{"ip":"::1","level":"error","message":"Producto no encontrado","method":"POST","stack":"Error: Producto no encontrado\n    at CarritoService.addToCart (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\services\\carrito.service.ts:42:13)\n    at async CarritoController.addToCart (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\controllers\\carrito.controller.ts:40:23)","timestamp":"2026-04-26T03:35:54.508Z","url":"/api/v1/carrito/items"}
+{"ip":"::1","level":"error","message":"Producto no encontrado","method":"POST","stack":"Error: Producto no encontrado\n    at CarritoService.addToCart (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\services\\carrito.service.ts:42:13)\n    at async CarritoController.addToCart (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\controllers\\carrito.controller.ts:40:23)","timestamp":"2026-04-26T03:35:55.499Z","url":"/api/v1/carrito/items"}
+{"ip":"::1","level":"error","message":"Producto no encontrado","method":"POST","stack":"Error: Producto no encontrado\n    at CarritoService.addToCart (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\services\\carrito.service.ts:42:13)\n    at async CarritoController.addToCart (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\controllers\\carrito.controller.ts:40:23)","timestamp":"2026-04-26T03:37:14.321Z","url":"/api/v1/carrito/items"}
+{"ip":"::1","level":"error","message":"Producto no encontrado","method":"POST","stack":"Error: Producto no encontrado\n    at CarritoService.addToCart (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\services\\carrito.service.ts:42:13)\n    at async CarritoController.addToCart (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\src\\controllers\\carrito.controller.ts:40:23)","timestamp":"2026-04-26T03:37:15.315Z","url":"/api/v1/carrito/items"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:43:26.757Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:43:26.763Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:43:26.764Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:44:15.836Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:44:15.838Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:44:15.839Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:44:28.664Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:44:28.667Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:44:28.667Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:44:34.776Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:44:34.779Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:44:34.779Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:45:08.636Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:45:08.642Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:45:08.643Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:45:17.517Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:45:17.521Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:45:17.521Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:53:22.326Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:53:22.328Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:53:22.329Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:53:34.320Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:53:34.323Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:53:34.323Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T03:56:08.076Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T03:56:08.082Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T03:56:08.084Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:06:31.223Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:06:31.227Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:06:31.228Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:14:28.249Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:14:28.258Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:14:28.259Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:16:20.257Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:16:20.264Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:16:20.265Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:19:24.255Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:19:24.257Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:19:24.258Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:29:32.853Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:29:32.857Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:29:32.857Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:29:39.644Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:29:39.647Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:29:39.648Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:32:48.783Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:32:48.788Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:32:48.789Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:33:25.033Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:33:25.036Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:33:25.037Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:36:20.388Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:36:20.391Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:36:20.392Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:36:37.364Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:36:37.368Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:36:37.369Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:37:54.260Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:37:54.269Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:37:54.270Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:38:30.930Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:38:30.933Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:38:30.934Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:38:38.757Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:38:38.760Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:38:38.761Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:40:54.497Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:40:54.500Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:40:54.501Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:41:02.679Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:41:02.686Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:41:02.687Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:42:12.543Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:42:12.549Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:42:12.550Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:45:51.988Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:45:51.994Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:45:51.995Z"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:50:46.835Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:50:46.845Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:50:46.846Z"}
+{"ip":"::1","level":"error","message":"Unexpected token '\"', \"\"session_h\"... is not valid JSON","method":"POST","stack":"SyntaxError: Unexpected token '\"', \"\"session_h\"... is not valid JSON\n    at JSON.parse (<anonymous>)\n    at createStrictSyntaxError (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\body-parser\\lib\\types\\json.js:165:10)\n    at parse (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\body-parser\\lib\\types\\json.js:86:15)\n    at C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n    at invokeCallback (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\raw-body\\index.js:238:16)\n    at done (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:508:28)\n    at IncomingMessage.emit (node:domain:489:12)","timestamp":"2026-04-26T04:50:58.999Z","url":"/api/v1/carrito/items"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:52:43.161Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:52:43.164Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:52:43.165Z"}
+{"ip":"::1","level":"error","message":"Unexpected token '\"', \"\"session_i\"... is not valid JSON","method":"POST","stack":"SyntaxError: Unexpected token '\"', \"\"session_i\"... is not valid JSON\n    at JSON.parse (<anonymous>)\n    at createStrictSyntaxError (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\body-parser\\lib\\types\\json.js:165:10)\n    at parse (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\body-parser\\lib\\types\\json.js:86:15)\n    at C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\body-parser\\lib\\read.js:128:18\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n    at invokeCallback (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\raw-body\\index.js:238:16)\n    at done (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (C:\\Users\\FELIX\\Desktop\\CICLO VII\\ING. SOFTWARE I\\SEMANA 2\\Tarea02\\carrito-compras\\backend\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:508:28)\n    at IncomingMessage.emit (node:domain:489:12)","timestamp":"2026-04-26T04:53:02.524Z","url":"/api/v1/carrito/items"}
+{"level":"info","message":"🚀 Servidor corriendo en http://localhost:3000","timestamp":"2026-04-26T04:59:22.983Z"}
+{"level":"info","message":"📚 Documentación API disponible en http://localhost:3000/api/docs","timestamp":"2026-04-26T04:59:22.986Z"}
+{"level":"info","message":"🌍 Entorno: development","timestamp":"2026-04-26T04:59:22.986Z"}
