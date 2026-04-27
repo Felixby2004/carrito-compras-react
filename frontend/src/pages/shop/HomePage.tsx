@@ -8,7 +8,7 @@ interface HomePageProps {
   isAuthenticated?: boolean;
 }
 
-export function HomePage({ onAddToCart, isAuthenticated }: HomePageProps) {
+export function HomePage({ onAddToCart }: HomePageProps) {
   const [destacados, setDestacados] = useState<Producto[]>([]);
   const [ofertas, setOfertas] = useState<Producto[]>([]);
   const [nuevos, setNuevos] = useState<Producto[]>([]);
