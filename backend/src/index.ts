@@ -45,12 +45,16 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Exportar io para usar en otros archivos
 export { io };
 
+console.log('🔗 FRONTEND_URL configurada:', config.frontendUrl);
+console.log('🔐 CORS permitiendo origen:', config.frontendUrl);
+
 // SOLO UNA LLAMADA A server.listen
 server.listen(PORT, () => {
   logger.info(`🚀 Servidor corriendo en http://localhost:${PORT}`);
   logger.info(`📚 Documentación API disponible en http://localhost:${PORT}/api/docs`);
   logger.info(`🔌 WebSocket corriendo en ws://localhost:${PORT}`);
   logger.info(`🌍 Entorno: ${config.nodeEnv}`);
+  logger.info(`🔗 Frontend permitido: ${config.frontendUrl}`);
 });
 
 process.on('unhandledRejection', (reason, _promise) => {

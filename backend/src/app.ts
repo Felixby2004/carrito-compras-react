@@ -16,6 +16,10 @@ import ordenRoutes from './routes/orden.routes';
 
 const app = express();
 
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Swagger configuration
 const swaggerOptions = {
   definition: {
@@ -65,9 +69,27 @@ app.use(helmet({
   },
 }));
 
+const allowedOrigins = [
+  'http://localhost:5173',           // Desarrollo local
+  'http://localhost:3000',            // Alternativa local
+  config.frontendUrl,                 // URL de Vercel desde variables (más seguro)
+  process.env.FRONTEND_URL,           // Fallback a variable directa
+].filter(Boolean); // Eliminar undefined
+
 // CORS configurado para el frontend
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Permitir requests sin origen (como Postman, mobile apps, curl)
+    if (!origin) return callback(null, true);
+    
+    // Verificar si el origen está permitido
+    if (allowedOrigins.includes(origin) || origin.includes('vercel.app')) {
+      callback(null, true);
+    } else {
+      console.warn(`🚫 CORS bloqueado: ${origin}`);
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Session-Id', 'X-Requested-With'],
@@ -76,8 +98,9 @@ app.use(cors({
 
 // Servir archivos estáticos con CORS
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
-  setHeaders: (res) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  setHeaders: (res, path) => {
+    // Permitir cualquier origen para archivos estáticos
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   },
 }));
@@ -91,29 +114,33 @@ app.use(cookieParser());
 
 // Rate limiter general para toda la API
 const limiterGeneral = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 1000, // 1000 solicitudes por ventana
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
   message: 'Demasiadas solicitudes desde esta IP',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.path === '/health', // Saltar health check
+  skip: (req) => req.path === '/health',
+  validate: { xForwardedForHeader: false } // 👈 Adiós error
 });
 
 // Rate limiter estricto para login y auth
 const limiterAuth = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // 5 intentos por ventana
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   message: 'Demasiados intentos de login, intente más tarde',
-  skipSuccessfulRequests: true, // No contar intentos exitosos
+  skipSuccessfulRequests: true,
+  validate: { xForwardedForHeader: false }
 });
 
 // Rate limiter para cambios críticos (post, put, delete)
 const limiterWrite = rateLimit({
-  windowMs: 60 * 1000, // 1 minuto
-  max: 30, // 30 solicitudes por minuto
+  windowMs: 60 * 1000,
+  max: 30,
   message: 'Demasiadas operaciones de escritura, intente más tarde',
   skip: (req) => ['GET', 'HEAD', 'OPTIONS'].includes(req.method),
+  validate: { xForwardedForHeader: false }
 });
+
 
 app.use('/api', limiterGeneral);
 app.use('/api/v1/auth/login', limiterAuth);
