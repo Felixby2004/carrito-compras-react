@@ -5,9 +5,10 @@ import type { Producto } from '../../types';
 
 interface HomePageProps {
   onAddToCart: (producto: Producto) => Promise<void>;
+  isAuthenticated?: boolean;
 }
 
-export function HomePage({ onAddToCart }: HomePageProps) {
+export function HomePage({ onAddToCart, isAuthenticated }: HomePageProps) {
   const [destacados, setDestacados] = useState<Producto[]>([]);
   const [ofertas, setOfertas] = useState<Producto[]>([]);
   const [nuevos, setNuevos] = useState<Producto[]>([]);
@@ -88,6 +89,20 @@ export function HomePage({ onAddToCart }: HomePageProps) {
         </div>
         </div>
       </div>
+
+      {/* Sección de Pedidos si está autenticado */}
+      {isAuthenticated && (
+        <div className="mb-12 p-8 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg">
+          <h2 className="text-3xl font-bold mb-2">📦 Revisa tus pedidos</h2>
+          <p className="text-blue-100 mb-6">Mantente al tanto del estado de tus compras y realiza un seguimiento de tus entregas.</p>
+          <a
+            href="/mis-ordenes"
+            className="inline-block bg-white px-6 py-3 rounded-lg font-semibold text-blue-600 hover:bg-blue-50 transition"
+          >
+            Ver mis pedidos →
+          </a>
+        </div>
+      )}
 
       {/* Productos Destacados */}
       {destacados.length > 0 && (

@@ -4,6 +4,7 @@ import { useCartStore } from '../../stores/cartStore';
 import { useAuthStore } from '../../stores/authStore';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { notify } from '../../utils/notify';
+import { getSocket } from '../../socket';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -75,6 +76,28 @@ export function CheckoutPage() {
     };
     verificarAuth();
   }, [checkAuth]);
+
+  // Escuchar eventos del socket
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNuevaOrden = (data: any) => {
+      console.log('Nueva orden creada (evento socket):', data);
+    };
+
+    const handleCambioEstado = (data: any) => {
+      console.log('Cambio de estado de orden (evento socket):', data);
+    };
+
+    socket.on('nueva-orden', handleNuevaOrden);
+    socket.on('cambio-estado-orden', handleCambioEstado);
+
+    return () => {
+      socket.off('nueva-orden', handleNuevaOrden);
+      socket.off('cambio-estado-orden', handleCambioEstado);
+    };
+  }, []);
 
   // Si está autenticado, saltar al paso 2
   useEffect(() => {

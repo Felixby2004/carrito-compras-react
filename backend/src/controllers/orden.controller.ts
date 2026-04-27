@@ -9,6 +9,7 @@ import crypto from 'crypto';
 import config from '../config';
 import PDFDocument from 'pdfkit';
 import { sendOrderStatusEmail } from '../utils/email';
+import { io } from '../index';
 
 const prisma = new PrismaClient();
 
@@ -374,6 +375,13 @@ export class OrdenController {
       // Convertir Decimal a número
       const ordenConvertida = this.convertDecimalToNumber(JSON.parse(JSON.stringify(orden)));
       
+      // Emitir evento de socket para notificar a clientes conectados
+      io.emit('nueva-orden', {
+        orden: ordenConvertida,
+        mensaje: `Nueva orden ${ordenNumero} creada`,
+        timestamp: new Date(),
+      });
+      
         if (data.identificacion.tipo === 'registro' && accessToken && refreshToken) {
         res.json({
             success: true,
@@ -716,6 +724,16 @@ export class OrdenController {
             // best-effort: no bloquear el cambio de estado si falla SMTP
           }
         }
+
+        // Emitir evento de socket para notificar cambio de estado
+        io.emit('cambio-estado-orden', {
+          ordenId: id,
+          ordenNumero: orden.orden_numero,
+          estadoAnterior,
+          estadoNuevo: estadoDestino,
+          comentario: comentario || `Estado cambiado a ${estadoDestino}`,
+          timestamp: new Date(),
+        });
 
         res.json({
         success: true,

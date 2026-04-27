@@ -105,6 +105,7 @@ function AppContent() {
     await logout();
     setUserMenuOpen(false);
     notify('Sesion cerrada', 'info');
+    setTimeout(() => window.location.href = '/', 500);
   };
 
   const handleAddToCart = async (producto: Producto) => {
@@ -222,7 +223,7 @@ function AppContent() {
 
       <Routes>
         {/* Rutas públicas */}
-        <Route path="/" element={<HomePage onAddToCart={handleAddToCart} />} />
+        <Route path="/" element={<HomePage onAddToCart={handleAddToCart} isAuthenticated={isAuthenticated} />} />
         <Route path="/catalogo" element={<CatalogoPage onAddToCart={handleAddToCart} />} />
         <Route path="/producto/:id" element={<ProductoDetallePage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
@@ -257,7 +258,7 @@ function AppContent() {
           <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
         </>
       )}
-      <div className="fixed top-4 right-4 z-[100] space-y-2">
+      <div className="fixed bottom-4 right-4 z-[100] space-y-2">
         {toasts.map((toast) => (
           <div
             key={toast.id}
