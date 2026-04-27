@@ -12,6 +12,24 @@ export function HomePage({ onAddToCart }: HomePageProps) {
   const [ofertas, setOfertas] = useState<Producto[]>([]);
   const [nuevos, setNuevos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [slide, setSlide] = useState(0);
+  const heroSlides = [
+    {
+      title: 'Tecnologia para tu dia a dia',
+      text: 'Descubre productos destacados, ofertas y novedades cada semana.',
+      image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&auto=format&fit=crop&q=60',
+    },
+    {
+      title: 'Ofertas especiales por tiempo limitado',
+      text: 'Aprovecha descuentos exclusivos en categorias seleccionadas.',
+      image: 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=1200&auto=format&fit=crop&q=60',
+    },
+    {
+      title: 'Compra rapido y seguro',
+      text: 'Carrito inteligente, cupones y seguimiento de pedidos en un solo lugar.',
+      image: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?w=1200&auto=format&fit=crop&q=60',
+    },
+  ];
 
   useEffect(() => {
     const cargarProductos = async () => {
@@ -34,6 +52,11 @@ export function HomePage({ onAddToCart }: HomePageProps) {
     cargarProductos();
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => setSlide((prev) => (prev + 1) % heroSlides.length), 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   if (loading) {
     return (
       <div className="container mx-auto p-6 text-center">
@@ -45,19 +68,25 @@ export function HomePage({ onAddToCart }: HomePageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl p-8 mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          ¡Bienvenido a E-Commerce!
-        </h1>
-        <p className="text-lg md:text-xl mb-6">
-          Los mejores productos al mejor precio
-        </p>
+      <div className="relative overflow-hidden rounded-2xl mb-12 h-[280px] md:h-[340px]">
+        <img src={heroSlides[slide].image} alt={heroSlides[slide].title} className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/75 via-blue-900/55 to-transparent" />
+        <div className="relative text-white p-8 md:p-12 max-w-2xl">
+          <h1 className="text-3xl md:text-5xl font-bold mb-3">{heroSlides[slide].title}</h1>
+          <p className="text-base md:text-lg mb-6">{heroSlides[slide].text}</p>
         <a
           href="/catalogo"
-          className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
+          className="inline-block bg-white px-6 py-3 rounded-lg font-semibold transition"
+          style={{ color: 'var(--color-primary, #2563eb)' }}
         >
           Ver catálogo completo →
         </a>
+        <div className="mt-6 flex gap-2">
+          {heroSlides.map((_, idx) => (
+            <button key={idx} onClick={() => setSlide(idx)} className={`w-3 h-3 rounded-full ${slide === idx ? 'bg-white' : 'bg-white/45'}`} />
+          ))}
+        </div>
+        </div>
       </div>
 
       {/* Productos Destacados */}
@@ -67,7 +96,7 @@ export function HomePage({ onAddToCart }: HomePageProps) {
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <span>⭐</span> Productos Destacados
             </h2>
-            <a href="/catalogo" className="text-blue-500 hover:underline text-sm">
+            <a href="/catalogo" className="hover:underline text-sm" style={{ color: 'var(--color-primary, #2563eb)' }}>
               Ver todos →
             </a>
           </div>
@@ -90,7 +119,7 @@ export function HomePage({ onAddToCart }: HomePageProps) {
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <span>🔥</span> Ofertas Especiales
             </h2>
-            <a href="/catalogo" className="text-blue-500 hover:underline text-sm">
+            <a href="/catalogo" className="hover:underline text-sm" style={{ color: 'var(--color-primary, #2563eb)' }}>
               Ver todos →
             </a>
           </div>
@@ -113,7 +142,7 @@ export function HomePage({ onAddToCart }: HomePageProps) {
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <span>🆕</span> Nuevos Ingresos
             </h2>
-            <a href="/catalogo" className="text-blue-500 hover:underline text-sm">
+            <a href="/catalogo" className="hover:underline text-sm" style={{ color: 'var(--color-primary, #2563eb)' }}>
               Ver todos →
             </a>
           </div>

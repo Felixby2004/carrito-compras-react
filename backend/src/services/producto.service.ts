@@ -8,50 +8,50 @@ const prisma = new PrismaClient();
 export class ProductoService {
 
   async getProductoById(id: number) {
-    const producto = await prisma.cat_productos.findFirst({
-      where: { id: id, activo: true },
-      include: {
-        categoria: true,
-        subcategoria: true,
-        marca: true,
-        unidad_medida: true,
-        imagenes: { orderBy: { orden: 'asc' } },
-        producto_atributos: { include: { atributo: true, valor: true } },
-        producto_etiquetas: { include: { etiqueta: true } },
-        stock: true,
-      },
-    });
-    
-    if (!producto) {
-      throw new AppError('Producto no encontrado', 404);
-    }
-    
-    const ahora = new Date();
-    const precioVenta = Number(producto.precio_venta);
-    const precioOferta = producto.precio_oferta ? Number(producto.precio_oferta) : null;
-    const tieneOferta = precioOferta !== null &&
-      producto.fecha_inicio_oferta &&
-      producto.fecha_fin_oferta &&
-      new Date(producto.fecha_inicio_oferta) <= ahora &&
-      new Date(producto.fecha_fin_oferta) >= ahora;
-    
-    const precioActual = tieneOferta ? precioOferta! : precioVenta;
-    const descuentoPorcentaje = tieneOferta && precioVenta > 0
-      ? Math.round(((precioVenta - precioOferta!) / precioVenta) * 100)
-      : 0;
-    
-    const stockDisponible = producto.stock ? 
-      Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0) : 0;
-    
-    return {
-      ...producto,
-      precio_venta: precioVenta,
-      precio_oferta: precioOferta,
-      precio_actual: precioActual,
-      descuento_porcentaje: descuentoPorcentaje,
-      stock_disponible: stockDisponible,
-    };
+  const producto = await prisma.cat_productos.findFirst({
+    where: { id: id, activo: true },
+    include: {
+      categoria: true,
+      subcategoria: true,
+      marca: true,
+      unidad_medida: true,
+      imagenes: { orderBy: { orden: 'asc' } },
+      producto_atributos: { include: { atributo: true, valor: true } },
+      producto_etiquetas: { include: { etiqueta: true } },
+      stock: true,
+    },
+  });
+  
+  if (!producto) {
+    throw new AppError('Producto no encontrado', 404);
   }
+  
+  const ahora = new Date();
+  const precioVenta = Number(producto.precio_venta);
+  const precioOferta = producto.precio_oferta ? Number(producto.precio_oferta) : null;
+  const tieneOferta = precioOferta !== null &&
+    producto.fecha_inicio_oferta &&
+    producto.fecha_fin_oferta &&
+    new Date(producto.fecha_inicio_oferta) <= ahora &&
+    new Date(producto.fecha_fin_oferta) >= ahora;
+  
+  const precioActual = tieneOferta ? precioOferta! : precioVenta;
+  const descuentoPorcentaje = tieneOferta && precioVenta > 0
+    ? Math.round(((precioVenta - precioOferta!) / precioVenta) * 100)
+    : 0;
+  
+  const stockDisponible = producto.stock ? 
+    Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0) : 0;
+  
+  return {
+    ...producto,
+    precio_venta: precioVenta,
+    precio_oferta: precioOferta,
+    precio_actual: precioActual,  // ← Asegura que esto existe
+    descuento_porcentaje: descuentoPorcentaje,
+    stock_disponible: stockDisponible,
+  };
+}
 
   async getProductos(filters: ProductoFilterInput) {
     const { 
@@ -232,6 +232,7 @@ export class ProductoService {
         categoria_id: data.categoria_id,
         subcategoria_id: data.subcategoria_id,
         marca_id: data.marca_id,
+        unidad_medida_id: data.unidad_medida_id,
         precio_costo: data.precio_costo,
         precio_venta: data.precio_venta,
         precio_oferta: data.precio_oferta,
@@ -492,6 +493,13 @@ export class ProductoService {
     return prisma.cat_marcas.findMany({
       where: { activo: true },
       select: { id: true, nombre: true },
+      orderBy: { nombre: 'asc' },
+    });
+  }
+
+  async getUnidadesMedida() {
+    return prisma.cat_unidades_medida.findMany({
+      select: { id: true, nombre: true, abreviatura: true },
       orderBy: { nombre: 'asc' },
     });
   }

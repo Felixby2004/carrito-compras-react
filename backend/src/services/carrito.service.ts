@@ -105,8 +105,6 @@ export class CarritoService {
       const stockReservado = item.producto.stock?.stock_reservado ? Number(item.producto.stock.stock_reservado) : 0;
       const stockDisponible = stockFisico - stockReservado;
       
-      console.log(`Item: ${item.producto.nombre}, cantidad: ${item.cantidad}, stock disponible: ${stockDisponible}`);
-      
       return {
         id: item.id,
         producto_id: item.producto_id,
@@ -213,7 +211,7 @@ export class CarritoService {
   }
 
   async updateCartItem(usuarioId: number | null, sessionId: string | null, itemId: number, cantidad: number) {
-    // Obtener el item actual con el producto y su stock
+    // Obtener el item actual
     const item = await prisma.ord_items_carrito.findUnique({
       where: { id: itemId },
       include: {
@@ -228,7 +226,7 @@ export class CarritoService {
       throw new AppError('Item no encontrado', 404);
     }
 
-    // Verificar que el item pertenece al usuario/sesión actual
+    // Verificar pertenencia
     if (usuarioId && item.carrito.usuario_id !== usuarioId) {
       throw new AppError('No autorizado', 403);
     }
@@ -236,18 +234,22 @@ export class CarritoService {
       throw new AppError('No autorizado', 403);
     }
 
-    // Validar stock si está aumentando la cantidad
-    if (cantidad > item.cantidad) {
-      const stockFisico = item.producto.stock ? Number(item.producto.stock.stock_fisico) : 0;
-      const stockReservado = item.producto.stock ? Number(item.producto.stock.stock_reservado) || 0 : 0;
-      const stockDisponible = stockFisico - stockReservado;
-      
-      if (cantidad > stockDisponible) {
-        throw new AppError(`Stock insuficiente. Solo hay ${stockDisponible} unidades disponibles.`, 400);
-      }
+    // Obtener stock disponible
+    const stockFisico = item.producto.stock ? Number(item.producto.stock.stock_fisico) : 0;
+    const stockReservado = item.producto.stock ? Number(item.producto.stock.stock_reservado) || 0 : 0;
+    const stockDisponible = stockFisico - stockReservado;
+
+    // Validar que no se exceda el stock
+    if (cantidad > stockDisponible) {
+      throw new AppError(`Stock insuficiente. Solo hay ${stockDisponible} unidades disponibles.`, 400);
     }
 
-    if (cantidad <= 0) {
+    // Validar cantidad mínima
+    if (cantidad < 0) {
+      throw new AppError('La cantidad no puede ser negativa', 400);
+    }
+
+    if (cantidad === 0) {
       await prisma.ord_items_carrito.delete({ where: { id: itemId } });
     } else {
       await prisma.ord_items_carrito.update({
@@ -276,7 +278,9 @@ export class CarritoService {
       throw new AppError('No autorizado', 403);
     }
     
-    await prisma.ord_items_carrito.delete({ where: { id: itemId } });
+    await prisma.ord_items_carrito.delete({ 
+      where: { id: itemId } 
+    });
     
     return this.getCarrito(usuarioId, sessionId);
   }

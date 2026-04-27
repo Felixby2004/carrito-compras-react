@@ -23,6 +23,7 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
+  password_confirmacion: string;
   nombre: string;
   apellido: string;
   telefono?: string;
@@ -51,6 +52,7 @@ export interface Producto {
   alto?: number;
   profundidad?: number;
   estado: string;
+  activo?: boolean;
   popularidad?: number;
   imagenes: ProductoImagen[];
   categoria?: { id: number; nombre: string };

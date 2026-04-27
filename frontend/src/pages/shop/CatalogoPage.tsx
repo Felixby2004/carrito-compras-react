@@ -42,14 +42,12 @@ export function CatalogoPage({ onAddToCart }: CatalogoPageProps) {
   const cargarProductos = async () => {
     setLoading(true);
     try {
-      console.log('Enviando ordenar:', sortBy); // ← Agrega este log
       const res = await productosApi.getProductos({
         page: currentPage,
         limit: itemsPerPage,
         ordenar: sortBy,
         ...filters,
       });
-      console.log('Respuesta:', res); // ← Agrega este log
       setProductos(res.data);
       setTotalPages(res.totalPages);
     } catch (error) {

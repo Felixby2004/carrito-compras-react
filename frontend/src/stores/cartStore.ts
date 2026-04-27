@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { carritoApi } from '../api/carrito.api';
 import type { ItemCarrito, CarritoResponse } from '../types';
+import { notify } from '../utils/notify';
 
 interface CartState {
   items: ItemCarrito[];
@@ -19,6 +20,8 @@ interface CartState {
   syncWithBackend: (usuarioId: number) => Promise<void>;
   setLocalCart: (cart: CarritoResponse) => void;
   resetCart: () => void;
+  saveLocalCartBeforeLogin: () => void;  // ← Agrega
+  getPendingCart: () => any; 
 }
 
 export const useCartStore = create<CartState>()(
@@ -30,6 +33,20 @@ export const useCartStore = create<CartState>()(
       total: 0,
       isLoading: false,
       cartId: null,
+
+      saveLocalCartBeforeLogin: () => {
+        const { items, subtotal, total } = get();
+        localStorage.setItem('pendingCart', JSON.stringify({ items, subtotal, total }));
+      },
+
+      getPendingCart: () => {
+        const pending = localStorage.getItem('pendingCart');
+        if (pending) {
+          localStorage.removeItem('pendingCart');
+          return JSON.parse(pending);
+        }
+        return null;
+      },
       
       loadCart: async () => {
         set({ isLoading: true });
@@ -68,7 +85,7 @@ export const useCartStore = create<CartState>()(
         } catch (error: any) {
           console.error('Error agregando item:', error);
           const mensaje = error.response?.data?.message || 'Error al agregar al carrito';
-          alert(mensaje);
+          notify(mensaje, 'error');
           set({ isLoading: false });
           throw error;
         }
@@ -77,7 +94,9 @@ export const useCartStore = create<CartState>()(
       updateItem: async (itemId: number, cantidad: number) => {
         set({ isLoading: true });
         try {
+          // Primero actualizar en el backend
           const cart = await carritoApi.updateCartItem(itemId, cantidad);
+          // Luego actualizar el estado local con la respuesta del backend
           set({
             items: cart.items,
             subtotal: cart.subtotal,
@@ -88,7 +107,7 @@ export const useCartStore = create<CartState>()(
         } catch (error: any) {
           console.error('Error actualizando item:', error);
           const mensaje = error.response?.data?.message || 'Error al actualizar cantidad';
-          alert(mensaje);
+          notify(mensaje, 'error');
           set({ isLoading: false });
           throw error;
         }
@@ -97,7 +116,9 @@ export const useCartStore = create<CartState>()(
       removeItem: async (itemId: number) => {
         set({ isLoading: true });
         try {
+          // Eliminar del backend
           const cart = await carritoApi.removeCartItem(itemId);
+          // Actualizar el estado local con la respuesta del backend
           set({
             items: cart.items,
             subtotal: cart.subtotal,
@@ -105,8 +126,10 @@ export const useCartStore = create<CartState>()(
             total: cart.total,
             isLoading: false,
           });
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error removiendo item:', error);
+          const mensaje = error.response?.data?.message || 'Error al eliminar producto';
+          notify(mensaje, 'error');
           set({ isLoading: false });
           throw error;
         }

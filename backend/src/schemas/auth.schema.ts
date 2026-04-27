@@ -3,9 +3,13 @@ import { z } from 'zod';
 export const registerSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  password_confirmacion: z.string().min(6, 'Confirme su contraseña'),
   nombre: z.string().min(2, 'El nombre es requerido'),
   apellido: z.string().min(2, 'El apellido es requerido'),
   telefono: z.string().optional(),
+}).refine((data) => data.password === data.password_confirmacion, {
+  message: 'Las contraseñas no coinciden',
+  path: ['password_confirmacion'],
 });
 
 export const loginSchema = z.object({

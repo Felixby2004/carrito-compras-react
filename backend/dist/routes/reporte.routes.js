@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const reporte_controller_1 = require("../controllers/reporte.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const router = (0, express_1.Router)();
+const controller = new reporte_controller_1.ReporteController();
+router.use(auth_middleware_1.authenticate);
+router.get('/operacional/:reporte', controller.reporteOperacional.bind(controller));
+router.get('/operacional/factura/:ordenId', controller.facturaIndividual.bind(controller));
+router.get('/operacional/comprobante/:ordenId', controller.comprobanteSimplificado.bind(controller));
+exports.default = router;

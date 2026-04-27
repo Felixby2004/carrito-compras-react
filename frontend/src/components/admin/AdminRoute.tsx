@@ -7,12 +7,14 @@ interface AdminRouteProps {
 
 export function AdminRoute({ children }: AdminRouteProps) {
   const { isAuthenticated, user } = useAuthStore();
+  const roles = user?.roles || [];
+  const isAdmin = roles.some((role) => ['administrador', 'admin', 'gerente', 'gerente_ventas', 'gerente_inventario', 'vendedor'].includes(role));
   
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
   
-  if (!user?.roles?.includes('administrador')) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

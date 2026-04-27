@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const configuracion_controller_1 = require("../controllers/configuracion.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const rbac_middleware_1 = require("../middlewares/rbac.middleware");
+const router = (0, express_1.Router)();
+const controller = new configuracion_controller_1.ConfiguracionController();
+router.get('/publica/tema', controller.getTemaPublico.bind(controller));
+router.get('/tema', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('configuracion', 'leer'), controller.getTemaAdmin.bind(controller));
+router.put('/tema', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('configuracion', 'editar'), controller.updateTema.bind(controller));
+exports.default = router;

@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
-import { X, Trash2, Minus, Plus, ShoppingBag  } from 'lucide-react';
+import { X, Trash2, Minus, Plus, ShoppingBag, Ticket } from 'lucide-react';
 import { useCartStore } from '../../stores/cartStore';
+import { cuponApi } from '../../api/cupon.api';
+import { getSocket } from '../../socket';
+import { useProductoStore } from '../../stores/productoStore';
+import { useNavigate } from 'react-router-dom';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -8,16 +12,203 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { items, subtotal, impuesto, total, updateItem, removeItem, clearCart } = useCartStore();
-  const [animate, setAnimate] = useState(false);
+  const [animate] = useState(false);
+  const [codigoCupon, setCodigoCupon] = useState('');
+  const [aplicandoCupon, setAplicandoCupon] = useState(false);
+  const [cuponAplicado, setCuponAplicado] = useState<any>(null);
+  const [descuento, setDescuento] = useState(0);
+  const [mensajeCupon, setMensajeCupon] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
+  
+  const { items, subtotal, impuesto, total, updateItem, clearCart } = useCartStore();
+  const actualizarPrecioGlobal = useProductoStore((state) => state.actualizarPrecio);
+  
+  // Calcular totales con descuento
+  const totalConDescuento = total - descuento;
+  const ahorro = descuento;
+
+  const navigate = useNavigate();
+
+  // Agregar después de los otros estados
+  const [mensajeCambioPrecio, setMensajeCambioPrecio] = useState<{ 
+    itemId: number;
+    nombre: string;
+    precioAnterior: number;
+    precioNuevo: number
+  } | null>(null);
+
+  // Conectar WebSocket y escuchar cambios de precio
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    // Función para manejar cambio de precio
+    const handlePrecioActualizado = (data: any) => {
+      const item = items.find(i => i.producto_id === data.productoId);
+      if (item) {
+        // Mostrar alerta
+        setMensajeCambioPrecio({
+          itemId: item.id,
+          nombre: data.nombre,
+          precioAnterior: data.precioAnterior,
+          precioNuevo: data.precioNuevo
+        });
+        
+        // Actualizar precio en el store global
+        actualizarPrecioGlobal(data.productoId, data.precioNuevo);
+        
+        // Actualizar el precio en el item del carrito
+        const updatedItems = items.map(i => 
+          i.producto_id === data.productoId 
+            ? { 
+                ...i, 
+                precio_unitario: data.precioNuevo, 
+                subtotal: i.cantidad * data.precioNuevo 
+              } 
+            : i
+        );
+        
+        // Recalcular subtotal y total
+        const nuevoSubtotal = updatedItems.reduce((sum, i) => sum + i.subtotal, 0);
+        const nuevoImpuesto = nuevoSubtotal * 0.18;
+        const nuevoTotal = nuevoSubtotal + nuevoImpuesto;
+        
+        // Actualizar el store del carrito
+        useCartStore.setState({ 
+          items: updatedItems,
+          subtotal: nuevoSubtotal,
+          impuesto: nuevoImpuesto,
+          total: nuevoTotal
+        });
+        
+        setTimeout(() => setMensajeCambioPrecio(null), 8000);
+      }
+    };
+
+    socket.on('precio-actualizado', handlePrecioActualizado);
+
+    return () => {
+      socket.off('precio-actualizado', handlePrecioActualizado);
+    };
+  }, [items]);
+
+  useEffect(() => {
+    // Verificar precios cada 30 segundos
+    const interval = setInterval(() => {
+      verificarCambiosPrecio();
+    }, 30000); // 30 segundos
+
+    return () => clearInterval(interval);
+  }, [items]);
 
   useEffect(() => {
     if (isOpen) {
-      setAnimate(true);
-    } else {
-      setTimeout(() => setAnimate(false), 300);
+      verificarCambiosPrecio();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+  const socket = getSocket();
+  if (!socket) return;
+
+  // Suscribirse a cada producto en el carrito
+  const suscripciones = items.map(item => {
+    socket.emit('suscribir-producto', item.producto_id);
+    
+    // Escuchar cambios de precio
+    const handlePrecioActualizado = (data: any) => {
+      if (data.productoId === item.producto_id) {
+        setMensajeCambioPrecio({
+          itemId: item.id,
+          nombre: data.nombre,
+          precioAnterior: data.precioAnterior,
+          precioNuevo: data.precioNuevo
+        });
+        // Actualizar el precio en el item localmente
+        const updatedItems = items.map(i => 
+          i.id === item.id ? { ...i, precio_unitario: data.precioNuevo, subtotal: i.cantidad * data.precioNuevo } : i
+        );
+        useCartStore.setState({ items: updatedItems });
+        setTimeout(() => setMensajeCambioPrecio(null), 8000);
+      }
+    };
+    
+    socket.on('precio-actualizado', handlePrecioActualizado);
+    
+    return () => {
+      socket.off('precio-actualizado', handlePrecioActualizado);
+      socket.emit('unsuscribir-producto', item.producto_id);
+    };
+  });
+
+  return () => {
+    suscripciones.forEach(cleanup => cleanup?.());
+  };
+}, [items]);
+
+  const verificarCambiosPrecio = () => {
+    items.forEach(async (item) => {
+      try {
+        // Obtener precio actual del producto desde el backend
+        const response = await fetch(`/api/v1/productos/${item.producto_id}`);
+        const data = await response.json();
+        const precioActual = data.data.precio_actual;
+        
+        const precioGuardado = localStorage.getItem(`precio_${item.id}`);
+        if (precioGuardado && parseFloat(precioGuardado) !== precioActual) {
+          setMensajeCambioPrecio({
+            itemId: item.id,
+            nombre: item.nombre,
+            precioAnterior: parseFloat(precioGuardado),
+            precioNuevo: precioActual
+          });
+          // Actualizar el precio en el store (opcional)
+          localStorage.setItem(`precio_${item.id}`, precioActual.toString());
+          setTimeout(() => setMensajeCambioPrecio(null), 8000);
+        }
+      } catch (error) {
+        console.error('Error verificando precio:', error);
+      }
+    });
+  };
+
+  const aplicarCupon = async () => {
+    if (!codigoCupon.trim()) {
+      setMensajeCupon({ text: 'Ingresa un código de cupón', type: 'error' });
+      return;
+    }
+    
+    setAplicandoCupon(true);
+    setMensajeCupon(null);
+    
+    try {
+      const result = await cuponApi.validarCupon(codigoCupon.toUpperCase(), subtotal);
+      
+      if (result.success) {
+        setCuponAplicado(result.data);
+        setDescuento(result.data.descuento);
+        sessionStorage.setItem('checkoutCupon', JSON.stringify(result.data));
+        setMensajeCupon({ 
+          text: `✅ Cupón aplicado: ${result.data.tipo === 'porcentaje' ? `${result.data.valor}% de descuento` : `S/ ${result.data.descuento.toFixed(2)} de descuento`}`, 
+          type: 'success' 
+        });
+      } else {
+        setMensajeCupon({ text: `❌ ${result.message}`, type: 'error' });
+      }
+    } catch (error: any) {
+      const mensaje = error.response?.data?.message || 'Error al validar cupón';
+      setMensajeCupon({ text: `❌ ${mensaje}`, type: 'error' });
+    } finally {
+      setAplicandoCupon(false);
+    }
+  };
+
+  const quitarCupon = () => {
+    setCodigoCupon('');
+    setCuponAplicado(null);
+    setDescuento(0);
+    setMensajeCupon(null);
+    sessionStorage.removeItem('checkoutCupon');
+  };
 
   if (!isOpen && !animate) return null;
 
@@ -41,16 +232,23 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           {/* Header */}
           <div className="flex justify-between items-center p-4 border-b">
             <h2 className="text-xl font-bold">Mi Carrito</h2>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100"
-            >
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100">
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Contenido */}
           <div className="flex-1 overflow-y-auto p-4">
+            {/* Alerta de cambio de precio - Debe estar DENTRO del div del carrito, antes de los items */}
+            {mensajeCambioPrecio && (
+              <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  💰 <strong>{mensajeCambioPrecio.nombre}</strong>: El precio cambió de 
+                  S/ {mensajeCambioPrecio.precioAnterior.toFixed(2)} a 
+                  S/ {mensajeCambioPrecio.precioNuevo.toFixed(2)}
+                </p>
+              </div>
+            )}
             {items.length === 0 ? (
               <div className="text-center py-12">
                 <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -70,17 +268,14 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <p className="text-sm text-gray-600">
                         S/ {item.precio_unitario.toFixed(2)} c/u
                       </p>
+                      {item.stock_disponible !== undefined && item.stock_disponible < 5 && (
+                        <p className="text-xs text-orange-500 mt-1">
+                          ⚠️ ¡Solo quedan {item.stock_disponible} unidades!
+                        </p>
+                      )}
                       <div className="flex items-center gap-3 mt-2">
                         <button
-                          onClick={() => {
-                            if (item.cantidad > 1) {
-                              updateItem(item.id, item.cantidad - 1);
-                            } else {
-                              if (confirm(`¿Eliminar ${item.nombre}?`)) {
-                                removeItem(item.id);
-                              }
-                            }
-                          }}
+                          onClick={() => updateItem(item.id, item.cantidad - 1)}
                           className="bg-gray-100 p-1 rounded hover:bg-gray-200"
                         >
                           <Minus className="w-4 h-4" />
@@ -98,11 +293,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           <Plus className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => {
-                            if (confirm(`¿Eliminar ${item.nombre} del carrito?`)) {
-                              removeItem(item.id);
-                            }
-                          }}
+                          onClick={() => updateItem(item.id, 0)}
                           className="ml-auto text-red-500 hover:text-red-700"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -118,34 +309,105 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             )}
           </div>
 
-          {/* Footer */}
+          {/* Cupón */}
           {items.length > 0 && (
-            <div className="border-t p-4 space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Subtotal:</span>
-                <span>S/ {subtotal.toFixed(2)}</span>
+            <div className="border-t border-b p-4 bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ¿Tienes un cupón?
+              </label>
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Ticket className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Ingresa tu código"
+                    value={codigoCupon}
+                    onChange={(e) => setCodigoCupon(e.target.value.toUpperCase())}
+                    disabled={!!cuponAplicado}
+                    className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                  />
+                </div>
+                {!cuponAplicado ? (
+                  <button
+                    onClick={aplicarCupon}
+                    disabled={aplicandoCupon || !codigoCupon.trim()}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 disabled:opacity-50 transition"
+                  >
+                    {aplicandoCupon ? '...' : 'Aplicar'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={quitarCupon}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition"
+                  >
+                    Quitar
+                  </button>
+                )}
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Impuesto (18%):</span>
-                <span>S/ {impuesto.toFixed(2)}</span>
+              {mensajeCupon && (
+                <p className={`text-xs mt-2 ${mensajeCupon.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                  {mensajeCupon.text}
+                </p>
+              )}
+              {cuponAplicado && cuponAplicado.tipo === 'porcentaje' && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {cuponAplicado.valor}% de descuento en toda la compra
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Footer con totales */}
+          {items.length > 0 && (
+            <div className="p-4 space-y-3 bg-white">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span>S/ {subtotal.toFixed(2)}</span>
+                </div>
+                {descuento > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Descuento:</span>
+                    <span>- S/ {descuento.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Impuesto (18%):</span>
+                  <span>S/ {impuesto.toFixed(2)}</span>
+                </div>
+                {ahorro > 0 && (
+                  <div className="flex justify-between text-xs text-green-500 pt-1 border-t">
+                    <span>Ahorro total:</span>
+                    <span>S/ {ahorro.toFixed(2)}</span>
+                  </div>
+                )}
               </div>
+              
               <div className="flex justify-between text-lg font-bold pt-2 border-t">
                 <span>Total:</span>
-                <span className="text-blue-600">S/ {total.toFixed(2)}</span>
+                <span className="text-blue-600">S/ {totalConDescuento.toFixed(2)}</span>
               </div>
+              
               <div className="flex gap-2 pt-2">
                 <button
-                onClick={async () => {
+                  onClick={async () => {
                     if (confirm('¿Vaciar todo el carrito?')) {
-                    await clearCart();
-                    onClose(); // Cierra el drawer después de vaciar
+                      await clearCart();
+                      quitarCupon();
+                      onClose();
                     }
-                }}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition"
+                  }}
+                  className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition"
                 >
-                Vaciar
+                  Vaciar
                 </button>
-                <button className="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">
+                <button 
+                  onClick={() => {
+                    onClose(); // Cerrar el drawer
+                    navigate('/checkout');
+                  }}
+                  className="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition"
+                >
                   Proceder al Pago
                 </button>
               </div>

@@ -10,12 +10,10 @@ export class CarritoController {
   private getSessionId(req: AuthRequest): string {
     // Intentar obtener del header X-Session-Id
     let sessionId = req.headers['x-session-id'] as string;
-    console.log('getSessionId - header:', sessionId);
     
     // Si no hay sessionId en header, generar uno nuevo
     if (!sessionId) {
       sessionId = 'session_' + Math.random().toString(36).substring(2, 15);
-      console.log('getSessionId - generado nuevo:', sessionId);
     }
     
     return sessionId;
@@ -62,6 +60,7 @@ export class CarritoController {
       const itemId = parseInt(req.params.itemId);
       const { cantidad } = updateCartItemSchema.parse(req.body);
       
+      
       const carrito = await carritoService.updateCartItem(usuarioId, sessionId, itemId, cantidad);
       
       res.json({
@@ -73,12 +72,13 @@ export class CarritoController {
       next(error);
     }
   }
-  
+
   async removeCartItem(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const usuarioId = req.user?.id || null;
       const sessionId = !usuarioId ? this.getSessionId(req) : null;
       const itemId = parseInt(req.params.itemId);
+      
       
       const carrito = await carritoService.removeCartItem(usuarioId, sessionId, itemId);
       

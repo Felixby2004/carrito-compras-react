@@ -6,6 +6,7 @@ import { AuthRequest } from '../middlewares/auth.middleware';
 import { AppError } from '../middlewares/errorHandler';
 import multer from 'multer';
 import path from 'path';
+import { io } from '../index';
 import fs from 'fs';
 
 const prisma = new PrismaClient();
@@ -80,7 +81,46 @@ export class ProductoController {
     try {
       const id = parseInt(req.params.id);
       const data = productoUpdateSchema.parse(req.body);
+      
+      // Obtener precio anterior - usar consulta directa más simple
+      const productoAnterior = await prisma.cat_productos.findUnique({
+        where: { id },
+        select: { precio_venta: true, precio_oferta: true, fecha_inicio_oferta: true, fecha_fin_oferta: true, nombre: true },
+      });
+      
+      // Calcular precio actual anterior
+      const ahora = new Date();
+      let precioActualAnterior = Number(productoAnterior?.precio_venta || 0);
+      if (productoAnterior?.precio_oferta && 
+          productoAnterior.fecha_inicio_oferta && 
+          productoAnterior.fecha_fin_oferta &&
+          new Date(productoAnterior.fecha_inicio_oferta) <= ahora &&
+          new Date(productoAnterior.fecha_fin_oferta) >= ahora) {
+        precioActualAnterior = Number(productoAnterior.precio_oferta);
+      }
+      
       const producto = await productoService.updateProducto(id, data, req.user!.id);
+      
+      // Obtener precio actual actualizado
+      let precioActualNuevo = Number(producto.precio_venta);
+      if (producto.precio_oferta && 
+          producto.fecha_inicio_oferta && 
+          producto.fecha_fin_oferta &&
+          new Date(producto.fecha_inicio_oferta) <= ahora &&
+          new Date(producto.fecha_fin_oferta) >= ahora) {
+        precioActualNuevo = Number(producto.precio_oferta);
+      }
+      
+      // Si el precio cambió, notificar a los clientes suscritos
+      if (precioActualAnterior !== precioActualNuevo) {
+        io.to(`producto_${id}`).emit('precio-actualizado', {
+          productoId: id,
+          precioAnterior: precioActualAnterior,
+          precioNuevo: precioActualNuevo,
+          nombre: productoAnterior?.nombre || producto.nombre,
+        });
+      }
+      
       res.json({
         success: true,
         data: producto,
@@ -179,6 +219,15 @@ export class ProductoController {
     try {
       const marcas = await productoService.getMarcas();
       res.json({ success: true, data: marcas });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getUnidadesMedida(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const unidades = await productoService.getUnidadesMedida();
+      res.json({ success: true, data: unidades });
     } catch (error) {
       next(error);
     }

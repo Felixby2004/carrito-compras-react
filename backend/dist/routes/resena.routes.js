@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const resena_controller_1 = require("../controllers/resena.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const router = (0, express_1.Router)();
+const resenaController = new resena_controller_1.ResenaController();
+router.get('/producto/:productoId', resenaController.getResenasByProducto.bind(resenaController));
+router.post('/', auth_middleware_1.authenticate, resenaController.createResena.bind(resenaController));
+exports.default = router;

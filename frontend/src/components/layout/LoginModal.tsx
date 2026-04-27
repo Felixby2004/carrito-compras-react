@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { X, LogIn } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useNavigate } from 'react-router-dom';
+import { authApi } from '../../api/auth.api';
+import { notify } from '../../utils/notify';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -14,6 +16,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [isRegister, setIsRegister] = useState(false);
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
+  const [passwordConfirmacion, setPasswordConfirmacion] = useState('');
   const { login, register } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -25,29 +28,50 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setLoading(true);
     try {
       if (isRegister) {
-        await register({ email, password, nombre, apellido });
-        alert('Registro exitoso. Revisa tu email para verificar tu cuenta.');
+        await register({
+          email,
+          password,
+          password_confirmacion: passwordConfirmacion,
+          nombre,
+          apellido,
+        });
+        notify('Registro exitoso. Revisa tu email para verificar tu cuenta.', 'success');
         onClose();
+        window.location.reload();
       } else {
         const user = await login({ email, password });
-        alert('Login exitoso');
+        notify('Login exitoso', 'success');
         onClose();
         
         // Redirigir según el rol
-        if (user.roles?.includes('administrador')) {
-          navigate('/admin');
-        } else {
-          navigate('/');
-        }
+        const roles = user.roles || [];
+        const isPanelRole = roles.some((r) =>
+          ['administrador', 'admin', 'gerente', 'gerente_ventas', 'gerente_inventario', 'vendedor'].includes(r),
+        );
+        navigate(isPanelRole ? '/admin' : '/');
       }
       setEmail('');
       setPassword('');
       setNombre('');
       setApellido('');
+      setPasswordConfirmacion('');
     } catch (error) {
-      alert(isRegister ? 'Error en registro' : 'Error en login');
+      notify(isRegister ? 'Error en registro' : 'Error en login', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      notify('Ingresa tu correo para recuperar contraseña.', 'info');
+      return;
+    }
+    try {
+      await authApi.forgotPassword(email);
+      notify('Si el correo existe, te enviamos un enlace de recuperación.', 'success');
+    } catch (error) {
+      notify('No se pudo enviar la recuperación en este momento.', 'error');
     }
   };
 
@@ -117,6 +141,17 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             required
           />
 
+          {isRegister && (
+            <input
+              type="password"
+              placeholder="Confirmar contraseña"
+              value={passwordConfirmacion}
+              onChange={(e) => setPasswordConfirmacion(e.target.value)}
+              className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            />
+          )}
+
           <button
             type="submit"
             disabled={loading}
@@ -127,6 +162,14 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
         </form>
 
         <div className="text-center mt-4">
+          {!isRegister && (
+            <button
+              onClick={handleForgotPassword}
+              className="text-sm text-gray-600 hover:underline mr-3"
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          )}
           <button
             onClick={() => setIsRegister(!isRegister)}
             className="text-blue-600 hover:underline text-sm"

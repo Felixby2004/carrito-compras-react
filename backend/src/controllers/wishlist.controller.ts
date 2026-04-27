@@ -39,7 +39,7 @@ export class WishlistController {
         },
       });
       
-      res.json({ success: true, data: wishlist });
+      res.json({ success: true, data: wishlist?.items || [] });
     } catch (error) {
       next(error);
     }
@@ -52,9 +52,10 @@ export class WishlistController {
         throw new AppError('No autenticado', 401);
       }
       
-      const { productoId } = req.body;
+      const productoIdRaw = req.body?.productoId ?? req.body?.producto_id;
+      const productoId = Number(productoIdRaw);
       
-      if (!productoId) {
+      if (!productoId || Number.isNaN(productoId)) {
         throw new AppError('Producto ID requerido', 400);
       }
       

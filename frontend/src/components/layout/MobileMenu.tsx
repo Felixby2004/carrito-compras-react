@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { useAuthStore } from '../../stores/authStore';
 
 export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isCliente = isAuthenticated && (user?.roles || []).some((r) => r === 'cliente');
 
   return (
     <>
@@ -50,6 +54,24 @@ export function MobileMenu() {
               >
                 Catálogo
               </Link>
+              {isCliente && (
+                <>
+                  <Link
+                    to="/mis-ordenes"
+                    onClick={() => setIsOpen(false)}
+                    className="text-gray-700 hover:text-blue-600 py-2"
+                  >
+                    Mis Pedidos
+                  </Link>
+                  <Link
+                    to="/wishlist"
+                    onClick={() => setIsOpen(false)}
+                    className="text-gray-700 hover:text-blue-600 py-2"
+                  >
+                    Lista de Deseados
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

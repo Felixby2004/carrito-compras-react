@@ -75,6 +75,21 @@ export class ResenaController {
       if (existe) {
         throw new AppError('Ya has reseñado este producto', 409);
       }
+
+      // Solo permitir reseñar si el cliente compró el producto
+      const compra = await prisma.ord_items_orden.findFirst({
+        where: {
+          producto_id: productoId,
+          orden: {
+            cliente_id: cliente.id,
+            estado: { in: ['pagada', 'en_proceso', 'enviada', 'entregada'] },
+          },
+        },
+        select: { id: true },
+      });
+      if (!compra) {
+        throw new AppError('Solo puedes reseñar productos que hayas comprado', 403);
+      }
       
       const resena = await prisma.cli_resenas_producto.create({
         data: {

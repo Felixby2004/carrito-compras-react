@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import config from '../config';
 import { AppError } from '../middlewares/errorHandler';
 import { RegisterInput, LoginInput } from '../schemas/auth.schema';
-// import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/email';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/email';
 
 const prisma = new PrismaClient();
 
@@ -52,7 +52,21 @@ export class AuthService {
           email: data.email,
           password_hash: hashedPassword,
           token_verificacion: verificationToken,
+          email_verificado: true,
           activo: true,
+        },
+      });
+
+      await tx.configuracion_sistema.upsert({
+        where: { clave: `perfil_usuario_${usuario.id}` },
+        update: {
+          valor: JSON.stringify({ nombre: data.nombre, apellido: data.apellido }),
+          descripcion: 'Perfil basico de usuario',
+        },
+        create: {
+          clave: `perfil_usuario_${usuario.id}`,
+          valor: JSON.stringify({ nombre: data.nombre, apellido: data.apellido }),
+          descripcion: 'Perfil basico de usuario',
         },
       });
       
@@ -83,8 +97,12 @@ export class AuthService {
       return { usuario, cliente };
     });
     
-    // Enviar email de verificación
-    // await sendVerificationEmail(data.email, verificationToken);
+    // Enviar email de verificación (no bloqueante)
+    try {
+      await sendVerificationEmail(data.email, verificationToken);
+    } catch {
+      // ignore
+    }
     
     // Generar tokens
     const accessToken = this.generateAccessToken(result.usuario.id, result.usuario.email);
@@ -129,6 +147,8 @@ export class AuthService {
     if (!usuario.activo) {
       throw new AppError('Usuario desactivado', 401);
     }
+
+    // En este proyecto (modo demo), permitimos login aun si el correo no fue verificado.
     
     const isValidPassword = await this.comparePassword(data.password, usuario.password_hash);
     
@@ -175,7 +195,15 @@ export class AuthService {
         expira_en: { gt: new Date() },
       },
       include: {
-        usuario: true,
+        usuario: {
+          include: {
+            usuario_roles: {
+              include: {
+                rol: true,
+              },
+            },
+          },
+        },
       },
     });
     
@@ -203,6 +231,11 @@ export class AuthService {
     });
     
     return {
+      user: {
+        id: tokenRecord.usuario.id,
+        email: tokenRecord.usuario.email,
+        roles: tokenRecord.usuario.usuario_roles.map((ur: any) => ur.rol.nombre),
+      },
       accessToken,
       refreshToken: newRefreshToken,
     };
@@ -259,7 +292,7 @@ export class AuthService {
       },
     });
     
-    //await sendPasswordResetEmail(email, resetToken);
+    await sendPasswordResetEmail(email, resetToken);
     
     return { success: true };
   }

@@ -66,3 +66,31 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
     logger.error(`Error enviando email a ${email}:`, error);
   }
 };
+
+export const sendOrderStatusEmail = async (
+  email: string,
+  ordenNumero: string,
+  estado: string,
+  comentario?: string
+) => {
+  const mailOptions = {
+    from: config.emailFrom,
+    to: email,
+    subject: `Actualizacion de tu orden ${ordenNumero}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Estado de orden actualizado</h2>
+        <p>Tu orden <strong>${ordenNumero}</strong> cambio a: <strong>${estado}</strong>.</p>
+        ${comentario ? `<p>Comentario: ${comentario}</p>` : ''}
+        <p>Gracias por comprar con nosotros.</p>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    logger.info(`Email de estado de orden enviado a ${email}`);
+  } catch (error) {
+    logger.error(`Error enviando email de estado a ${email}:`, error);
+  }
+};

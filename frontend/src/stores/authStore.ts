@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { authApi } from '../api/auth.api';
 import { setAccessToken } from '../api/client';
 import type { Usuario, LoginRequest, RegisterRequest } from '../types';
+import { useCartStore } from './cartStore';
 
 interface AuthState {
   user: Usuario | null;
@@ -29,7 +30,7 @@ export const useAuthStore = create<AuthState>()(
           const { user, accessToken, refreshToken } = response.data;
           
           setAccessToken(accessToken);
-          localStorage.setItem('accessToken', accessToken); // ← Agrega esta línea
+          localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('refreshToken', refreshToken);
           
           set({
@@ -38,7 +39,25 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
           });
           
-          return user; // ← Devuelve el usuario
+          // Sincronizar carrito
+          const cartStore = useCartStore.getState();
+          const pendingCart = cartStore.getPendingCart();
+          
+          if (pendingCart && pendingCart.items.length > 0) {
+            // Si hay carrito pendiente, agregar cada item
+            for (const item of pendingCart.items) {
+              try {
+                await cartStore.addItem(item.producto_id, item.cantidad);
+              } catch (error) {
+                console.error('Error agregando item:', error);
+              }
+            }
+          } else {
+            // Si no, cargar carrito del backend
+            await cartStore.loadCart();
+          }
+          
+          return user;
         } catch (error) {
           set({ isLoading: false });
           throw error;
@@ -48,15 +67,10 @@ export const useAuthStore = create<AuthState>()(
       register: async (data: RegisterRequest) => {
         set({ isLoading: true });
         try {
-          const response = await authApi.register(data);
-          const { user, accessToken, refreshToken } = response.data;
-          
-          setAccessToken(accessToken);
-          localStorage.setItem('refreshToken', refreshToken);
-          
+          await authApi.register(data);
           set({
-            user,
-            isAuthenticated: true,
+            user: null,
+            isAuthenticated: false,
             isLoading: false,
           });
         } catch (error) {

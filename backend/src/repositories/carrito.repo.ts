@@ -5,9 +5,6 @@ const prisma = new PrismaClient();
 export class CarritoRepository {
   
   async findOrCreateCarrito(usuarioId: number | null, sessionId: string | null) {
-    console.log('=== findOrCreateCarrito ===');
-    console.log('usuarioId:', usuarioId);
-    console.log('sessionId:', sessionId);
     
     let carrito = null;
     
@@ -29,7 +26,6 @@ export class CarritoRepository {
           },
         },
       });
-      console.log('Carrito encontrado por usuarioId:', carrito?.id);
     } else if (sessionId) {
       carrito = await prisma.ord_carritos.findFirst({
         where: { session_id: sessionId },
@@ -48,11 +44,9 @@ export class CarritoRepository {
           },
         },
       });
-      console.log('Carrito encontrado por sessionId:', carrito?.id);
     }
     
     if (!carrito) {
-      console.log('Creando nuevo carrito con sessionId:', sessionId);
       carrito = await prisma.ord_carritos.create({
         data: {
           usuario_id: usuarioId,
@@ -73,7 +67,6 @@ export class CarritoRepository {
           },
         },
       });
-      console.log('Nuevo carrito creado:', carrito.id);
     }
     
     return carrito;
@@ -114,8 +107,6 @@ export class CarritoRepository {
   }
 
   async addItem(carritoId: number, productoId: number, varianteId: number | null, cantidad: number, precio: number) {
-    console.log('=== addItem EN REPOSITORIO ===');
-    console.log('Buscando item existente con:', { carritoId, productoId, varianteId });
     
     const existingItem = await prisma.ord_items_carrito.findFirst({
       where: {
@@ -125,21 +116,17 @@ export class CarritoRepository {
       },
     });
     
-    console.log('Item existente encontrado:', existingItem);
     
     if (existingItem) {
       const nuevaCantidad = existingItem.cantidad + cantidad;
-      console.log(`Actualizando cantidad: ${existingItem.cantidad} + ${cantidad} = ${nuevaCantidad}`);
       
       const updated = await prisma.ord_items_carrito.update({
         where: { id: existingItem.id },
         data: { cantidad: nuevaCantidad },
       });
-      console.log('Item actualizado:', updated);
       return updated;
     }
     
-    console.log('Creando nuevo item');
     const newItem = await prisma.ord_items_carrito.create({
       data: {
         carrito_id: carritoId,
@@ -149,7 +136,6 @@ export class CarritoRepository {
         precio_unitario: precio,
       },
     });
-    console.log('Nuevo item creado:', newItem);
     return newItem;
   }
   

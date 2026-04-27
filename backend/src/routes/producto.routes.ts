@@ -15,6 +15,7 @@ router.get('/todos', productoController.getTodosProductos.bind(productoControlle
 router.get('/categorias', productoController.getCategorias.bind(productoController));
 router.get('/subcategorias', productoController.getSubcategorias.bind(productoController));
 router.get('/marcas', productoController.getMarcas.bind(productoController));
+router.get('/unidades-medida', productoController.getUnidadesMedida.bind(productoController));
 router.get('/:id/relacionados', productoController.getRelacionados.bind(productoController));
 router.get('/:id/imagenes', productoController.getImagenes.bind(productoController));
 router.get('/:id', productoController.getProductoById.bind(productoController));

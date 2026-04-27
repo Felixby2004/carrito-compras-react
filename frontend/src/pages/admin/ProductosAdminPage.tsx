@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Download, Search, X } from 'lucide-react';
 import type { Producto } from '../../types';
 import apiClient from '../../api/client';
+import { notify } from '../../utils/notify';
+import { Pagination } from '../../components/ui/Pagination';
 
 interface Categoria {
   id: number;
@@ -19,16 +21,25 @@ interface Marca {
   nombre: string;
 }
 
+interface UnidadMedida {
+  id: number;
+  nombre: string;
+  abreviatura: string;
+}
+
 export function ProductosAdminPage() {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([]);
   const [marcas, setMarcas] = useState<Marca[]>([]);
+  const [unidadesMedida, setUnidadesMedida] = useState<UnidadMedida[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingProducto, setEditingProducto] = useState<Producto | null>(null);
   const [imagenesProducto, setImagenesProducto] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   
   const [formData, setFormData] = useState({
     sku: '',
@@ -38,6 +49,7 @@ export function ProductosAdminPage() {
     categoria_id: '',
     subcategoria_id: '',
     marca_id: '',
+    unidad_medida_id: '',
     precio_costo: '',
     precio_venta: '',
     precio_oferta: '',
@@ -77,14 +89,28 @@ export function ProductosAdminPage() {
 
   const cargarCatalogos = async () => {
     try {
-      const [cats, subs, mar] = await Promise.all([
-        apiClient.get('/productos/categorias'),
-        apiClient.get('/productos/subcategorias'),
-        apiClient.get('/productos/marcas'),
+      const [cats, subs, mar, um] = await Promise.all([
+        apiClient.get('/productos/categorias').catch(err => {
+          console.error('Error cargando categorías:', err);
+          return { data: { data: [] } };
+        }),
+        apiClient.get('/productos/subcategorias').catch(err => {
+          console.error('Error cargando subcategorías:', err);
+          return { data: { data: [] } };
+        }),
+        apiClient.get('/productos/marcas').catch(err => {
+          console.error('Error cargando marcas:', err);
+          return { data: { data: [] } };
+        }),
+        apiClient.get('/productos/unidades-medida').catch(err => {
+          console.error('Error cargando unidades de medida:', err);
+          return { data: { data: [] } };
+        }),
       ]);
       setCategorias(cats.data.data || []);
       setSubcategorias(subs.data.data || []);
       setMarcas(mar.data.data || []);
+      setUnidadesMedida(um.data.data || []);
     } catch (error) {
       console.error('Error cargando catálogos:', error);
     }
@@ -112,6 +138,7 @@ export function ProductosAdminPage() {
         categoria_id: parseInt(formData.categoria_id),
         subcategoria_id: formData.subcategoria_id ? parseInt(formData.subcategoria_id) : undefined,
         marca_id: formData.marca_id ? parseInt(formData.marca_id) : undefined,
+        unidad_medida_id: formData.unidad_medida_id ? parseInt(formData.unidad_medida_id) : undefined,
         precio_costo: formData.precio_costo ? parseFloat(formData.precio_costo) : 0,
         precio_venta: parseFloat(formData.precio_venta),
         precio_oferta: formData.precio_oferta ? parseFloat(formData.precio_oferta) : undefined,
@@ -128,10 +155,10 @@ export function ProductosAdminPage() {
 
       if (editingProducto) {
         await apiClient.put(`/productos/${editingProducto.id}`, data);
-        alert('Producto actualizado');
+        notify('Producto actualizado', 'success');
       } else {
         await apiClient.post('/productos', data);
-        alert('Producto creado');
+        notify('Producto creado', 'success');
       }
       
       setShowModal(false);
@@ -140,7 +167,7 @@ export function ProductosAdminPage() {
       cargarProductos();
     } catch (error: any) {
       console.error('Error guardando producto:', error);
-      alert(error.response?.data?.message || 'Error al guardar producto');
+      notify(error.response?.data?.message || 'Error al guardar producto', 'error');
     }
   };
 
@@ -148,11 +175,11 @@ export function ProductosAdminPage() {
     if (confirm('¿Eliminar este producto?')) {
       try {
         await apiClient.delete(`/productos/${id}`);
-        alert('Producto eliminado');
+        notify('Producto eliminado', 'success');
         cargarProductos();
       } catch (error: any) {
         console.error('Error eliminando producto:', error);
-        alert(error.response?.data?.message || 'Error al eliminar producto');
+        notify(error.response?.data?.message || 'Error al eliminar producto', 'error');
       }
     }
   };
@@ -166,6 +193,7 @@ export function ProductosAdminPage() {
       categoria_id: '',
       subcategoria_id: '',
       marca_id: '',
+      unidad_medida_id: '',
       precio_costo: '',
       precio_venta: '',
       precio_oferta: '',
@@ -217,6 +245,7 @@ export function ProductosAdminPage() {
     categoria_id: producto.categoria_id?.toString() || '',
     subcategoria_id: producto.subcategoria_id?.toString() || '',
     marca_id: producto.marca_id?.toString() || '',
+    unidad_medida_id: (producto as any).unidad_medida_id?.toString() || '',
     precio_costo: producto.precio_costo?.toString() || '',
     precio_venta: producto.precio_venta?.toString() || '',
     precio_oferta: producto.precio_oferta?.toString() || '',
@@ -250,9 +279,21 @@ export function ProductosAdminPage() {
   };
 
   const filteredProductos = productos.filter(p =>
-    p?.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p?.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+    (p?.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p?.sku?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+    (p?.activo === true || p?.activo !== false)
   );
+
+  const totalPages = Math.ceil(filteredProductos.length / ITEMS_PER_PAGE);
+  const paginatedProductos = filteredProductos.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Resetear página al buscar
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const subcategoriasFiltradas = subcategorias.filter(
     sub => sub.categoria_id === parseInt(formData.categoria_id)
@@ -313,7 +354,7 @@ export function ProductosAdminPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredProductos.map((producto) => (
+            {paginatedProductos.map((producto) => (
               <tr key={producto.id} className="border-b hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm">{producto.sku}</td>
                 <td className="px-4 py-3">
@@ -366,6 +407,14 @@ export function ProductosAdminPage() {
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={filteredProductos.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+      />
 
       {/* Modal de producto */}
       {showModal && (
@@ -474,6 +523,21 @@ export function ProductosAdminPage() {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Unidad de Medida */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Unidad de Medida</label>
+                <select
+                  value={formData.unidad_medida_id}
+                  onChange={(e) => setFormData({ ...formData, unidad_medida_id: e.target.value })}
+                  className="w-full border rounded-lg p-2"
+                >
+                  <option value="">Seleccionar unidad de medida</option>
+                  {unidadesMedida.map((um) => (
+                    <option key={um.id} value={um.id}>{um.nombre} ({um.abreviatura})</option>
+                  ))}
+                </select>
               </div>
 
               {/* Precios */}
@@ -614,123 +678,123 @@ export function ProductosAdminPage() {
                 </select>
               </div>
 
-              {/* Imágenes del producto */}
-<div>
-  <label className="block text-sm font-medium mb-1">Imágenes del producto</label>
-  
-  {/* Mostrar imágenes existentes */}
-  {/* Mostrar imágenes existentes */}
-{imagenesProducto.length > 0 && (
-  <div className="grid grid-cols-4 gap-3 mb-3">
-    {imagenesProducto.map((img) => (
-      <div key={img.id} className="relative group border rounded-lg p-1">
-        <img
-          src={img.url}  // Esto funciona con base64 también
-          alt="Producto"
-          className="w-full h-24 object-cover rounded"
-        />
-        
-        {/* Botón eliminar */}
-        <button
-          type="button"
-          onClick={async () => {
-            if (confirm('¿Eliminar esta imagen?')) {
-              try {
-                await apiClient.delete(`/productos/imagenes/${img.id}`);
-                alert('Imagen eliminada');
-                await cargarImagenesProducto(editingProducto!.id);
-                cargarProductos();
-              } catch (error) {
-                console.error('Error eliminando imagen:', error);
-                alert('Error al eliminar imagen');
-              }
-            }
-          }}
-          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition hover:bg-red-600"
-          title="Eliminar"
-        >
-          ✕
-        </button>
-        
-        {/* Botón principal */}
-        {!img.es_principal && (
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                await apiClient.put(`/productos/imagenes/${img.id}/principal`);
-                alert('Imagen establecida como principal');
-                await cargarImagenesProducto(editingProducto!.id);
-                cargarProductos();
-              } catch (error) {
-                console.error('Error al establecer principal:', error);
-                alert('Error al establecer imagen principal');
-              }
-            }}
-            className="absolute bottom-1 right-1 bg-gray-500 text-white text-xs px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition hover:bg-blue-500"
-            title="Establecer como principal"
-          >
-            Principal
-          </button>
-        )}
-        
-        {/* Indicador de imagen principal */}
-        {img.es_principal && (
-          <span className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-2 py-0.5 rounded">
-            Principal
-          </span>
-        )}
-      </div>
-    ))}
-  </div>
-)}
+              {/* Imágenes del producto - Solo se muestra cuando se edita */}
+              {editingProducto && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Imágenes del producto</label>
+                
+                {/* Mostrar imágenes existentes */}
+              {imagenesProducto.length > 0 && (
+                <div className="grid grid-cols-4 gap-3 mb-3">
+                  {imagenesProducto.map((img) => (
+                    <div key={img.id} className="relative group border rounded-lg p-1">
+                      <img
+                        src={img.url}  // Esto funciona con base64 también
+                        alt="Producto"
+                        className="w-full h-24 object-cover rounded"
+                      />
+                      
+                      {/* Botón eliminar */}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (confirm('¿Eliminar esta imagen?')) {
+                            try {
+                              await apiClient.delete(`/productos/imagenes/${img.id}`);
+                              notify('Imagen eliminada', 'success');
+                              await cargarImagenesProducto(editingProducto!.id);
+                              cargarProductos();
+                            } catch (error) {
+                              console.error('Error eliminando imagen:', error);
+                              notify('Error al eliminar imagen', 'error');
+                            }
+                          }
+                        }}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition hover:bg-red-600"
+                        title="Eliminar"
+                      >
+                        ✕
+                      </button>
+                      
+                      {/* Botón principal */}
+                      {!img.es_principal && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await apiClient.put(`/productos/imagenes/${img.id}/principal`);
+                              notify('Imagen establecida como principal', 'success');
+                              await cargarImagenesProducto(editingProducto!.id);
+                              cargarProductos();
+                            } catch (error) {
+                              console.error('Error al establecer principal:', error);
+                              notify('Error al establecer imagen principal', 'error');
+                            }
+                          }}
+                          className="absolute bottom-1 right-1 bg-gray-500 text-white text-xs px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition hover:bg-blue-500"
+                          title="Establecer como principal"
+                        >
+                          Principal
+                        </button>
+                      )}
+                      
+                      {/* Indicador de imagen principal */}
+                      {img.es_principal && (
+                        <span className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-2 py-0.5 rounded">
+                          Principal
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
-  {/* Subir nuevas imágenes */}
-  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-    <input
-      type="file"
-      multiple
-      accept="image/*"
-      onChange={async (e) => {
-        const files = Array.from(e.target.files || []);
-        if (files.length === 0) return;
-        
-        const formData = new FormData();
-        files.forEach(file => formData.append('imagenes', file));
-        
-        try {
-          const productoId = editingProducto?.id;
-          if (productoId) {
-            const response = await apiClient.post(`/productos/${productoId}/imagenes`, formData, {
-              headers: { 'Content-Type': 'multipart/form-data' },
-            });
-            console.log('Imágenes subidas:', response.data);
-            alert('Imágenes subidas correctamente');
-            await cargarImagenesProducto(productoId);
-            cargarProductos(); // Recargar lista de productos
-          } else {
-            alert('Primero guarda el producto para poder subir imágenes');
-          }
-        } catch (error: any) {
-          console.error('Error subiendo imágenes:', error);
-          alert(error.response?.data?.message || 'Error al subir imágenes');
-        }
-        
-        // Limpiar el input
-        e.target.value = '';
-      }}
-      className="hidden"
-      id="image-upload"
-    />
-    <label
-      htmlFor="image-upload"
-      className="cursor-pointer inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
-    >
-      📸 Subir imágenes
-    </label>
-    <p className="text-xs text-gray-500 mt-1">PNG, JPG hasta 5MB cada una</p>
-  </div>
-</div>
+                {/* Subir nuevas imágenes */}
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length === 0) return;
+                      
+                      const formData = new FormData();
+                      files.forEach(file => formData.append('imagenes', file));
+                      
+                      try {
+                        const productoId = editingProducto?.id;
+                        if (productoId) {
+                          await apiClient.post(`/productos/${productoId}/imagenes`, formData, {
+                            headers: { 'Content-Type': 'multipart/form-data' },
+                          });
+                          notify('Imagenes subidas correctamente', 'success');
+                          await cargarImagenesProducto(productoId);
+                          cargarProductos(); // Recargar lista de productos
+                        } else {
+                          notify('Primero guarda el producto para poder subir imagenes', 'info');
+                        }
+                      } catch (error: any) {
+                        console.error('Error subiendo imágenes:', error);
+                        notify(error.response?.data?.message || 'Error al subir imagenes', 'error');
+                      }
+                      
+                      // Limpiar el input
+                      e.target.value = '';
+                    }}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="cursor-pointer inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                  >
+                    📸 Subir imágenes
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">PNG, JPG hasta 5MB cada una</p>
+                </div>
+              </div>
+              )}
 
               {/* Botones */}
               <div className="flex justify-end gap-3 pt-4">
