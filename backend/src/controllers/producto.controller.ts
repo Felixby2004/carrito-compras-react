@@ -8,6 +8,8 @@ import multer from 'multer';
 import path from 'path';
 import { io } from '../index';
 import fs from 'fs';
+import { uploadCloudinary } from '../config/cloudinary';
+import { config } from '../config';
 
 const prisma = new PrismaClient();
 const productoService = new ProductoService();
@@ -235,45 +237,48 @@ export class ProductoController {
 
   // Subir imágenes de producto
   async subirImagenes(req: Request, res: Response, next: NextFunction) {
-  try {
-    const productoId = parseInt(req.params.id);
-    
-    const producto = await prisma.cat_productos.findUnique({
-      where: { id: productoId },
-    });
-    
-    if (!producto) {
-      throw new AppError('Producto no encontrado', 404);
-    }
-    
-    const files = req.files as Express.Multer.File[];
-    
-    if (!files || files.length === 0) {
-      throw new AppError('No se subieron imágenes', 400);
-    }
-    
-    const imagenesExistentes = await prisma.cat_imagenes_producto.count({
-      where: { producto_id: productoId },
-    });
-    
-    const imagenes = [];
-    for (let i = 0; i < files.length; i++) {
-      const imagen = await prisma.cat_imagenes_producto.create({
-        data: {
-          producto_id: productoId,
-          url: `http://localhost:3000/uploads/${files[i].filename}`, // URL completa
-          orden: imagenesExistentes + i,
-          es_principal: imagenesExistentes === 0 && i === 0,
-        },
+    try {
+      const productoId = parseInt(req.params.id);
+      
+      const producto = await prisma.cat_productos.findUnique({
+        where: { id: productoId },
       });
-      imagenes.push(imagen);
+      
+      if (!producto) {
+        throw new AppError('Producto no encontrado', 404);
+      }
+      
+      const files = req.files as Express.Multer.File[];
+      
+      if (!files || files.length === 0) {
+        throw new AppError('No se subieron imágenes', 400);
+      }
+      
+      const imagenesExistentes = await prisma.cat_imagenes_producto.count({
+        where: { producto_id: productoId },
+      });
+      
+      // 🔥 OBTENER LA URL BASE DEL BACKEND DESDE VARIABLE DE ENTORNO
+      const baseUrl = process.env.BACKEND_URL || `http://localhost:${config.port}`;
+      
+      const imagenes = [];
+      for (let i = 0; i < files.length; i++) {
+        const imagen = await prisma.cat_imagenes_producto.create({
+          data: {
+            producto_id: productoId,
+            url: `${baseUrl}/uploads/${files[i].filename}`, // ✅ USA LA URL CORRECTA
+            orden: imagenesExistentes + i,
+            es_principal: imagenesExistentes === 0 && i === 0,
+          },
+        });
+        imagenes.push(imagen);
+      }
+      
+      res.json({ success: true, data: imagenes });
+    } catch (error) {
+      next(error);
     }
-    
-    res.json({ success: true, data: imagenes });
-  } catch (error) {
-    next(error);
   }
-}
   
   // Obtener imágenes de un producto
   async getImagenes(req: Request, res: Response, next: NextFunction) {
