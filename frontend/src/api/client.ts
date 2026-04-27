@@ -1,11 +1,8 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: '/api/v1',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL, // en prod será tu Render
+  withCredentials: true, // opcional (solo si usas cookies)
 });
 
 // Función para obtener o crear un sessionId PERSISTENTE
