@@ -9,6 +9,7 @@ import type { Producto } from '../../types';
 import { useProductoStore } from '../../stores/productoStore';
 import { getSocket } from '../../socket';
 import { notify } from '../../utils/notify';
+import { Price } from '../../components/Price';
 
 export function ProductoDetallePage() {
   const { id } = useParams<{ id: string }>();
@@ -273,14 +274,14 @@ export function ProductoDetallePage() {
           <div className="mb-4">
             {tieneDescuento ? (
               <div>
-                <span className="text-3xl font-bold text-blue-600">S/ {precioActualCalculado.toFixed(2)}</span>
-                <span className="text-lg text-gray-400 line-through ml-2">S/ {producto.precio_venta.toFixed(2)}</span>
+                <span className="text-3xl font-bold text-blue-600"><Price value={precioActualCalculado} /></span>
+                <span className="text-lg text-gray-400 line-through ml-2"><Price value={producto.precio_venta} /></span>
                 <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
                   -{producto.descuento_porcentaje}%
                 </span>
               </div>
             ) : (
-              <span className="text-3xl font-bold text-blue-600">S/ {precioActualCalculado.toFixed(2)}</span>
+              <span className="text-3xl font-bold text-blue-600"><Price value={precioActualCalculado} /></span>
             )}
           </div>
 
@@ -462,7 +463,7 @@ export function ProductoDetallePage() {
                 />
                 <h3 className="font-semibold text-center hover:text-blue-600">{rel.nombre}</h3>
                 <p className="text-center text-blue-600 font-bold mt-1">
-                  S/ {(rel.precio_actual || rel.precio_venta).toFixed(2)}
+                  <Price value={rel.precio_actual || rel.precio_venta} />
                 </p>
               </Link>
             ))}

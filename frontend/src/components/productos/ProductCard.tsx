@@ -5,6 +5,7 @@ import { useProductoStore } from '../../stores/productoStore';
 import { useWishlistStore } from '../../stores/wishlistStore';
 import { useAuthStore } from '../../stores/authStore';
 import { notify } from '../../utils/notify';
+import { Price } from '../Price';
 
 interface ProductCardProps {
   producto: Producto;
@@ -70,10 +71,10 @@ export function ProductCard({ producto, viewMode = 'grid', onAddToCart }: Produc
           </Link>
           <p className="text-gray-600 text-sm mt-1">{producto.descripcion_corta}</p>
           <div className="mt-2 flex items-center gap-2">
-            <span className="text-2xl font-bold text-blue-600">S/ {Number(precioActual || 0).toFixed(2)}</span>
+            <span className="text-2xl font-bold text-blue-600"><Price value={precioActual} /></span>
             {tieneDescuento && (
               <>
-                <span className="text-sm text-gray-400 line-through">S/ {Number(precioVenta || 0).toFixed(2)}</span>
+                <span className="text-sm text-gray-400 line-through"><Price value={precioVenta} /></span>
                 <span className="text-sm text-green-600">-{producto.descuento_porcentaje}%</span>
               </>
             )}
@@ -138,10 +139,10 @@ export function ProductCard({ producto, viewMode = 'grid', onAddToCart }: Produc
       </Link>
       <p className="text-gray-600 text-sm mt-1 line-clamp-2">{producto.descripcion_corta}</p>
       <div className="mt-2">
-        <span className="text-2xl font-bold text-blue-600">S/ {precioActual.toFixed(2)}</span>
+        <span className="text-2xl font-bold text-blue-600"><Price value={precioActual} /></span>
         {tieneDescuento && (
           <>
-            <span className="text-sm text-gray-400 line-through ml-2">S/ {precioVenta.toFixed(2)}</span>
+            <span className="text-sm text-gray-400 line-through ml-2"><Price value={precioVenta} /></span>
             <span className="text-sm text-green-600 ml-1">-{producto.descuento_porcentaje}%</span>
           </>
         )}

@@ -5,19 +5,11 @@ import { cuponApi } from '../../api/cupon.api';
 import { getSocket } from '../../socket';
 import { useProductoStore } from '../../stores/productoStore';
 import { useNavigate } from 'react-router-dom';
-
+import { Price } from '../Price';
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const formatPrice = (value: any): string => {
-  if (value === undefined || value === null || value === '') {
-    return '0.00';
-  }
-  const num = Number(value);
-  return isNaN(num) ? '0.00' : num.toFixed(2);
-};
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [animate] = useState(false);
@@ -275,7 +267,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <div className="flex-1">
                       <h3 className="font-semibold">{item.nombre}</h3>
                       <p className="text-sm text-gray-600">
-                        S/{formatPrice(item.precio_unitario)} c/u
+                        <Price value={item.precio_unitario} />
                       </p>
                       {item.stock_disponible !== undefined && item.stock_disponible < 5 && (
                         <p className="text-xs text-orange-500 mt-1">
@@ -310,7 +302,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">S/{formatPrice(item.subtotal)}</p>
+                      <p className="font-semibold"><Price value={item.subtotal} /></p> 
                     </div>
                   </div>
                 ))}
@@ -372,29 +364,29 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span>S/{formatPrice(subtotal)}</span>
+                  <Price value={subtotal} />
                 </div>
                 {descuento > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Descuento:</span>
-                    <span>- S/ {formatPrice(descuento)}</span>
+                    <span>- <Price value={descuento} /></span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Impuesto (18%):</span>
-                  <span>S/ {formatPrice(impuesto)}</span>
+                  <span><Price value={impuesto} /></span>
                 </div>
                 {ahorro > 0 && (
                   <div className="flex justify-between text-xs text-green-500 pt-1 border-t">
                     <span>Ahorro total:</span>
-                    <span>S/ {formatPrice(ahorro)}</span>
+                    <span><Price value={ahorro} /></span>
                   </div>
                 )}
               </div>
               
               <div className="flex justify-between text-lg font-bold pt-2 border-t">
                 <span>Total:</span>
-                <span className="text-blue-600">S/ {formatPrice(totalConDescuento)}</span>
+                <span className="text-blue-600"><Price value={totalConDescuento} /></span>
               </div>
               
               <div className="flex gap-2 pt-2">
