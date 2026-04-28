@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import { PrismaClient } from '@prisma/client';
 import { AppError } from '../middlewares/errorHandler';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';

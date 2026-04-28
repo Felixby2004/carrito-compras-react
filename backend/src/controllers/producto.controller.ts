@@ -8,8 +8,6 @@ import multer from 'multer';
 import path from 'path';
 import { io } from '../index';
 import fs from 'fs';
-import { uploadCloudinary } from '../config/cloudinary';
-import { config } from '../config';
 
 const prisma = new PrismaClient();
 const productoService = new ProductoService();
