@@ -70,10 +70,10 @@ export function ProductCard({ producto, viewMode = 'grid', onAddToCart }: Produc
           </Link>
           <p className="text-gray-600 text-sm mt-1">{producto.descripcion_corta}</p>
           <div className="mt-2 flex items-center gap-2">
-            <span className="text-2xl font-bold text-blue-600">S/ {precioActual.toFixed(2)}</span>
+            <span className="text-2xl font-bold text-blue-600">S/ {Number(precioActual || 0).toFixed(2)}</span>
             {tieneDescuento && (
               <>
-                <span className="text-sm text-gray-400 line-through">S/ {precioVenta.toFixed(2)}</span>
+                <span className="text-sm text-gray-400 line-through">S/ {Number(precioVenta || 0).toFixed(2)}</span>
                 <span className="text-sm text-green-600">-{producto.descuento_porcentaje}%</span>
               </>
             )}

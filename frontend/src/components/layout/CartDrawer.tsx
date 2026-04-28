@@ -11,6 +11,14 @@ interface CartDrawerProps {
   onClose: () => void;
 }
 
+const formatPrice = (value: any): string => {
+  if (value === undefined || value === null || value === '') {
+    return '0.00';
+  }
+  const num = Number(value);
+  return isNaN(num) ? '0.00' : num.toFixed(2);
+};
+
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [animate] = useState(false);
   const [codigoCupon, setCodigoCupon] = useState('');
@@ -267,7 +275,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <div className="flex-1">
                       <h3 className="font-semibold">{item.nombre}</h3>
                       <p className="text-sm text-gray-600">
-                        S/ {item.precio_unitario.toFixed(2)} c/u
+                        S/{formatPrice(item.precio_unitario)} c/u
                       </p>
                       {item.stock_disponible !== undefined && item.stock_disponible < 5 && (
                         <p className="text-xs text-orange-500 mt-1">
@@ -302,7 +310,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">S/ {item.subtotal.toFixed(2)}</p>
+                      <p className="font-semibold">S/{formatPrice(item.subtotal)}</p>
                     </div>
                   </div>
                 ))}
@@ -364,29 +372,29 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span>S/ {subtotal.toFixed(2)}</span>
+                  <span>S/{formatPrice(subtotal)}</span>
                 </div>
                 {descuento > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Descuento:</span>
-                    <span>- S/ {descuento.toFixed(2)}</span>
+                    <span>- S/ {formatPrice(descuento)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Impuesto (18%):</span>
-                  <span>S/ {impuesto.toFixed(2)}</span>
+                  <span>S/ {formatPrice(impuesto)}</span>
                 </div>
                 {ahorro > 0 && (
                   <div className="flex justify-between text-xs text-green-500 pt-1 border-t">
                     <span>Ahorro total:</span>
-                    <span>S/ {ahorro.toFixed(2)}</span>
+                    <span>S/ {formatPrice(ahorro)}</span>
                   </div>
                 )}
               </div>
               
               <div className="flex justify-between text-lg font-bold pt-2 border-t">
                 <span>Total:</span>
-                <span className="text-blue-600">S/ {totalConDescuento.toFixed(2)}</span>
+                <span className="text-blue-600">S/ {formatPrice(totalConDescuento)}</span>
               </div>
               
               <div className="flex gap-2 pt-2">
