@@ -11,6 +11,14 @@ export function MobileMenu() {
   const logout = useAuthStore((state) => state.logout);
   const isCliente = isAuthenticated && (user?.roles || []).some((r) => r === 'cliente');
 
+  // 👈 NO mostrar el menú en rutas de administración
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
+  // Si es ruta de admin, no renderizar nada
+  if (isAdminRoute) {
+    return null;
+  }
+
   const getDisplayName = () => {
     if (!user) return 'Usuario';
     if (user.email) return user.email.split('@')[0];
@@ -52,7 +60,7 @@ export function MobileMenu() {
 
   return (
     <>
-      {/* Botón hamburguesa - z-index más alto que el navbar */}
+      {/* Botón hamburguesa */}
       <button
         onClick={() => setIsOpen(true)}
         className="p-2 rounded-lg hover:bg-gray-100 lg:hidden relative"
@@ -62,7 +70,7 @@ export function MobileMenu() {
         <Menu className="w-6 h-6 text-gray-700" />
       </button>
 
-      {/* Overlay y menú - z-index muy alto */}
+      {/* Overlay y menú */}
       {isOpen && (
         <div style={{ 
           position: 'fixed', 

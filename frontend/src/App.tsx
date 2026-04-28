@@ -180,31 +180,31 @@ function AppContent() {
                   </button>
                   {userMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
-                    {isCliente && (
-                      <>
-                        <Link
-                          to="/mis-ordenes"
-                          onClick={() => setUserMenuOpen(false)}
-                          className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        >
-                          Mis Pedidos
-                        </Link>
-                        <Link
-                          to="/wishlist"
-                          onClick={() => setUserMenuOpen(false)}
-                          className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        >
-                          Lista de Deseados
-                        </Link>
-                        <div className="border-t border-gray-100 my-1"></div>
-                      </>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
-                    >
-                      Cerrar Sesión
-                    </button>
+                      {isCliente && (
+                        <>
+                          <Link
+                            to="/mis-ordenes"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          >
+                            Mis Pedidos
+                          </Link>
+                          <Link
+                            to="/wishlist"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          >
+                            Lista de Deseados
+                          </Link>
+                          <div className="border-t border-gray-100 my-1"></div>
+                        </>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                      >
+                        Cerrar Sesión
+                      </button>
                     </div>
                   )}
                 </div>
@@ -259,6 +259,8 @@ function AppContent() {
           <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
         </>
       )}
+      
+      {/* Toasts */}
       <div className="fixed bottom-4 right-4 z-[100] space-y-2">
         {toasts.map((toast) => (
           <div
