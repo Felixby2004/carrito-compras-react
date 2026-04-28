@@ -26,6 +26,8 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
+  console.log('🟢 Cliente conectado:', socket.id);
+
   // Unirse a sala de productos específicos
   socket.on('suscribir-producto', (productoId) => {
     socket.join(`producto_${productoId}`);
@@ -35,7 +37,42 @@ io.on('connection', (socket) => {
     socket.leave(`producto_${productoId}`);
   });
 
+  // Cliente solicita procesar pago
+  socket.on('procesar-pago', async (data) => {
+    try {
+      console.log('💰 Procesando pago:', data);
+      
+      const { ordenId, metodoPago, monto, tokenPago } = data;
+      socket.emit('pago-procesado', {
+        success: true,
+        ordenId: ordenId,
+        mensaje: 'Pago completado exitosamente'
+      });
+      
+      // También emitir a todos los admins
+      io.emit('nueva-orden-pagada', { ordenId });
+      
+    } catch (error) {
+      console.error('Error en pago:', error);
+      socket.emit('error-pago', {
+        success: false,
+        error: error.message
+      });
+    }
+  });
+  
+  // Cliente consulta estado de pago
+  socket.on('consultar-pago', async (data) => {
+    const { ordenId } = data;
+    // Consultar estado del pago
+    socket.emit('estado-pago', {
+      ordenId,
+      estado: 'pendiente'
+    });
+  });
+
   socket.on('disconnect', () => {
+    console.log('🔴 Cliente desconectado:', socket.id);
   });
 });
 

@@ -70,11 +70,13 @@ app.use(helmet({
 }));
 
 const allowedOrigins = [
-  'http://localhost:5173',           // Desarrollo local
-  'http://localhost:3000',            // Alternativa local
-  config.frontendUrl,                 // URL de Vercel desde variables (más seguro)
-  process.env.FRONTEND_URL,           // Fallback a variable directa
-].filter(Boolean); // Eliminar undefined
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:10000',
+  'https://carrito-compras-react-peach.vercel.app',
+  config.frontendUrl,
+  process.env.FRONTEND_URL,
+].filter(Boolean);
 
 // CORS configurado para el frontend
 app.use(cors({
@@ -98,8 +100,7 @@ app.use(cors({
 
 // Servir archivos estáticos con CORS
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
-  setHeaders: (res, path) => {
-    // Permitir cualquier origen para archivos estáticos
+  setHeaders: (res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   },
