@@ -127,7 +127,7 @@ function AppContent() {
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             {/* Logo y menú móvil */}
             <div className="flex items-center gap-4">
-              <MobileMenu />
+              {!isAdminRoute && <MobileMenu key="mobile-menu" />}
               <Link
                 to="/"
                 className="text-2xl font-bold"

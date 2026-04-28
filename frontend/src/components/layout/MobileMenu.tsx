@@ -11,9 +11,19 @@ export function MobileMenu() {
   const logout = useAuthStore((state) => state.logout);
   const isCliente = isAuthenticated && (user?.roles || []).some((r) => r === 'cliente');
 
-  // 👈 NO mostrar el menú en rutas de administración
   const isAdminRoute = location.pathname.startsWith('/admin');
-  
+
+  // 👈 Limpiar el body cuando el componente se desmonta
+  useEffect(() => {
+    return () => {
+      // Restaurar el body cuando el componente se desmonta
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+    };
+  }, []);
+
   // Si es ruta de admin, no renderizar nada
   if (isAdminRoute) {
     return null;
