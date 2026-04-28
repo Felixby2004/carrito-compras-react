@@ -17,6 +17,8 @@ export function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [errorLogin, setErrorLogin] = useState('');
+
+  const API_URL = import.meta.env.VITE_API_URL;
   
   // Paso 1: Identificación
   const [identificacion, setIdentificacion] = useState({
@@ -133,7 +135,7 @@ export function CheckoutPage() {
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      const response = await fetch('/api/v1/clientes/direcciones', { headers });
+      const response = await fetch('${API_URL}/clientes/direcciones', { headers });
       if (response.ok) {
         const data = await response.json();
         setDirecciones(data.data || []);
@@ -147,7 +149,7 @@ export function CheckoutPage() {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) return;
-      const response = await fetch('/api/v1/perfil', {
+      const response = await fetch('${API_URL}/perfil', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) return;
@@ -204,6 +206,8 @@ export function CheckoutPage() {
         const dir = direcciones.find(d => d.id === parseInt(direccionSeleccionada));
         direccionFinal = dir;
       }
+
+      const API_URL = import.meta.env.VITE_API_URL;
       
       const ordenData = {
         items: items.map(item => ({
@@ -244,7 +248,7 @@ export function CheckoutPage() {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch('/api/v1/ordenes', {
+      const response = await fetch(`${API_URL}/ordenes`, {
         method: 'POST',
         headers,
         body: JSON.stringify(ordenData),

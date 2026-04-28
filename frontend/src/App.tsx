@@ -87,7 +87,8 @@ function AppContent() {
   useEffect(() => {
     const loadTheme = async () => {
       try {
-        const res = await fetch('/api/v1/configuracion/publica/tema');
+        const API_URL = import.meta.env.VITE_API_URL;
+        const res = await fetch(`${API_URL}/configuracion/publica/tema`);
         const data = await res.json();
         if (!res.ok || !data?.success) return;
         const tema = data.data || {};

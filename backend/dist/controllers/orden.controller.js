@@ -14,6 +14,9 @@ const config_1 = __importDefault(require("../config"));
 const pdfkit_1 = __importDefault(require("pdfkit"));
 const email_1 = require("../utils/email");
 const prisma = new client_1.PrismaClient();
+
+const API_URL = import.meta.env.VITE_API_URL;
+
 const crearOrdenSchema = zod_1.z.object({
     items: zod_1.z.array(zod_1.z.object({
         producto_id: zod_1.z.number(),

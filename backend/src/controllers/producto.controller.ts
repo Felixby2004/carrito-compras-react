@@ -35,13 +35,36 @@ const upload = multer({
 });
 
 export class ProductoController {
+
+  private fixImageUrl(url: string): string {
+    if (!url) return url;
+    // Si la URL es de localhost, reemplazar con la URL de producción
+    if (url.includes('localhost') || url.includes('127.0.0.1')) {
+      const baseUrl = process.env.BACKEND_URL || 'https://carrito-compras-react-f7qf.onrender.com';
+      // Extraer solo la parte después de /uploads/
+      const path = url.split('/uploads/')[1];
+      return `${baseUrl}/uploads/${path}`;
+    }
+    return url;
+  }
+
   async getProductos(req: Request, res: Response, next: NextFunction) {
     try {
       const filters = productoFilterSchema.parse(req.query);
       const result = await productoService.getProductos(filters);
+      
+      // Transformar URLs de imágenes en los productos
+      const productosConImagenesCorregidas = result.data.map(producto => ({
+        ...producto,
+        imagenes: producto.imagenes?.map(img => ({
+          ...img,
+          url: this.fixImageUrl(img.url)
+        })) || []
+      }));
+      
       res.json({
         success: true,
-        data: result.data,
+        data: productosConImagenesCorregidas,
         total: result.total,
         page: result.page,
         limit: result.limit,
@@ -51,14 +74,32 @@ export class ProductoController {
       next(error);
     }
   }
+
   
   async getProductoById(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = parseInt(req.params.id);
-      const producto = await productoService.getProductoById(id);
+      const productoId = parseInt(req.params.id);
+      
+      const producto = await prisma.cat_productos.findUnique({
+        where: { id: productoId },
+        include: { imagenes: true }
+      });
+      
+      if (!producto) {
+        throw new AppError('Producto no encontrado', 404);
+      }
+      
+      // Transformar URLs de imágenes
+      if (producto.imagenes) {
+        producto.imagenes = producto.imagenes.map(img => ({
+          ...img,
+          url: this.fixImageUrl(img.url)
+        }));
+      }
+      
       res.json({
         success: true,
-        data: producto,
+        data: producto
       });
     } catch (error) {
       next(error);

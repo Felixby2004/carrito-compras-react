@@ -83,12 +83,15 @@ export function ProductoDetallePage() {
     if (!producto) return;
     setEnviandoResena(true);
     try {
+      
+      const API_URL = import.meta.env.VITE_API_URL;
+
       const token = localStorage.getItem('accessToken');
       if (!token) {
         notify('Tu sesión expiró. Inicia sesión nuevamente.', 'info');
         return;
       }
-      const response = await fetch('/api/v1/resenas', {
+      const response = await fetch(`${API_URL}/resenas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
