@@ -11,20 +11,30 @@ export function MobileMenu() {
   const logout = useAuthStore((state) => state.logout);
   const isCliente = isAuthenticated && (user?.roles || []).some((r) => r === 'cliente');
 
-  // Cerrar menú al cambiar de página
+  const getDisplayName = () => {
+    if (!user) return 'Usuario';
+    if (user.email) return user.email.split('@')[0];
+    return 'Cliente';
+  };
+
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  // Prevenir scroll cuando el menú está abierto
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
     } else {
       document.body.style.overflow = 'unset';
+      document.body.style.position = 'unset';
+      document.body.style.width = 'auto';
     }
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.style.position = 'unset';
+      document.body.style.width = 'auto';
     };
   }, [isOpen]);
 
@@ -33,39 +43,51 @@ export function MobileMenu() {
     setIsOpen(false);
   };
 
-  console.log('Usuario completo:', user);
-  console.log('Propiedades:', user ? Object.keys(user) : 'no user');
-
   return (
     <>
-      {/* Botón hamburguesa - con z-index alto */}
+      {/* Botón hamburguesa - z-index muy alto */}
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 rounded-lg hover:bg-gray-100 lg:hidden relative z-30"
+        className="p-2 rounded-lg hover:bg-gray-100 lg:hidden relative"
+        style={{ zIndex: 9999 }}
         aria-label="Abrir menú"
       >
         <Menu className="w-6 h-6 text-gray-700" />
       </button>
 
-      {/* Overlay - fondo oscuro */}
+      {/* Overlay y menú */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Fondo semitransparente - on click cierra */}
+        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'block' }} className="lg:hidden">
+          {/* Fondo oscuro */}
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
+            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)' }}
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
           
-          {/* Menú lateral - con animación */}
-          <div className="fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-2xl z-50 p-6 animate-slide-in">
-            {/* Cabecera del menú */}
+          {/* Menú lateral */}
+          <div 
+            style={{ 
+              position: 'fixed', 
+              left: 0, 
+              top: 0, 
+              bottom: 0, 
+              width: '320px', 
+              maxWidth: '85vw',
+              backgroundColor: 'white',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+              zIndex: 10001,
+              padding: '1.5rem',
+              overflowY: 'auto'
+            }}
+          >
+            {/* Cabecera */}
             <div className="flex justify-between items-center mb-6 pb-4 border-b">
               <div>
                 <h2 className="text-xl font-bold text-blue-600">Menú</h2>
                 {isAuthenticated && (
                   <p className="text-sm text-gray-500 mt-1">
-                    Hola, {user?.email?.split('@')[0] || 'Usuario'}
+                    Hola, {getDisplayName()}
                   </p>
                 )}
               </div>
@@ -78,7 +100,7 @@ export function MobileMenu() {
               </button>
             </div>
             
-            {/* Enlaces del menú */}
+            {/* Enlaces */}
             <nav className="flex flex-col gap-2">
               <Link 
                 to="/" 
@@ -145,7 +167,7 @@ export function MobileMenu() {
               )}
             </nav>
 
-            {/* Footer del menú - Cerrar sesión */}
+            {/* Footer - Cerrar sesión */}
             {isAuthenticated && (
               <div className="absolute bottom-6 left-6 right-6">
                 <button
