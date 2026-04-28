@@ -17,8 +17,6 @@ export function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [errorLogin, setErrorLogin] = useState('');
-
-  const API_URL = import.meta.env.VITE_API_URL;
   
   // Paso 1: Identificación
   const [identificacion, setIdentificacion] = useState({
