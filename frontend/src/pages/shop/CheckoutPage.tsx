@@ -133,7 +133,8 @@ export function CheckoutPage() {
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      const response = await fetch('${API_URL}/clientes/direcciones', { headers });
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_URL}/clientes/direcciones`, { headers }); // ✅ Corregido
       if (response.ok) {
         const data = await response.json();
         setDirecciones(data.data || []);
@@ -147,7 +148,8 @@ export function CheckoutPage() {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) return;
-      const response = await fetch('${API_URL}/perfil', {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_URL}/perfil`, { // ✅ Corregido
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) return;
@@ -245,11 +247,21 @@ export function CheckoutPage() {
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
+      console.log('Token existe?', !!token);
+      console.log('Token:', token);
+
+      if (!token) {
+        notify('Debes iniciar sesión para continuar', 'error');
+        return;
+      }
       
       const response = await fetch(`${API_URL}/ordenes`, {
         method: 'POST',
-        headers,
-        body: JSON.stringify(ordenData),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(ordenData)
       });
       
       const data = await response.json();
