@@ -34,13 +34,33 @@ const upload = (0, multer_1.default)({
 });
 exports.upload = upload;
 class ProductoController {
+    fixImageUrl(url) {
+        if (!url)
+            return url;
+        // Si la URL es de localhost, reemplazar con la URL de producción
+        if (url.includes('localhost') || url.includes('127.0.0.1')) {
+            const baseUrl = process.env.BACKEND_URL || 'https://carrito-compras-react-f7qf.onrender.com';
+            // Extraer solo la parte después de /uploads/
+            const path = url.split('/uploads/')[1];
+            return `${baseUrl}/uploads/${path}`;
+        }
+        return url;
+    }
     async getProductos(req, res, next) {
         try {
             const filters = producto_schema_1.productoFilterSchema.parse(req.query);
             const result = await productoService.getProductos(filters);
+            // Transformar URLs de imágenes en los productos
+            const productosConImagenesCorregidas = result.data.map(producto => ({
+                ...producto,
+                imagenes: producto.imagenes?.map(img => ({
+                    ...img,
+                    url: this.fixImageUrl(img.url)
+                })) || []
+            }));
             res.json({
                 success: true,
-                data: result.data,
+                data: productosConImagenesCorregidas,
                 total: result.total,
                 page: result.page,
                 limit: result.limit,
@@ -53,11 +73,51 @@ class ProductoController {
     }
     async getProductoById(req, res, next) {
         try {
-            const id = parseInt(req.params.id);
-            const producto = await productoService.getProductoById(id);
+            const productoId = parseInt(req.params.id);
+            const producto = await prisma.cat_productos.findUnique({
+                where: { id: productoId },
+                include: {
+                    imagenes: true,
+                    stock: true // 👈 Asegurar que incluye stock
+                }
+            });
+            if (!producto) {
+                throw new errorHandler_1.AppError('Producto no encontrado', 404);
+            }
+            // Calcular stock disponible
+            const ahora = new Date();
+            const precioVenta = Number(producto.precio_venta);
+            const precioOferta = producto.precio_oferta ? Number(producto.precio_oferta) : null;
+            const tieneOferta = precioOferta !== null &&
+                producto.fecha_inicio_oferta &&
+                producto.fecha_fin_oferta &&
+                new Date(producto.fecha_inicio_oferta) <= ahora &&
+                new Date(producto.fecha_fin_oferta) >= ahora;
+            const precioActual = tieneOferta ? precioOferta : precioVenta;
+            const descuentoPorcentaje = tieneOferta && precioVenta > 0
+                ? Math.round(((precioVenta - precioOferta) / precioVenta) * 100)
+                : 0;
+            // 👈 Calcular stock disponible correctamente
+            const stockDisponible = producto.stock
+                ? Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0)
+                : 0;
+            // Transformar URLs de imágenes
+            const imagenesCorregidas = producto.imagenes?.map(img => ({
+                ...img,
+                url: this.fixImageUrl(img.url)
+            })) || [];
+            const productoFormateado = {
+                ...producto,
+                precio_venta: precioVenta,
+                precio_oferta: precioOferta,
+                precio_actual: precioActual,
+                descuento_porcentaje: descuentoPorcentaje,
+                stock_disponible: stockDisponible,
+                imagenes: imagenesCorregidas
+            };
             res.json({
                 success: true,
-                data: producto,
+                data: productoFormateado
             });
         }
         catch (error) {
@@ -245,12 +305,15 @@ class ProductoController {
             const imagenesExistentes = await prisma.cat_imagenes_producto.count({
                 where: { producto_id: productoId },
             });
+            // 🔥 CORREGIDO: Usar la URL pública de Render
+            // En lugar de 'http://localhost:3000', usar la variable de entorno
+            const baseUrl = process.env.BACKEND_URL || process.env.RENDER_EXTERNAL_URL || 'https://carrito-compras-react-f7qf.onrender.com';
             const imagenes = [];
             for (let i = 0; i < files.length; i++) {
                 const imagen = await prisma.cat_imagenes_producto.create({
                     data: {
                         producto_id: productoId,
-                        url: `http://localhost:3000/uploads/${files[i].filename}`, // URL completa
+                        url: `${baseUrl}/uploads/${files[i].filename}`, // ✅ URL CORRECTA
                         orden: imagenesExistentes + i,
                         es_principal: imagenesExistentes === 0 && i === 0,
                     },

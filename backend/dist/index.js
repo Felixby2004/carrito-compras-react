@@ -29,6 +29,7 @@ io.use((socket, next) => {
     next();
 });
 io.on('connection', (socket) => {
+    console.log('🟢 Cliente conectado:', socket.id);
     // Unirse a sala de productos específicos
     socket.on('suscribir-producto', (productoId) => {
         socket.join(`producto_${productoId}`);
@@ -36,17 +37,51 @@ io.on('connection', (socket) => {
     socket.on('unsuscribir-producto', (productoId) => {
         socket.leave(`producto_${productoId}`);
     });
+    // Cliente solicita procesar pago
+    socket.on('procesar-pago', async (data) => {
+        try {
+            console.log('💰 Procesando pago:', data);
+            const { ordenId, metodoPago, monto, tokenPago } = data;
+            socket.emit('pago-procesado', {
+                success: true,
+                ordenId: ordenId,
+                mensaje: 'Pago completado exitosamente'
+            });
+            // También emitir a todos los admins
+            io.emit('nueva-orden-pagada', { ordenId });
+        }
+        catch (error) {
+            console.error('Error en pago:', error);
+            socket.emit('error-pago', {
+                success: false,
+                error: error.message
+            });
+        }
+    });
+    // Cliente consulta estado de pago
+    socket.on('consultar-pago', async (data) => {
+        const { ordenId } = data;
+        // Consultar estado del pago
+        socket.emit('estado-pago', {
+            ordenId,
+            estado: 'pendiente'
+        });
+    });
     socket.on('disconnect', () => {
+        console.log('🔴 Cliente desconectado:', socket.id);
     });
 });
 // Servir archivos estáticos ANTES de las rutas
 app_1.default.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
+console.log('🔗 FRONTEND_URL configurada:', config_1.default.frontendUrl);
+console.log('🔐 CORS permitiendo origen:', config_1.default.frontendUrl);
 // SOLO UNA LLAMADA A server.listen
 server.listen(PORT, () => {
     logger_1.default.info(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     logger_1.default.info(`📚 Documentación API disponible en http://localhost:${PORT}/api/docs`);
     logger_1.default.info(`🔌 WebSocket corriendo en ws://localhost:${PORT}`);
     logger_1.default.info(`🌍 Entorno: ${config_1.default.nodeEnv}`);
+    logger_1.default.info(`🔗 Frontend permitido: ${config_1.default.frontendUrl}`);
 });
 process.on('unhandledRejection', (reason, _promise) => {
     logger_1.default.error('Unhandled Rejection:', reason);

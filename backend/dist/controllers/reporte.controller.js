@@ -35,6 +35,42 @@ class ReporteController {
         }
         doc.y = y + 8;
     }
+    drawTableStockBajo(doc, headers, rows, stockValues) {
+        const startX = 40;
+        let y = doc.y;
+        const colWidth = (doc.page.width - 80) / headers.length;
+        const rowHeight = 14;
+        // Dibujar encabezados
+        doc.fontSize(9).font('Helvetica-Bold').fillColor('black');
+        headers.forEach((h, idx) => doc.text(h, startX + idx * colWidth, y, { width: colWidth - 6 }));
+        y += 18;
+        doc.moveTo(startX, y - 4).lineTo(doc.page.width - 40, y - 4).stroke();
+        doc.font('Helvetica').fontSize(8);
+        // Dibujar filas
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const stock = stockValues[i];
+            const isStockZero = stock === 0;
+            if (y > doc.page.height - 60) {
+                doc.addPage();
+                y = 40;
+            }
+            // Si stock es 0, usar texto rojo y negrita
+            if (isStockZero) {
+                doc.font('Helvetica-Bold').fillColor('red');
+            }
+            else {
+                doc.font('Helvetica').fillColor('black');
+            }
+            row.forEach((cell, idx) => {
+                doc.text(cell, startX + idx * colWidth, y, { width: colWidth - 6 });
+            });
+            y += rowHeight;
+        }
+        // Resetear color y fuente
+        doc.fillColor('black').font('Helvetica');
+        doc.y = y + 8;
+    }
     async getDataOperacional(reporte) {
         switch (reporte) {
             case 'ordenes-periodo':
@@ -98,12 +134,14 @@ class ReporteController {
                     ]));
                     break;
                 case 'stock-bajo':
-                    this.drawTable(doc, ['SKU', 'Producto', 'Stock', 'Minimo'], data.slice(0, 200).map((s) => [
+                    const stockRows = data.slice(0, 200).map((s) => [
                         s.producto?.sku || '-',
                         s.producto?.nombre || '-',
                         `${s.stock_fisico}`,
                         `${s.stock_minimo}`,
-                    ]));
+                    ]);
+                    const stockValues = data.slice(0, 200).map((s) => s.stock_fisico);
+                    this.drawTableStockBajo(doc, ['SKU', 'Producto', 'Stock', 'Minimo'], stockRows, stockValues);
                     break;
                 case 'pagos-periodo':
                     this.drawTable(doc, ['Fecha', 'Orden', 'Metodo', 'Estado', 'Monto'], data.slice(0, 200).map((p) => [

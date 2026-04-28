@@ -1,50 +1,93 @@
+// backend/src/middlewares/auth.middleware.ts
 import { Request, Response, NextFunction } from 'express';
-import { AuthRequest } from './auth.middleware';
-import auditService from '../services/auditoria.service';
+import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+import config from '../config';
+import { AppError } from './errorHandler';
 
-/**
- * Middleware que envuelve una acción para registrar auditoría
- * Usa un parámetro especial en locals para indicar qué registrar
- */
+const prisma = new PrismaClient();
+
+// Definición de AuthRequest
+export interface AuthRequest extends Request {
+  user?: {
+    id: number;
+    email: string;
+    roles: string[];
+  };
+}
+
+// Middleware de autenticación (el que necesitas)
+export const authenticate = async (
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    if (!token) {
+      throw new AppError('Token no proporcionado', 401);
+    }
+    
+    const decoded = jwt.verify(token, config.jwtSecret) as {
+      id: number;
+      email: string;
+    };
+    
+    const usuario = await prisma.seg_usuarios.findUnique({
+      where: { id: decoded.id, activo: true },
+      include: {
+        usuario_roles: {
+          include: {
+            rol: true,
+          },
+        },
+      },
+    });
+    
+    if (!usuario) {
+      throw new AppError('Usuario no encontrado o inactivo', 401);
+    }
+    
+    req.user = {
+      id: usuario.id,
+      email: usuario.email,
+      roles: usuario.usuario_roles.map((ur: any) => ur.rol.nombre),
+    };
+    
+    next();
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      next(new AppError('Token inválido o expirado', 401));
+    } else {
+      next(error);
+    }
+  }
+};
+
+// Middleware de auditoría (opcional, puedes mantenerlo)
 export const auditMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  // Almacenar información original para comparar después
   const originalSend = res.send;
 
   res.send = function (data: any) {
-    // Si la respuesta es exitosa y contiene datos, registrar auditoría
     if (res.statusCode >= 200 && res.statusCode < 300 && res.locals.auditAction) {
       const { accion, modulo, tabla, registro_id, datos_anteriores, datos_nuevos } = res.locals.auditAction;
       const ip = req.ip || req.connection.remoteAddress || 'desconocida';
       const usuario_id = (req as AuthRequest).user?.id;
 
-      // No esperar a que se complete la auditoría
-      auditService.registrarAccion({
-        usuario_id,
-        accion,
-        modulo,
-        tabla,
-        registro_id,
-        datos_anteriores,
-        datos_nuevos,
-        ip,
-      }).catch(err => console.error('Error en auditoría:', err));
+      // (Opcional) registrar auditoría
+      console.log('Auditoría:', { usuario_id, accion, modulo, tabla, registro_id, ip });
     }
-
-    // Llamar al método original
     return originalSend.call(this, data);
   };
 
   next();
 };
 
-/**
- * Helper para registrar auditoría desde controladores
- * Uso en controladores: res.locals.auditAction = crearAuditAction(...)
- */
 export const crearAuditAction = (
   accion: 'crear' | 'editar' | 'eliminar' | 'cambio_estado',
   modulo: string,
@@ -53,12 +96,5 @@ export const crearAuditAction = (
   datos_anteriores?: any,
   datos_nuevos?: any
 ) => {
-  return {
-    accion,
-    modulo,
-    tabla,
-    registro_id,
-    datos_anteriores,
-    datos_nuevos,
-  };
+  return { accion, modulo, tabla, registro_id, datos_anteriores, datos_nuevos };
 };

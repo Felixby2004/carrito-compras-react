@@ -108,6 +108,7 @@ export class ClienteController {
           ...cliente,
           segmento: segmentoCalculado,
           total_gastado: Number(totalGastadoReal),
+          fecha_ultima_compra: resumenCliente?.ultimaCompra || cliente.fecha_ultima_compra,
           fecha_ultima_compra: resumenCliente?.ultimaCompra ?? cliente.fecha_ultima_compra ?? null,
           ordenes: cliente.ordenes.map((orden: any) => ({
             ...orden,

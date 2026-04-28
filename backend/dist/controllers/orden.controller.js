@@ -13,10 +13,8 @@ const crypto_1 = __importDefault(require("crypto"));
 const config_1 = __importDefault(require("../config"));
 const pdfkit_1 = __importDefault(require("pdfkit"));
 const email_1 = require("../utils/email");
+const index_1 = require("../index");
 const prisma = new client_1.PrismaClient();
-
-const API_URL = import.meta.env.VITE_API_URL;
-
 const crearOrdenSchema = zod_1.z.object({
     items: zod_1.z.array(zod_1.z.object({
         producto_id: zod_1.z.number(),
@@ -342,6 +340,12 @@ class OrdenController {
             });
             // Convertir Decimal a número
             const ordenConvertida = this.convertDecimalToNumber(JSON.parse(JSON.stringify(orden)));
+            // Emitir evento de socket para notificar a clientes conectados
+            index_1.io.emit('nueva-orden', {
+                orden: ordenConvertida,
+                mensaje: `Nueva orden ${ordenNumero} creada`,
+                timestamp: new Date(),
+            });
             if (data.identificacion.tipo === 'registro' && accessToken && refreshToken) {
                 res.json({
                     success: true,
@@ -658,6 +662,15 @@ class OrdenController {
                     // best-effort: no bloquear el cambio de estado si falla SMTP
                 }
             }
+            // Emitir evento de socket para notificar cambio de estado
+            index_1.io.emit('cambio-estado-orden', {
+                ordenId: id,
+                ordenNumero: orden.orden_numero,
+                estadoAnterior,
+                estadoNuevo: estadoDestino,
+                comentario: comentario || `Estado cambiado a ${estadoDestino}`,
+                timestamp: new Date(),
+            });
             res.json({
                 success: true,
                 message: `Estado actualizado a ${estadoDestino}`,
