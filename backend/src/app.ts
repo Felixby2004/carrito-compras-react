@@ -73,7 +73,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:10000',
-  'https://carrito-compras-react-peach.vercel.app',
+  'https://carrito-compras-react-f7qf.onrender.com',
   config.frontendUrl,
   process.env.FRONTEND_URL,
 ].filter(Boolean);
