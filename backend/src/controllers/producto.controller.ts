@@ -82,24 +82,55 @@ export class ProductoController {
       
       const producto = await prisma.cat_productos.findUnique({
         where: { id: productoId },
-        include: { imagenes: true }
+        include: { 
+          imagenes: true,
+            stock: true  // 👈 Asegurar que incluye stock
+        }
       });
       
       if (!producto) {
         throw new AppError('Producto no encontrado', 404);
       }
+
+      // Calcular stock disponible
+      const ahora = new Date();
+      const precioVenta = Number(producto.precio_venta);
+      const precioOferta = producto.precio_oferta ? Number(producto.precio_oferta) : null;
+      const tieneOferta = precioOferta !== null &&
+        producto.fecha_inicio_oferta &&
+        producto.fecha_fin_oferta &&
+        new Date(producto.fecha_inicio_oferta) <= ahora &&
+        new Date(producto.fecha_fin_oferta) >= ahora;
+      
+      const precioActual = tieneOferta ? precioOferta : precioVenta;
+      const descuentoPorcentaje = tieneOferta && precioVenta > 0
+        ? Math.round(((precioVenta - precioOferta) / precioVenta) * 100)
+        : 0;
+      
+      // 👈 Calcular stock disponible correctamente
+      const stockDisponible = producto.stock 
+        ? Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0)
+        : 0;
       
       // Transformar URLs de imágenes
-      if (producto.imagenes) {
-        producto.imagenes = producto.imagenes.map(img => ({
-          ...img,
-          url: this.fixImageUrl(img.url)
-        }));
-      }
+      const imagenesCorregidas = producto.imagenes?.map(img => ({
+        ...img,
+        url: this.fixImageUrl(img.url)
+      })) || [];
+      
+      const productoFormateado = {
+        ...producto,
+        precio_venta: precioVenta,
+        precio_oferta: precioOferta,
+        precio_actual: precioActual,
+        descuento_porcentaje: descuentoPorcentaje,
+        stock_disponible: stockDisponible,
+        imagenes: imagenesCorregidas
+      };
       
       res.json({
         success: true,
-        data: producto
+        data: productoFormateado
       });
     } catch (error) {
       next(error);
@@ -404,6 +435,7 @@ export class ProductoController {
       });
       
       const ahora = new Date();
+
       const productosFormateados = productos.map(p => {
         const precioVenta = Number(p.precio_venta);
         const precioOferta = p.precio_oferta ? Number(p.precio_oferta) : null;

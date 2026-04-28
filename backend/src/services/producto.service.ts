@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { ProductoInput, ProductoUpdateInput, ProductoFilterInput } from '../schemas/producto.schema';
 import { AppError } from '../middlewares/errorHandler';
-import logger from '../utils/logger';
 
 const prisma = new PrismaClient();
 
