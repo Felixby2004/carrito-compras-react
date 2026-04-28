@@ -11,30 +11,6 @@ export function MobileMenu() {
   const logout = useAuthStore((state) => state.logout);
   const isCliente = isAuthenticated && (user?.roles || []).some((r) => r === 'cliente');
 
-  const isAdminRoute = location.pathname.startsWith('/admin');
-
-  // 👈 Limpiar el body cuando el componente se desmonta
-  useEffect(() => {
-    return () => {
-      // Restaurar el body cuando el componente se desmonta
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
-    };
-  }, []);
-
-  // Si es ruta de admin, no renderizar nada
-  if (isAdminRoute) {
-    return null;
-  }
-
-  const getDisplayName = () => {
-    if (!user) return 'Usuario';
-    if (user.email) return user.email.split('@')[0];
-    return 'Cliente';
-  };
-
   // Cerrar menú al cambiar de página
   useEffect(() => {
     setIsOpen(false);
@@ -44,22 +20,11 @@ export function MobileMenu() {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.top = `-${window.scrollY}px`;
     } else {
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
-      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      document.body.style.overflow = 'unset';
     }
     return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
+      document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
 
@@ -68,68 +33,39 @@ export function MobileMenu() {
     setIsOpen(false);
   };
 
+  console.log('Usuario completo:', user);
+  console.log('Propiedades:', user ? Object.keys(user) : 'no user');
+
   return (
     <>
-      {/* Botón hamburguesa */}
+      {/* Botón hamburguesa - con z-index alto */}
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 rounded-lg hover:bg-gray-100 lg:hidden relative"
-        style={{ zIndex: 1000 }}
+        className="p-2 rounded-lg hover:bg-gray-100 lg:hidden relative z-30"
         aria-label="Abrir menú"
       >
         <Menu className="w-6 h-6 text-gray-700" />
       </button>
 
-      {/* Overlay y menú */}
+      {/* Overlay - fondo oscuro */}
       {isOpen && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          zIndex: 9999,
-          display: 'block'
-        }} className="lg:hidden">
-          
-          {/* Fondo oscuro */}
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Fondo semitransparente - on click cierra */}
           <div 
-            style={{ 
-              position: 'fixed', 
-              top: 0, 
-              left: 0, 
-              right: 0, 
-              bottom: 0, 
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              backdropFilter: 'blur(2px)'
-            }}
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
           
-          {/* Menú lateral */}
-          <div 
-            style={{ 
-              position: 'fixed', 
-              left: 0, 
-              top: 0, 
-              bottom: 0, 
-              width: '280px',
-              maxWidth: '85vw',
-              backgroundColor: 'white',
-              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-              zIndex: 10000,
-              padding: '1.5rem',
-              overflowY: 'auto'
-            }}
-          >
-            {/* Cabecera */}
+          {/* Menú lateral - con animación */}
+          <div className="fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-2xl z-50 p-6 animate-slide-in">
+            {/* Cabecera del menú */}
             <div className="flex justify-between items-center mb-6 pb-4 border-b">
               <div>
                 <h2 className="text-xl font-bold text-blue-600">Menú</h2>
                 {isAuthenticated && (
                   <p className="text-sm text-gray-500 mt-1">
-                    Hola, {getDisplayName()}
+                    Hola, {user?.email?.split('@')[0] || 'Usuario'}
                   </p>
                 )}
               </div>
@@ -142,11 +78,10 @@ export function MobileMenu() {
               </button>
             </div>
             
-            {/* Enlaces */}
+            {/* Enlaces del menú */}
             <nav className="flex flex-col gap-2">
               <Link 
                 to="/" 
-                onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                   location.pathname === '/' 
                     ? 'bg-blue-50 text-blue-600' 
@@ -159,7 +94,6 @@ export function MobileMenu() {
               
               <Link 
                 to="/catalogo" 
-                onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                   location.pathname === '/catalogo' 
                     ? 'bg-blue-50 text-blue-600' 
@@ -174,7 +108,6 @@ export function MobileMenu() {
                 <>
                   <Link
                     to="/mis-ordenes"
-                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       location.pathname === '/mis-ordenes' 
                         ? 'bg-blue-50 text-blue-600' 
@@ -187,7 +120,6 @@ export function MobileMenu() {
                   
                   <Link
                     to="/wishlist"
-                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       location.pathname === '/wishlist' 
                         ? 'bg-blue-50 text-blue-600' 
@@ -200,7 +132,6 @@ export function MobileMenu() {
 
                   <Link
                     to="/perfil"
-                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       location.pathname === '/perfil' 
                         ? 'bg-blue-50 text-blue-600' 
@@ -214,9 +145,9 @@ export function MobileMenu() {
               )}
             </nav>
 
-            {/* Footer - Cerrar sesión */}
+            {/* Footer del menú - Cerrar sesión */}
             {isAuthenticated && (
-              <div style={{ position: 'absolute', bottom: '1.5rem', left: '1.5rem', right: '1.5rem' }}>
+              <div className="absolute bottom-6 left-6 right-6">
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
