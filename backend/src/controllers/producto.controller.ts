@@ -299,15 +299,16 @@ export class ProductoController {
         where: { producto_id: productoId },
       });
       
-      // 🔥 OBTENER LA URL BASE DEL BACKEND DESDE VARIABLE DE ENTORNO
-      const baseUrl = process.env.BACKEND_URL || `http://localhost:${config.port}`;
+      // 🔥 CORREGIDO: Usar la URL pública de Render
+      // En lugar de 'http://localhost:3000', usar la variable de entorno
+      const baseUrl = process.env.BACKEND_URL || process.env.RENDER_EXTERNAL_URL || 'https://carrito-compras-react-f7qf.onrender.com';
       
       const imagenes = [];
       for (let i = 0; i < files.length; i++) {
         const imagen = await prisma.cat_imagenes_producto.create({
           data: {
             producto_id: productoId,
-            url: `${baseUrl}/uploads/${files[i].filename}`, // ✅ USA LA URL CORRECTA
+            url: `${baseUrl}/uploads/${files[i].filename}`, // ✅ URL CORRECTA
             orden: imagenesExistentes + i,
             es_principal: imagenesExistentes === 0 && i === 0,
           },
