@@ -123,7 +123,7 @@ function AppContent() {
     <div className="min-h-screen bg-slate-50">
       {/* Navbar - solo visible si NO es ruta de admin */}
       {!isAdminRoute && (
-        <nav className="bg-white/90 backdrop-blur shadow-md sticky top-0 z-40 border-b border-slate-100">
+        <nav className="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-slate-100">
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             {/* Logo y menú móvil */}
             <div className="flex items-center gap-4">

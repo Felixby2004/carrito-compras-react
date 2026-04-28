@@ -17,24 +17,31 @@ export function MobileMenu() {
     return 'Cliente';
   };
 
+  // Cerrar menú al cambiar de página
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
+  // Prevenir scroll cuando el menú está abierto
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
+      document.body.style.top = `-${window.scrollY}px`;
     } else {
-      document.body.style.overflow = 'unset';
-      document.body.style.position = 'unset';
-      document.body.style.width = 'auto';
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
     }
     return () => {
-      document.body.style.overflow = 'unset';
-      document.body.style.position = 'unset';
-      document.body.style.width = 'auto';
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
     };
   }, [isOpen]);
 
@@ -45,22 +52,39 @@ export function MobileMenu() {
 
   return (
     <>
-      {/* Botón hamburguesa - z-index muy alto */}
+      {/* Botón hamburguesa - z-index más alto que el navbar */}
       <button
         onClick={() => setIsOpen(true)}
         className="p-2 rounded-lg hover:bg-gray-100 lg:hidden relative"
-        style={{ zIndex: 9999 }}
+        style={{ zIndex: 1000 }}
         aria-label="Abrir menú"
       >
         <Menu className="w-6 h-6 text-gray-700" />
       </button>
 
-      {/* Overlay y menú */}
+      {/* Overlay y menú - z-index muy alto */}
       {isOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'block' }} className="lg:hidden">
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          zIndex: 9999,
+          display: 'block'
+        }} className="lg:hidden">
+          
           {/* Fondo oscuro */}
           <div 
-            style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)' }}
+            style={{ 
+              position: 'fixed', 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              backdropFilter: 'blur(2px)'
+            }}
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
@@ -72,11 +96,11 @@ export function MobileMenu() {
               left: 0, 
               top: 0, 
               bottom: 0, 
-              width: '320px', 
+              width: '280px',
               maxWidth: '85vw',
               backgroundColor: 'white',
               boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-              zIndex: 10001,
+              zIndex: 10000,
               padding: '1.5rem',
               overflowY: 'auto'
             }}
@@ -104,6 +128,7 @@ export function MobileMenu() {
             <nav className="flex flex-col gap-2">
               <Link 
                 to="/" 
+                onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                   location.pathname === '/' 
                     ? 'bg-blue-50 text-blue-600' 
@@ -116,6 +141,7 @@ export function MobileMenu() {
               
               <Link 
                 to="/catalogo" 
+                onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                   location.pathname === '/catalogo' 
                     ? 'bg-blue-50 text-blue-600' 
@@ -130,6 +156,7 @@ export function MobileMenu() {
                 <>
                   <Link
                     to="/mis-ordenes"
+                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       location.pathname === '/mis-ordenes' 
                         ? 'bg-blue-50 text-blue-600' 
@@ -142,6 +169,7 @@ export function MobileMenu() {
                   
                   <Link
                     to="/wishlist"
+                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       location.pathname === '/wishlist' 
                         ? 'bg-blue-50 text-blue-600' 
@@ -154,6 +182,7 @@ export function MobileMenu() {
 
                   <Link
                     to="/perfil"
+                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       location.pathname === '/perfil' 
                         ? 'bg-blue-50 text-blue-600' 
@@ -169,7 +198,7 @@ export function MobileMenu() {
 
             {/* Footer - Cerrar sesión */}
             {isAuthenticated && (
-              <div className="absolute bottom-6 left-6 right-6">
+              <div style={{ position: 'absolute', bottom: '1.5rem', left: '1.5rem', right: '1.5rem' }}>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"

@@ -41,3 +41,23 @@ body {
 header, nav, div, main, section {
   isolation: isolate;
 }
+
+/* Asegurar que el menú móvil esté sobre todo */
+.mobile-menu-portal {
+  z-index: 99999 !important;
+}
+
+.mobile-menu-overlay {
+  z-index: 99998 !important;
+}
+
+.mobile-menu-panel {
+  z-index: 99999 !important;
+}
+
+/* Prevenir que elementos con position fixed interfieran */
+body.menu-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
