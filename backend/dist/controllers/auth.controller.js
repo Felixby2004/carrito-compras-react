@@ -50,7 +50,7 @@ class AuthController {
     }
     async logout(req, res, next) {
         try {
-            const refreshToken = req.body.refreshToken;
+            const { refreshToken } = req.body;
             if (!refreshToken) {
                 throw new errorHandler_1.AppError('Refresh token requerido', 400);
             }

@@ -64,14 +64,15 @@ class ClienteController {
             const resumenPorCliente = new Map(ordenesPorCliente.map((registro) => [
                 registro.cliente_id,
                 {
-                    total: Number(registro._sum?.total ?? 0), // 👈 Usar ?. y ??
-                    ultimaCompra: registro._max?.created_at ?? null, // 👈 Usar ?. y ??
+                    total: Number(registro._sum?.total ?? 0),
+                    ultimaCompra: registro._max?.created_at ?? null,
                 },
             ]));
             // Calcular segmentación si no viene filtrada
             const clientesConSegmento = clientes.map(cliente => {
                 const resumenCliente = resumenPorCliente.get(cliente.id);
                 const totalGastadoReal = resumenCliente?.total ?? 0;
+                const fechaUltimaCompra = resumenCliente?.ultimaCompra || cliente.fecha_ultima_compra;
                 let segmentoCalculado = cliente.segmento;
                 // Si no tiene segmento definido, calcularlo
                 if (!cliente.segmento || cliente.segmento === 'nuevo') {
