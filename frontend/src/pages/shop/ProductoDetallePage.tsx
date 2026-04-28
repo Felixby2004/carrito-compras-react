@@ -36,7 +36,8 @@ export function ProductoDetallePage() {
   
   const cargarResenas = async (productoId: number) => {
     try {
-      const response = await fetch(`/api/v1/resenas/producto/${productoId}`);
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_URL}/resenas/producto/${productoId}`);
       const data = await response.json();
       setReseñas(data.data || []);
       setPromedioReseñas(data.promedio || 0);
