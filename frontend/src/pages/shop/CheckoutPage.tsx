@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../stores/cartStore';
 import { useAuthStore } from '../../stores/authStore';
-import { ChevronRight, ChevronLeft, CreditCard } from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { notify } from '../../utils/notify';
 import { getSocket } from '../../socket';
 import apiClient from '../../api/client';
@@ -193,8 +193,6 @@ export function CheckoutPage() {
         direccionFinal = dir;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL;
-      
       const ordenData = {
         items: items.map(item => ({
           producto_id: item.producto_id,
