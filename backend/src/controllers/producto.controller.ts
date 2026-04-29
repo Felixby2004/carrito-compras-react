@@ -366,7 +366,7 @@ export class ProductoController {
         throw new AppError('Producto no encontrado', 404);
       }
       
-      const files = req.files as Express.Multer.File[];
+      const files = req.files as any[];
       
       if (!files || files.length === 0) {
         throw new AppError('No se subieron imágenes', 400);
@@ -380,12 +380,11 @@ export class ProductoController {
       const baseUrl = config.backendUrl;
       
       const imagenes = [];
-      const multerFiles = files as any[]; // Fallback para evitar errores de tipo si Express.Multer no está global
-      for (let i = 0; i < multerFiles.length; i++) {
+      for (let i = 0; i < files.length; i++) {
         const imagen = await prisma.cat_imagenes_producto.create({
           data: {
             producto_id: productoId,
-            url: `${baseUrl}/uploads/${multerFiles[i].filename}`,
+            url: `${baseUrl}/uploads/${files[i].filename}`,
             orden: imagenesExistentes + i,
             es_principal: imagenesExistentes === 0 && i === 0,
           },

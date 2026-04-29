@@ -344,12 +344,11 @@ class ProductoController {
             // Usar la URL base configurada
             const baseUrl = config_1.default.backendUrl;
             const imagenes = [];
-            const multerFiles = files; // Fallback para evitar errores de tipo si Express.Multer no está global
-            for (let i = 0; i < multerFiles.length; i++) {
+            for (let i = 0; i < files.length; i++) {
                 const imagen = await prisma.cat_imagenes_producto.create({
                     data: {
                         producto_id: productoId,
-                        url: `${baseUrl}/uploads/${multerFiles[i].filename}`,
+                        url: `${baseUrl}/uploads/${files[i].filename}`,
                         orden: imagenesExistentes + i,
                         es_principal: imagenesExistentes === 0 && i === 0,
                     },
