@@ -354,7 +354,7 @@ export class ProductoController {
   }
 
   // Subir imágenes de producto
-  async subirImagenes(req: Request, res: Response, next: NextFunction) {
+  async subirImagenes(req: any, res: Response, next: NextFunction) {
     try {
       const productoId = parseInt(req.params.id);
       
@@ -380,11 +380,12 @@ export class ProductoController {
       const baseUrl = config.backendUrl;
       
       const imagenes = [];
-      for (let i = 0; i < files.length; i++) {
+      const multerFiles = files as any[]; // Fallback para evitar errores de tipo si Express.Multer no está global
+      for (let i = 0; i < multerFiles.length; i++) {
         const imagen = await prisma.cat_imagenes_producto.create({
           data: {
             producto_id: productoId,
-            url: `${baseUrl}/uploads/${files[i].filename}`,
+            url: `${baseUrl}/uploads/${multerFiles[i].filename}`,
             orden: imagenesExistentes + i,
             es_principal: imagenesExistentes === 0 && i === 0,
           },
