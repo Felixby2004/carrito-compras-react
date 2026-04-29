@@ -9,6 +9,7 @@ import multer from 'multer';
 import path from 'path';
 import { io } from '../index';
 import fs from 'fs';
+import { uploadCloudinary } from '../config/cloudinary';
 
 const prisma = new PrismaClient();
 const productoService = new ProductoService();
@@ -376,15 +377,15 @@ export class ProductoController {
         where: { producto_id: productoId },
       });
       
-      // Usar la URL base configurada
-      const baseUrl = config.backendUrl;
-      
       const imagenes = [];
       for (let i = 0; i < files.length; i++) {
+        // Si usamos Cloudinary, la URL viene en path. Si es local, la construimos.
+        const url = files[i].path || files[i].url || `${config.backendUrl}/uploads/${files[i].filename}`;
+        
         const imagen = await prisma.cat_imagenes_producto.create({
           data: {
             producto_id: productoId,
-            url: `${baseUrl}/uploads/${files[i].filename}`,
+            url: url,
             orden: imagenesExistentes + i,
             es_principal: imagenesExistentes === 0 && i === 0,
           },
@@ -526,4 +527,4 @@ export class ProductoController {
 }
 
 // Exportar el middleware upload para usarlo en las rutas
-export { upload };
+export { upload, uploadCloudinary };

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ProductoController, upload } from '../controllers/producto.controller';
+import { ProductoController, uploadCloudinary } from '../controllers/producto.controller';
 import { authenticate } from '../middlewares/auth.middleware';
 import { requirePermission } from '../middlewares/rbac.middleware';
 
@@ -44,7 +44,7 @@ router.post(
   '/:id/imagenes',
   authenticate,
   requirePermission('productos', 'editar'),
-  upload.array('imagenes', 10),
+  uploadCloudinary.array('imagenes', 10),
   productoController.subirImagenes.bind(productoController)
 );
 
