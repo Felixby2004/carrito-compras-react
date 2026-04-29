@@ -10,7 +10,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (data: LoginRequest) => Promise<Usuario>;
-  register: (data: RegisterRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<Usuario>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   clearAuth: () => void;
@@ -67,12 +67,36 @@ export const useAuthStore = create<AuthState>()(
       register: async (data: RegisterRequest) => {
         set({ isLoading: true });
         try {
-          await authApi.register(data);
+          const response = await authApi.register(data);
+          const { user, accessToken, refreshToken } = response.data;
+          
+          setAccessToken(accessToken);
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('refreshToken', refreshToken);
+          
           set({
-            user: null,
-            isAuthenticated: false,
+            user,
+            isAuthenticated: true,
             isLoading: false,
           });
+          
+          // Sincronizar carrito
+          const cartStore = useCartStore.getState();
+          const pendingCart = cartStore.getPendingCart();
+          
+          if (pendingCart && pendingCart.items.length > 0) {
+            for (const item of pendingCart.items) {
+              try {
+                await cartStore.addItem(item.producto_id, item.cantidad);
+              } catch (error) {
+                console.error('Error agregando item:', error);
+              }
+            }
+          } else {
+            await cartStore.loadCart();
+          }
+
+          return user;
         } catch (error) {
           set({ isLoading: false });
           throw error;

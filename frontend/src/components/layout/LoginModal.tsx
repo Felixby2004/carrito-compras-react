@@ -28,16 +28,22 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setLoading(true);
     try {
       if (isRegister) {
-        await register({
+        const user = await register({
           email,
           password,
           password_confirmacion: passwordConfirmacion,
           nombre,
           apellido,
         });
-        notify('Registro exitoso. Revisa tu email para verificar tu cuenta.', 'success');
+        notify('Registro exitoso', 'success');
         onClose();
-        window.location.reload();
+        
+        // Redirigir según el rol
+        const roles = (user as any)?.roles || [];
+        const isPanelRole = roles.some((r: string) =>
+          ['administrador', 'admin', 'gerente', 'gerente_ventas', 'gerente_inventario', 'vendedor'].includes(r),
+        );
+        navigate(isPanelRole ? '/admin' : '/');
       } else {
         const user = await login({ email, password });
         notify('Login exitoso', 'success');
