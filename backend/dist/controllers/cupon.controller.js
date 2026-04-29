@@ -36,6 +36,12 @@ class CuponController {
             if (!cupon) {
                 throw new errorHandler_1.AppError('Cupón inválido o expirado', 400);
             }
+            if (cupon.monto_minimo && subtotal < Number(cupon.monto_minimo)) {
+                throw new errorHandler_1.AppError(`El monto mínimo para usar este cupón es S/ ${Number(cupon.monto_minimo).toFixed(2)}`, 400);
+            }
+            if (cupon.usos_maximos && cupon.usos_actuales >= cupon.usos_maximos) {
+                throw new errorHandler_1.AppError('El cupón ha alcanzado su límite de usos', 400);
+            }
             let descuento = 0;
             if (cupon.tipo === 'porcentaje') {
                 descuento = subtotal * (Number(cupon.valor) / 100);
@@ -53,6 +59,7 @@ class CuponController {
                     descuento,
                     tipo: cupon.tipo,
                     valor: Number(cupon.valor),
+                    monto_minimo: cupon.monto_minimo ? Number(cupon.monto_minimo) : null,
                 },
             });
         }

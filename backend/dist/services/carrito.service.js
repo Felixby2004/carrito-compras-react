@@ -9,6 +9,19 @@ const errorHandler_1 = require("../middlewares/errorHandler");
 const config_1 = __importDefault(require("../config"));
 const prisma = new client_1.PrismaClient();
 class CarritoService {
+    fixImageUrl(url) {
+        if (!url)
+            return url;
+        if (url.startsWith('http') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
+            return url;
+        }
+        const baseUrl = config_1.default.backendUrl;
+        if (url.includes('/uploads/')) {
+            const path = url.split('/uploads/')[1];
+            return `${baseUrl}/uploads/${path}`;
+        }
+        return url;
+    }
     calcularImpuesto(subtotal) {
         return subtotal * (config_1.default.taxPercentage / 100);
     }
@@ -106,7 +119,7 @@ class CarritoService {
                 id: item.id,
                 producto_id: item.producto_id,
                 nombre: item.producto.nombre,
-                imagen: item.producto.imagenes[0]?.url,
+                imagen: this.fixImageUrl(item.producto.imagenes[0]?.url),
                 cantidad: item.cantidad,
                 precio_unitario: Number(item.precio_unitario),
                 subtotal: Number(item.precio_unitario) * item.cantidad,

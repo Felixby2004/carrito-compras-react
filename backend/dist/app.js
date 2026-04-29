@@ -32,6 +32,10 @@ const swaggerOptions = {
         },
         servers: [
             {
+                url: 'https://carrito-compras-react-f7qf.onrender.com/api/v1',
+                description: 'Servidor de Producción',
+            },
+            {
                 url: `http://localhost:${config_1.default.port}/api/v1`,
                 description: 'Servidor de desarrollo',
             },
@@ -57,9 +61,10 @@ app.use((0, helmet_1.default)({
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             scriptSrc: ["'self'", "'unsafe-inline'"],
-            imgSrc: ["'self'", 'data:', 'https:'],
+            imgSrc: ["'self'", 'data:', 'https:', 'http:', '*'], // Permitir imágenes de cualquier fuente
         },
     },
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // Permitir recursos cross-origin
     hsts: {
         maxAge: 31536000, // 1 año
         includeSubDomains: true,
@@ -71,6 +76,7 @@ const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:10000',
     'https://carrito-compras-react-f7qf.onrender.com',
+    'https://carrito-compras-react-peach.vercel.app',
     config_1.default.frontendUrl,
     process.env.FRONTEND_URL,
 ].filter(Boolean);
@@ -119,7 +125,7 @@ const limiterGeneral = (0, express_rate_limit_1.default)({
 // Rate limiter estricto para login y auth
 const limiterAuth = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000,
-    max: 5,
+    max: 20, // Aumentado para pruebas
     message: 'Demasiados intentos de login, intente más tarde',
     skipSuccessfulRequests: true,
     validate: { xForwardedForHeader: false }

@@ -40,7 +40,7 @@ export function MisOrdenesPage() {
         return;
       }
       const API_URL = import.meta.env.VITE_API_URL;
-      const res = await fetch(`${API_URL}/orders/my-orders${qs ? `?${qs}` : ''}`, {
+      const res = await fetch(`${API_URL}/ordenes/mis-ordenes${qs ? `?${qs}` : ''}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();

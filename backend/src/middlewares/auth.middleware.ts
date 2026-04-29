@@ -100,8 +100,12 @@ export const optionalAuthenticate = async (
     
     next();
   } catch (error) {
-    // Si hay un error con el token (expirado, inválido), simplemente continuamos sin usuario
-    // A menos que sea un error de base de datos crítico, pero por ahora seguimos
+    if (error instanceof jwt.TokenExpiredError) {
+      return next(new AppError('Sesión expirada', 401));
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return next(new AppError('Token inválido', 401));
+    }
     next();
   }
 };

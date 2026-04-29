@@ -76,7 +76,16 @@ class ReporteController {
             case 'ordenes-periodo':
                 return prisma.ord_ordenes.findMany({ include: { items: true, cliente: { include: { usuario: true } } }, take: 200, orderBy: { created_at: 'desc' } });
             case 'inventario-valorizado':
-                return prisma.inv_stock_producto.findMany({ include: { producto: { include: { categoria: true } } } });
+                return prisma.inv_stock_producto.findMany({
+                    include: {
+                        producto: {
+                            include: {
+                                categoria: true
+                            }
+                        }
+                    },
+                    take: 200
+                });
             case 'movimientos-periodo':
                 return prisma.inv_movimientos_inventario.findMany({ include: { producto: { include: { producto: true } } }, take: 200, orderBy: { fecha_movimiento: 'desc' } });
             case 'stock-bajo':
@@ -93,25 +102,32 @@ class ReporteController {
         try {
             const reporte = String(req.params.reporte);
             const data = await this.getDataOperacional(reporte);
-            const doc = new pdfkit_1.default({ margin: 40 });
+            if (!data || data.length === 0) {
+                throw new errorHandler_1.AppError('No hay datos disponibles para este reporte', 404);
+            }
+            const doc = new pdfkit_1.default({
+                margin: 40,
+                bufferPages: true // Permitir numeración de páginas al final
+            });
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', `attachment; filename="reporte-${reporte}.pdf"`);
             doc.pipe(res);
+            // Encabezado
             doc.fontSize(16).text(`${empresa.nombre} - Reporte Operacional`, { align: 'center' });
             doc.fontSize(10).text(`RUC: ${empresa.ruc}`, { align: 'center' });
             doc.moveDown();
-            doc.fontSize(12).text(`Reporte: ${reporte}`);
+            doc.fontSize(12).text(`Reporte: ${reporte.replace(/-/g, ' ').toUpperCase()}`);
             doc.text(`Generado: ${new Date().toLocaleString()}`);
             doc.moveDown();
-            doc.text(`Registros: ${data.length}`);
+            doc.text(`Registros mostrados: ${Math.min(data.length, 200)}`);
             doc.moveDown();
             switch (reporte) {
                 case 'ordenes-periodo':
                     this.drawTable(doc, ['Orden', 'Fecha', 'Cliente', 'Estado', 'Total'], data.slice(0, 200).map((o) => [
-                        o.orden_numero,
+                        o.orden_numero || 'N/A',
                         new Date(o.created_at).toLocaleDateString(),
-                        o.cliente?.usuario?.email || 'N/A',
-                        o.estado,
+                        o.cliente?.usuario?.email || 'Invitado',
+                        o.estado || 'N/A',
                         `S/ ${this.toNumber(o.total).toFixed(2)}`,
                     ]));
                     break;
@@ -120,16 +136,16 @@ class ReporteController {
                         s.producto?.sku || '-',
                         s.producto?.nombre || '-',
                         s.producto?.categoria?.nombre || 'Sin categoria',
-                        `${s.stock_fisico}`,
-                        `S/ ${(s.stock_fisico * this.toNumber(s.producto?.precio_costo)).toFixed(2)}`,
+                        `${s.stock_fisico || 0}`,
+                        `S/ ${((s.stock_fisico || 0) * this.toNumber(s.producto?.precio_costo)).toFixed(2)}`,
                     ]));
                     break;
                 case 'movimientos-periodo':
                     this.drawTable(doc, ['Fecha', 'Producto', 'Tipo', 'Cantidad', 'Motivo'], data.slice(0, 200).map((m) => [
                         new Date(m.fecha_movimiento).toLocaleDateString(),
                         m.producto?.producto?.nombre || `#${m.producto_id}`,
-                        m.tipo_movimiento,
-                        `${m.cantidad}`,
+                        m.tipo_movimiento || '-',
+                        `${m.cantidad || 0}`,
                         (m.motivo || '').slice(0, 45),
                     ]));
                     break;
@@ -137,35 +153,45 @@ class ReporteController {
                     const stockRows = data.slice(0, 200).map((s) => [
                         s.producto?.sku || '-',
                         s.producto?.nombre || '-',
-                        `${s.stock_fisico}`,
-                        `${s.stock_minimo}`,
+                        `${s.stock_fisico || 0}`,
+                        `${s.stock_minimo || 0}`,
                     ]);
-                    const stockValues = data.slice(0, 200).map((s) => s.stock_fisico);
+                    const stockValues = data.slice(0, 200).map((s) => s.stock_fisico || 0);
                     this.drawTableStockBajo(doc, ['SKU', 'Producto', 'Stock', 'Minimo'], stockRows, stockValues);
                     break;
                 case 'pagos-periodo':
                     this.drawTable(doc, ['Fecha', 'Orden', 'Metodo', 'Estado', 'Monto'], data.slice(0, 200).map((p) => [
                         new Date(p.created_at).toLocaleDateString(),
                         p.orden?.orden_numero || `#${p.orden_id}`,
-                        p.metodo,
-                        p.estado_pago,
+                        p.metodo || '-',
+                        p.estado_pago || '-',
                         `S/ ${this.toNumber(p.monto).toFixed(2)}`,
                     ]));
                     break;
                 case 'devoluciones':
                     this.drawTable(doc, ['Orden', 'Fecha', 'Estado', 'Total', 'Reembolso'], data.slice(0, 200).map((o) => [
-                        o.orden_numero,
+                        o.orden_numero || 'N/A',
                         new Date(o.created_at).toLocaleDateString(),
-                        o.estado,
+                        o.estado || '-',
                         `S/ ${this.toNumber(o.total).toFixed(2)}`,
-                        `S/ ${o.pagos.filter((p) => p.metodo === 'reembolso').reduce((acc, p) => acc + this.toNumber(p.monto), 0).toFixed(2)}`,
+                        `S/ ${o.pagos?.filter((p) => p.metodo === 'reembolso').reduce((acc, p) => acc + this.toNumber(p.monto), 0).toFixed(2) || '0.00'}`,
                     ]));
                     break;
             }
-            doc.text(`Página 1 - ${new Date().toLocaleDateString()}`);
+            // Numeración de páginas
+            const range = doc.bufferedPageRange();
+            for (let i = range.start; i < range.start + range.count; i++) {
+                doc.switchToPage(i);
+                doc.fontSize(8).fillColor('gray').text(`Página ${i + 1} de ${range.count} - Generado el ${new Date().toLocaleString()}`, 40, doc.page.height - 30, { align: 'center' });
+            }
             doc.end();
         }
         catch (error) {
+            // Si ya empezamos a escribir la respuesta, no podemos usar next(error) para enviar JSON
+            if (res.headersSent) {
+                console.error('Error después de enviar headers:', error);
+                return;
+            }
             next(error);
         }
     }

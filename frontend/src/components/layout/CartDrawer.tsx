@@ -151,7 +151,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       try {
         // Obtener precio actual del producto desde el backend
         const API_URL = import.meta.env.VITE_API_URL;
-        const response = await fetch(`${API_URL}/products/${item.producto_id}`)
+        const response = await fetch(`${API_URL}/productos/${item.producto_id}`)
         const data = await response.json();
         const precioActual = data.data.precio_actual;
         

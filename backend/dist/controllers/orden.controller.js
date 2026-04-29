@@ -40,7 +40,7 @@ const crearOrdenSchema = zod_1.z.object({
     metodo_pago: zod_1.z.number(),
     cupon_codigo: zod_1.z.string().optional(),
     identificacion: zod_1.z.object({
-        tipo: zod_1.z.enum(['invitado', 'login', 'registro']),
+        tipo: zod_1.z.enum(['invitado', 'login', 'registro', 'autenticado']),
         email: zod_1.z.string().email().optional(),
         password: zod_1.z.string().optional(),
         nombre: zod_1.z.string().optional(),
@@ -86,91 +86,121 @@ class OrdenController {
             // Paso 1: Identificar o crear usuario/cliente
             if (authReq.user?.id) {
                 usuarioId = authReq.user.id;
-                const cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: authReq.user.id } });
-                if (cliente)
-                    clienteId = cliente.id;
-            }
-            else if (data.identificacion.tipo === 'login' && data.identificacion.email) {
-                const usuario = await prisma.seg_usuarios.findUnique({
-                    where: { email: data.identificacion.email },
-                });
-                if (!usuario) {
-                    throw new errorHandler_1.AppError('Credenciales inválidas', 401);
-                }
-                const isValid = await bcrypt_1.default.compare(data.identificacion.password || '', usuario.password_hash);
-                if (!isValid) {
-                    throw new errorHandler_1.AppError('Credenciales inválidas', 401);
-                }
-                usuarioId = usuario.id;
-                const cliente = await prisma.cli_clientes.findUnique({
-                    where: { usuario_id: usuario.id },
-                });
-                if (cliente) {
-                    clienteId = cliente.id;
-                }
-            }
-            else if (data.identificacion.tipo === 'registro' && data.identificacion.email) {
-                const hashedPassword = await bcrypt_1.default.hash(data.identificacion.password || 'Temp123!', 12);
-                nuevoUsuario = await prisma.seg_usuarios.create({
-                    data: {
-                        email: data.identificacion.email,
-                        password_hash: hashedPassword,
-                        email_verificado: true,
-                        activo: true,
-                    },
-                });
-                usuarioId = nuevoUsuario.id;
-                const rolCliente = await prisma.seg_roles.findFirst({
-                    where: { nombre: 'cliente' },
-                });
-                if (rolCliente) {
-                    await prisma.seg_usuario_rol.create({
+                let cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: authReq.user.id } });
+                // Si no existe el cliente pero sí el usuario, lo creamos
+                if (!cliente && usuarioId) {
+                    cliente = await prisma.cli_clientes.create({
                         data: {
-                            usuario_id: nuevoUsuario.id,
-                            rol_id: rolCliente.id,
+                            usuario_id: usuarioId,
+                            telefono: data.direccion.telefono || '',
+                            total_gastado: 0,
+                            segmento: 'nuevo',
                         },
                     });
                 }
-                const nuevoCliente = await prisma.cli_clientes.create({
-                    data: {
-                        usuario_id: nuevoUsuario.id,
-                        telefono: data.direccion.telefono,
-                        total_gastado: 0,
-                        segmento: 'nuevo',
-                    },
-                });
-                clienteId = nuevoCliente.id;
-                // Generar tokens para el nuevo usuario
-                accessToken = jsonwebtoken_1.default.sign({ id: nuevoUsuario.id, email: nuevoUsuario.email }, config_1.default.jwtSecret, { expiresIn: '15m' });
-                refreshToken = crypto_1.default.randomBytes(40).toString('hex');
-                await prisma.seg_refresh_tokens.create({
-                    data: {
-                        usuario_id: nuevoUsuario.id,
-                        token: refreshToken,
-                        expira_en: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                        revocado: false,
-                    },
-                });
+                if (cliente)
+                    clienteId = cliente.id;
             }
-            else if (data.identificacion.tipo === 'invitado') {
-                const usuarioInvitado = await prisma.seg_usuarios.create({
-                    data: {
-                        email: `invitado_${Date.now()}@temp.com`,
-                        password_hash: await bcrypt_1.default.hash('temp', 12),
-                        email_verificado: false,
-                        activo: true,
-                    },
-                });
-                usuarioId = usuarioInvitado.id;
-                const clienteInvitado = await prisma.cli_clientes.create({
-                    data: {
-                        usuario_id: usuarioInvitado.id,
-                        telefono: data.direccion.telefono,
-                        total_gastado: 0,
-                        segmento: 'invitado',
-                    },
-                });
-                clienteId = clienteInvitado.id;
+            // Si no hay usuario autenticado por token, buscar por identificación en el body
+            if (!usuarioId) {
+                if (data.identificacion.tipo === 'autenticado') {
+                    throw new errorHandler_1.AppError('Su sesión ha expirado o es inválida. Por favor, vuelva a iniciar sesión para continuar.', 401);
+                }
+                if (data.identificacion.tipo === 'login' && data.identificacion.email) {
+                    const usuario = await prisma.seg_usuarios.findUnique({
+                        where: { email: data.identificacion.email },
+                    });
+                    if (!usuario) {
+                        throw new errorHandler_1.AppError('Credenciales inválidas: El correo no existe. Si no tiene cuenta, elija "Registrarme".', 401);
+                    }
+                    if (!data.identificacion.password) {
+                        throw new errorHandler_1.AppError('Se requiere contraseña para iniciar sesión. Por favor, ingrésela o vuelva a loguearse.', 401);
+                    }
+                    const isValid = await bcrypt_1.default.compare(data.identificacion.password, usuario.password_hash);
+                    if (!isValid) {
+                        throw new errorHandler_1.AppError('Credenciales inválidas: Contraseña incorrecta.', 401);
+                    }
+                    usuarioId = usuario.id;
+                    let cliente = await prisma.cli_clientes.findUnique({
+                        where: { usuario_id: usuario.id },
+                    });
+                    if (!cliente) {
+                        cliente = await prisma.cli_clientes.create({
+                            data: {
+                                usuario_id: usuario.id,
+                                telefono: data.direccion.telefono || '',
+                                total_gastado: 0,
+                                segmento: 'nuevo',
+                            },
+                        });
+                    }
+                    if (cliente) {
+                        clienteId = cliente.id;
+                    }
+                }
+                else if (data.identificacion.tipo === 'registro' && data.identificacion.email) {
+                    const hashedPassword = await bcrypt_1.default.hash(data.identificacion.password || 'Temp123!', 12);
+                    nuevoUsuario = await prisma.seg_usuarios.create({
+                        data: {
+                            email: data.identificacion.email,
+                            password_hash: hashedPassword,
+                            email_verificado: true,
+                            activo: true,
+                        },
+                    });
+                    usuarioId = nuevoUsuario.id;
+                    const rolCliente = await prisma.seg_roles.findFirst({
+                        where: { nombre: 'cliente' },
+                    });
+                    if (rolCliente) {
+                        await prisma.seg_usuario_rol.create({
+                            data: {
+                                usuario_id: nuevoUsuario.id,
+                                rol_id: rolCliente.id,
+                            },
+                        });
+                    }
+                    const nuevoCliente = await prisma.cli_clientes.create({
+                        data: {
+                            usuario_id: nuevoUsuario.id,
+                            telefono: data.direccion.telefono,
+                            total_gastado: 0,
+                            segmento: 'nuevo',
+                        },
+                    });
+                    clienteId = nuevoCliente.id;
+                    // Generar tokens para el nuevo usuario
+                    accessToken = jsonwebtoken_1.default.sign({ id: nuevoUsuario.id, email: nuevoUsuario.email }, config_1.default.jwtSecret, { expiresIn: '15m' });
+                    refreshToken = crypto_1.default.randomBytes(40).toString('hex');
+                    await prisma.seg_refresh_tokens.create({
+                        data: {
+                            usuario_id: nuevoUsuario.id,
+                            token: refreshToken,
+                            expira_en: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                            revocado: false,
+                        },
+                    });
+                }
+                else if (data.identificacion.tipo === 'invitado') {
+                    const usuarioInvitado = await prisma.seg_usuarios.create({
+                        data: {
+                            email: `invitado_${Date.now()}@temp.com`,
+                            password_hash: await bcrypt_1.default.hash('temp', 12),
+                            email_verificado: false,
+                            activo: true,
+                        },
+                    });
+                    usuarioId = usuarioInvitado.id;
+                    const clienteInvitado = await prisma.cli_clientes.create({
+                        data: {
+                            usuario_id: usuarioInvitado.id,
+                            telefono: data.direccion.telefono,
+                            total_gastado: 0,
+                            segmento: 'invitado',
+                        },
+                    });
+                    clienteId = clienteInvitado.id;
+                }
             }
             if (!clienteId) {
                 throw new errorHandler_1.AppError('No se pudo identificar al cliente', 400);

@@ -104,6 +104,7 @@ export function CheckoutPage() {
   useEffect(() => {
     if (authChecked && isAuthenticated) {
       setCurrentStep(2);
+      setIdentificacion(prev => ({ ...prev, tipo: 'autenticado' })); // Indicar al backend que use el token
       cargarDirecciones();
       cargarPerfilAutocompletado();
     }

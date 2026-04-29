@@ -31,7 +31,7 @@ export function OrdenDetallePage() {
         return;
       }
       const API_URL = import.meta.env.VITE_API_URL;
-      const res = await fetch(`${API_URL}/orders/my-orders/${id}`, {
+      const res = await fetch(`${API_URL}/ordenes/mis-ordenes/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
