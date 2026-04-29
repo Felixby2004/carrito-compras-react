@@ -6,6 +6,7 @@ import { getSocket } from '../../socket';
 import { useProductoStore } from '../../stores/productoStore';
 import { useNavigate } from 'react-router-dom';
 import { Price } from '../Price';
+import { fixImageUrl } from '../../utils/images';
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -172,6 +173,33 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     });
   };
 
+  useEffect(() => {
+    if (cuponAplicado && subtotal > 0) {
+      // Si el subtotal es menor al monto mínimo, quitar el cupón
+      if (cuponAplicado.monto_minimo && subtotal < cuponAplicado.monto_minimo) {
+        quitarCupon();
+        setMensajeCupon({ 
+          text: `❌ Cupón removido: El monto mínimo es S/ ${cuponAplicado.monto_minimo.toFixed(2)}`, 
+          type: 'error' 
+        });
+        return;
+      }
+
+      // Recalcular descuento si es porcentaje
+      if (cuponAplicado.tipo === 'porcentaje') {
+        const nuevoDescuento = subtotal * (cuponAplicado.valor / 100);
+        setDescuento(nuevoDescuento);
+      } else if (cuponAplicado.tipo === 'fijo') {
+        // Asegurar que el descuento fijo no sea mayor al subtotal
+        if (cuponAplicado.valor > subtotal) {
+          setDescuento(subtotal);
+        } else {
+          setDescuento(cuponAplicado.valor);
+        }
+      }
+    }
+  }, [subtotal, cuponAplicado]);
+
   const aplicarCupon = async () => {
     if (!codigoCupon.trim()) {
       setMensajeCupon({ text: 'Ingresa un código de cupón', type: 'error' });
@@ -260,7 +288,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4 border-b pb-4">
                     <img
-                      src={item.imagen || 'https://placehold.co/80x80?text=Producto'}
+                      src={fixImageUrl(item.imagen)}
                       alt={item.nombre}
                       className="w-20 h-20 object-cover rounded"
                     />

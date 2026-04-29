@@ -28,8 +28,22 @@ export function ReportesAdminPage() {
       const url = window.URL.createObjectURL(pdfBlob);
       window.open(url, '_blank');
       setTimeout(() => window.URL.revokeObjectURL(url), 60000);
-    } catch (error) {
-      notify('No se pudo generar el reporte. Verifica tu sesion o permisos.', 'error');
+    } catch (error: any) {
+      console.error('Error generando reporte:', error);
+      if (error.response?.data instanceof Blob) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const errorData = JSON.parse(reader.result as string);
+            notify(`Error: ${errorData.message || 'No se pudo generar el reporte'}`, 'error');
+          } catch (e) {
+            notify('No se pudo generar el reporte. Verifica tu sesión o permisos.', 'error');
+          }
+        };
+        reader.readAsText(error.response.data);
+      } else {
+        notify('No se pudo generar el reporte. Verifica tu sesión o permisos.', 'error');
+      }
     }
   };
 

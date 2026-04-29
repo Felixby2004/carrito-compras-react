@@ -7,6 +7,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { notify } from '../../utils/notify';
 import apiClient from '../../api/client';
 import type { Producto } from '../../types';
+import { fixImageUrl } from '../../utils/images';
 
 export function WishlistPage() {
   const { items, loadWishlist, toggleWishlist } = useWishlistStore();
@@ -106,7 +107,7 @@ export function WishlistPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {productos.map((producto) => {
-            const imagen = producto.imagenes?.[0]?.url || 'https://placehold.co/300x300?text=Sin+imagen';
+            const imagen = fixImageUrl(producto.imagenes?.[0]?.url);
             const stockDisponible = Number(producto.stock_disponible) || 0;
             const sinStock = stockDisponible <= 0;
 

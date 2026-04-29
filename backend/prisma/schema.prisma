@@ -717,7 +717,8 @@ model configuracion_sistema {
   valor            String   @db.Text
   descripcion      String?  @db.Text
   updated_at       DateTime @updatedAt
-
+  
+  @@unique([id], name: "configuracion_sistema_unique_id")
   @@map("configuracion_sistema")
 }
 

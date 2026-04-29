@@ -90,31 +90,65 @@ export class OrdenController {
       // Paso 1: Identificar o crear usuario/cliente
       if (authReq.user?.id) {
         usuarioId = authReq.user.id;
-        const cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: authReq.user.id } });
+        let cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: authReq.user.id } });
+        
+        // Si no existe el cliente pero sí el usuario, lo creamos
+        if (!cliente && usuarioId) {
+          cliente = await prisma.cli_clientes.create({
+            data: {
+              usuario_id: usuarioId,
+              telefono: data.direccion.telefono || '',
+              total_gastado: 0,
+              segmento: 'nuevo',
+            },
+          });
+        }
+        
         if (cliente) clienteId = cliente.id;
       }
-      else if (data.identificacion.tipo === 'login' && data.identificacion.email) {
-        const usuario = await prisma.seg_usuarios.findUnique({
-          where: { email: data.identificacion.email },
-        });
-        if (!usuario) {
-          throw new AppError('Credenciales inválidas', 401);
-        }
-        
-        const isValid = await bcrypt.compare(data.identificacion.password || '', usuario.password_hash);
-        if (!isValid) {
-          throw new AppError('Credenciales inválidas', 401);
-        }
-        
-        usuarioId = usuario.id;
-        const cliente = await prisma.cli_clientes.findUnique({
-          where: { usuario_id: usuario.id },
-        });
-        if (cliente) {
-          clienteId = cliente.id;
-        }
-      } 
-      else if (data.identificacion.tipo === 'registro' && data.identificacion.email) {
+      
+      // Si no hay usuario autenticado por token, buscar por identificación en el body
+      if (!usuarioId) {
+        if (data.identificacion.tipo === 'login' && data.identificacion.email) {
+          const usuario = await prisma.seg_usuarios.findUnique({
+            where: { email: data.identificacion.email },
+          });
+          
+          if (!usuario) {
+            throw new AppError('Credenciales inválidas: El correo no existe', 401);
+          }
+          
+          if (!data.identificacion.password) {
+            throw new AppError('Se requiere contraseña para iniciar sesión', 401);
+          }
+          
+          const isValid = await bcrypt.compare(data.identificacion.password, usuario.password_hash);
+          if (!isValid) {
+            throw new AppError('Credenciales inválidas: Contraseña incorrecta', 401);
+          }
+          
+          usuarioId = usuario.id;
+          let cliente = await prisma.cli_clientes.findUnique({
+            where: { usuario_id: usuario.id },
+          });
+          
+          if (!cliente) {
+            cliente = await prisma.cli_clientes.create({
+              data: {
+                usuario_id: usuario.id,
+                telefono: data.direccion.telefono || '',
+                total_gastado: 0,
+                segmento: 'nuevo',
+              },
+            });
+          }
+          
+          if (cliente) {
+            clienteId = cliente.id;
+          }
+        } 
+        else if (data.identificacion.tipo === 'registro' && data.identificacion.email) {
+          // ... rest of registration logic
         const hashedPassword = await bcrypt.hash(data.identificacion.password || 'Temp123!', 12);
         
         nuevoUsuario = await prisma.seg_usuarios.create({

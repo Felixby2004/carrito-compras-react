@@ -6,6 +6,7 @@ import { useWishlistStore } from '../../stores/wishlistStore';
 import { useAuthStore } from '../../stores/authStore';
 import { notify } from '../../utils/notify';
 import { Price } from '../Price';
+import { fixImageUrl } from '../../utils/images';
 
 interface ProductCardProps {
   producto: Producto;
@@ -26,7 +27,7 @@ export function ProductCard({ producto, viewMode = 'grid', onAddToCart }: Produc
     ? producto.precio_venta
     : Number(producto.precio_venta) || 0;
 
-  const imagenPrincipal = producto.imagenes?.[0]?.url || 'https://placehold.co/300x300?text=Sin+imagen';
+  const imagenPrincipal = fixImageUrl(producto.imagenes?.[0]?.url);
   const stockDisponible = typeof producto.stock_disponible === 'number'
     ? producto.stock_disponible
     : Number(producto.stock_disponible) || 0;

@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { OrdenController } from '../controllers/orden.controller';
-import { authenticate } from '../middlewares/auth.middleware';
+import { authenticate, optionalAuthenticate } from '../middlewares/auth.middleware';
 import { requirePermission } from '../middlewares/rbac.middleware';
 
 const router = Router();
 const ordenController = new OrdenController();
 
-// Ruta pública para crear orden (invitados también pueden)
-router.post('/', ordenController.crearOrden.bind(ordenController));
+// Ruta para crear orden (invitados también pueden, por eso optionalAuthenticate)
+router.post('/', optionalAuthenticate, ordenController.crearOrden.bind(ordenController));
 
 // Rutas protegidas - las más específicas primero
 router.get('/mis-ordenes', authenticate, ordenController.getMisOrdenes.bind(ordenController));

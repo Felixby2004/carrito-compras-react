@@ -4,6 +4,7 @@ import { ProductoService } from '../services/producto.service';
 import { productoSchema, productoUpdateSchema, productoFilterSchema } from '../schemas/producto.schema';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import { AppError } from '../middlewares/errorHandler';
+import config from '../config';
 import multer from 'multer';
 import path from 'path';
 import { io } from '../index';
@@ -36,13 +37,20 @@ export class ProductoController {
 
   private fixImageUrl(url: string): string {
     if (!url) return url;
-    // Si la URL es de localhost, reemplazar con la URL de producción
-    if (url.includes('localhost') || url.includes('127.0.0.1')) {
-      const baseUrl = process.env.BACKEND_URL || 'https://carrito-compras-react-f7qf.onrender.com';
-      // Extraer solo la parte después de /uploads/
+    
+    // Si la URL ya es absoluta y no es localhost, dejarla como está
+    if (url.startsWith('http') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
+      return url;
+    }
+
+    // Si es localhost o una ruta relativa, usar la backendUrl configurada
+    const baseUrl = config.backendUrl;
+    
+    if (url.includes('/uploads/')) {
       const path = url.split('/uploads/')[1];
       return `${baseUrl}/uploads/${path}`;
     }
+    
     return url;
   }
 
@@ -220,9 +228,19 @@ export class ProductoController {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
       const productos = await productoService.getProductosDestacados(limit);
+      
+      // Transformar URLs de imágenes
+      const productosConImagenesCorregidas = productos.map(producto => ({
+        ...producto,
+        imagenes: producto.imagenes?.map(img => ({
+          ...img,
+          url: this.fixImageUrl(img.url)
+        })) || []
+      }));
+      
       res.json({
         success: true,
-        data: productos,
+        data: productosConImagenesCorregidas,
       });
     } catch (error) {
       next(error);
@@ -233,9 +251,19 @@ export class ProductoController {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
       const productos = await productoService.getProductosOfertas(limit);
+      
+      // Transformar URLs de imágenes
+      const productosConImagenesCorregidas = productos.map(producto => ({
+        ...producto,
+        imagenes: producto.imagenes?.map(img => ({
+          ...img,
+          url: this.fixImageUrl(img.url)
+        })) || []
+      }));
+      
       res.json({
         success: true,
-        data: productos,
+        data: productosConImagenesCorregidas,
       });
     } catch (error) {
       next(error);
@@ -246,9 +274,19 @@ export class ProductoController {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
       const productos = await productoService.getProductosNuevos(limit);
+      
+      // Transformar URLs de imágenes
+      const productosConImagenesCorregidas = productos.map(producto => ({
+        ...producto,
+        imagenes: producto.imagenes?.map(img => ({
+          ...img,
+          url: this.fixImageUrl(img.url)
+        })) || []
+      }));
+      
       res.json({
         success: true,
-        data: productos,
+        data: productosConImagenesCorregidas,
       });
     } catch (error) {
       next(error);
@@ -260,9 +298,19 @@ export class ProductoController {
       const id = parseInt(req.params.id);
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 4;
       const productos = await productoService.getProductosRelacionados(id, limit);
+      
+      // Transformar URLs de imágenes
+      const productosConImagenesCorregidas = productos.map(producto => ({
+        ...producto,
+        imagenes: producto.imagenes?.map(img => ({
+          ...img,
+          url: this.fixImageUrl(img.url)
+        })) || []
+      }));
+      
       res.json({
         success: true,
-        data: productos,
+        data: productosConImagenesCorregidas,
       });
     } catch (error) {
       next(error);
@@ -328,16 +376,15 @@ export class ProductoController {
         where: { producto_id: productoId },
       });
       
-      // 🔥 CORREGIDO: Usar la URL pública de Render
-      // En lugar de 'http://localhost:3000', usar la variable de entorno
-      const baseUrl = process.env.BACKEND_URL || process.env.RENDER_EXTERNAL_URL || 'https://carrito-compras-react-f7qf.onrender.com';
+      // Usar la URL base configurada
+      const baseUrl = config.backendUrl;
       
       const imagenes = [];
       for (let i = 0; i < files.length; i++) {
         const imagen = await prisma.cat_imagenes_producto.create({
           data: {
             producto_id: productoId,
-            url: `${baseUrl}/uploads/${files[i].filename}`, // ✅ URL CORRECTA
+            url: `${baseUrl}/uploads/${files[i].filename}`,
             orden: imagenesExistentes + i,
             es_principal: imagenesExistentes === 0 && i === 0,
           },
@@ -361,7 +408,13 @@ export class ProductoController {
         orderBy: { orden: 'asc' },
       });
       
-      res.json({ success: true, data: imagenes });
+      // Transformar URLs
+      const imagenesCorregidas = imagenes.map(img => ({
+        ...img,
+        url: this.fixImageUrl(img.url)
+      }));
+      
+      res.json({ success: true, data: imagenesCorregidas });
     } catch (error) {
       next(error);
     }
@@ -458,6 +511,10 @@ export class ProductoController {
           stock_disponible: p.stock ? Number(p.stock.stock_fisico) - (Number(p.stock.stock_reservado) || 0) : 0,
           stock_minimo: p.stock?.stock_minimo || 0,
           estado: p.estado,
+          imagenes: p.imagenes.map(img => ({
+            ...img,
+            url: this.fixImageUrl(img.url)
+          }))
         };
       });
       

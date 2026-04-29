@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../stores/cartStore';
 import { useAuthStore } from '../../stores/authStore';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronLeft, CreditCard } from 'lucide-react';
 import { notify } from '../../utils/notify';
 import { getSocket } from '../../socket';
+import apiClient from '../../api/client';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -128,17 +129,8 @@ export function CheckoutPage() {
 
   const cargarDirecciones = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const headers: any = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      const API_URL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${API_URL}/clientes/direcciones`, { headers }); // ✅ Corregido
-      if (response.ok) {
-        const data = await response.json();
-        setDirecciones(data.data || []);
-      }
+      const response = await apiClient.get('/clientes/direcciones');
+      setDirecciones(response.data.data || []);
     } catch (error) {
       console.error('Error cargando direcciones:', error);
     }
@@ -146,15 +138,8 @@ export function CheckoutPage() {
 
   const cargarPerfilAutocompletado = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) return;
-      const API_URL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${API_URL}/perfil`, { // ✅ Corregido
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      const perfil = data?.data;
+      const response = await apiClient.get('/perfil');
+      const perfil = response.data?.data;
       const nombreCompleto = perfil?.cliente?.direcciones?.find((d: any) => d.es_principal)?.destinatario || '';
       const [nombre = '', apellido = ''] = nombreCompleto.split(' ');
       setIdentificacion((prev) => ({ ...prev, email: perfil?.email || prev.email }));
@@ -243,28 +228,17 @@ export function CheckoutPage() {
       };
       
       const token = localStorage.getItem('accessToken');
-      const headers: any = { 'Content-Type': 'application/json' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      console.log('Token existe?', !!token);
-      console.log('Token:', token);
-
-      if (!token) {
+      
+      // Permitir continuar si es registro o invitado, o si tiene token
+      if (!token && identificacion.tipo === 'login') {
         notify('Debes iniciar sesión para continuar', 'error');
+        setLoading(false);
         return;
       }
       
-      const response = await fetch(`${API_URL}/ordenes`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(ordenData)
-      });
+      const response = await apiClient.post('/ordenes', ordenData);
       
-      const data = await response.json();
+      const data = response.data;
       
       if (data.success) {
         notify('Orden completada con exito', 'success');
@@ -275,9 +249,10 @@ export function CheckoutPage() {
       } else {
         notify(data.message || 'Error al procesar la orden', 'error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
-      notify('Error al procesar la orden', 'error');
+      const message = error.response?.data?.message || 'Error al procesar la orden';
+      notify(message, 'error');
     } finally {
       setLoading(false);
     }

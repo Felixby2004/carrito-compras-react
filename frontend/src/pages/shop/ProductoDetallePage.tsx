@@ -10,6 +10,7 @@ import { useProductoStore } from '../../stores/productoStore';
 import { getSocket } from '../../socket';
 import { notify } from '../../utils/notify';
 import { Price } from '../../components/Price';
+import { fixImageUrl } from '../../utils/images';
 
 export function ProductoDetallePage() {
   const { id } = useParams<{ id: string }>();
@@ -202,7 +203,9 @@ export function ProductoDetallePage() {
   const precioActualCalculado = getPrecio(producto.id, producto.precio_actual || producto.precio_venta);
   const tieneDescuento = producto.descuento_porcentaje > 0;
   const stockDisponible = producto.stock_disponible || 0;
-  const imagenes = producto.imagenes?.length > 0 ? producto.imagenes : [{ url: 'https://placehold.co/600x600?text=Sin+imagen', es_principal: true }];
+  const imagenes = producto.imagenes?.length > 0 
+    ? producto.imagenes.map(img => ({ ...img, url: fixImageUrl(img.url) }))
+    : [{ url: 'https://placehold.co/600x600?text=Sin+imagen', es_principal: true }];
   const imagenPrincipal = imagenes[selectedImage]?.url;
   const enWishlist = producto ? isInWishlist(producto.id) : false;
 
@@ -457,7 +460,7 @@ export function ProductoDetallePage() {
             {productosRelacionados.map((rel) => (
               <Link key={rel.id} to={`/producto/${rel.id}`} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition">
                 <img
-                  src={rel.imagenes?.[0]?.url || 'https://placehold.co/200x200?text=Producto'}
+                  src={fixImageUrl(rel.imagenes?.[0]?.url)}
                   alt={rel.nombre}
                   className="w-full h-40 object-cover rounded mb-3"
                 />

@@ -10,7 +10,19 @@ const PORT = config.port;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: config.frontendUrl,
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:5173',
+        'https://carrito-compras-react-peach.vercel.app',
+        config.frontendUrl,
+      ].filter(Boolean);
+      
+      if (!origin || allowedOrigins.includes(origin) || origin.includes('vercel.app')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   },
 });

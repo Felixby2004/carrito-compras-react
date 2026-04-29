@@ -6,6 +6,19 @@ import config from '../config';
 const prisma = new PrismaClient();
 
 export class CarritoService {
+  private fixImageUrl(url: string): string {
+    if (!url) return url;
+    if (url.startsWith('http') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
+      return url;
+    }
+    const baseUrl = config.backendUrl;
+    if (url.includes('/uploads/')) {
+      const path = url.split('/uploads/')[1];
+      return `${baseUrl}/uploads/${path}`;
+    }
+    return url;
+  }
+
   private calcularImpuesto(subtotal: number): number {
     return subtotal * (config.taxPercentage / 100);
   }
@@ -109,7 +122,7 @@ export class CarritoService {
         id: item.id,
         producto_id: item.producto_id,
         nombre: item.producto.nombre,
-        imagen: item.producto.imagenes[0]?.url,
+        imagen: this.fixImageUrl(item.producto.imagenes[0]?.url),
         cantidad: item.cantidad,
         precio_unitario: Number(item.precio_unitario),
         subtotal: Number(item.precio_unitario) * item.cantidad,

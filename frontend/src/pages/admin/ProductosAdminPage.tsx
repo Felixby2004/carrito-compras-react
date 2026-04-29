@@ -4,6 +4,7 @@ import type { Producto } from '../../types';
 import apiClient from '../../api/client';
 import { notify } from '../../utils/notify';
 import { Pagination } from '../../components/ui/Pagination';
+import { fixImageUrl } from '../../utils/images';
 
 interface Categoria {
   id: number;
@@ -689,7 +690,7 @@ export function ProductosAdminPage() {
                   {imagenesProducto.map((img) => (
                     <div key={img.id} className="relative group border rounded-lg p-1">
                       <img
-                        src={img.url}  // Esto funciona con base64 también
+                        src={fixImageUrl(img.url)}
                         alt="Producto"
                         className="w-full h-24 object-cover rounded"
                       />
