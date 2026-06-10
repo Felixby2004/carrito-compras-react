@@ -48,6 +48,13 @@ router.post(
   productoController.subirImagenes.bind(productoController)
 );
 
+router.post(
+  '/:id/imagenes/url',
+  authenticate,
+  requirePermission('productos', 'editar'),
+  productoController.agregarImagenUrl.bind(productoController)
+);
+
 router.put(
   '/imagenes/:imagenId/principal',
   authenticate,

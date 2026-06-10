@@ -268,14 +268,15 @@ export class PerfilController {
       const direccion = await prisma.cli_direcciones.create({
         data: {
           cliente_id: cliente.id,
-          alias: datos.alias,
-          direccion_completa: datos.direccion_completa,
-          ciudad: datos.ciudad,
-          departamento: datos.departamento || '',
-          codigo_postal: datos.codigo_postal || '',
-          telefono: datos.telefono,
-          es_principal: datos.es_principal ?? false,
-        },
+          alias: (datos as any).alias,
+          direccion_completa: (datos as any).direccion_completa,
+          departamento: (datos as any).departamento || '',
+          provincia: (datos as any).provincia,
+          distrito: (datos as any).distrito,
+          codigo_postal: (datos as any).codigo_postal || '',
+          telefono: (datos as any).telefono,
+          es_principal: (datos as any).es_principal ?? false,
+        } as any,
       });
       
       res.status(201).json({
@@ -354,14 +355,15 @@ export class PerfilController {
       const actualizada = await prisma.cli_direcciones.update({
         where: { id: direccionId },
         data: {
-          alias: datos.alias,
-          direccion_completa: datos.direccion_completa,
-          ciudad: datos.ciudad,
-          departamento: datos.departamento,
-          codigo_postal: datos.codigo_postal,
-          telefono: datos.telefono,
-          es_principal: datos.es_principal,
-        },
+          alias: (datos as any).alias,
+          direccion_completa: (datos as any).direccion_completa,
+          departamento: (datos as any).departamento,
+          provincia: (datos as any).provincia,
+          distrito: (datos as any).distrito,
+          codigo_postal: (datos as any).codigo_postal,
+          telefono: (datos as any).telefono,
+          es_principal: (datos as any).es_principal,
+        } as any,
       });
       
       res.json({

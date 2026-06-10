@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, User, ShoppingBag, Heart, LogOut } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 
 export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -28,23 +29,54 @@ export function MobileMenu() {
     };
   }, [isOpen]);
 
+  // Cerrar menú al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  // Cerrar menú al presionar Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen]);
+
   const handleLogout = () => {
     logout();
     setIsOpen(false);
   };
 
-  console.log('Usuario completo:', user);
-  console.log('Propiedades:', user ? Object.keys(user) : 'no user');
-
   return (
     <>
       {/* Botón hamburguesa - con z-index alto */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => setIsOpen(!isOpen)}
         className="p-2 rounded-lg hover:bg-gray-100 lg:hidden relative z-30"
-        aria-label="Abrir menú"
+        aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
       >
-        <Menu className="w-6 h-6 text-gray-700" />
+        {isOpen ? <X className="w-6 h-6 text-gray-700" /> : <Menu className="w-6 h-6 text-gray-700" />}
       </button>
 
       {/* Overlay - fondo oscuro */}
@@ -58,7 +90,10 @@ export function MobileMenu() {
           />
           
           {/* Menú lateral - con animación */}
-          <div className="fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-2xl z-50 p-6 animate-slide-in">
+          <div 
+            ref={menuRef}
+            className="fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl z-50 p-6 animate-slide-in"
+          >
             {/* Cabecera del menú */}
             <div className="flex justify-between items-center mb-6 pb-4 border-b">
               <div>
@@ -82,6 +117,7 @@ export function MobileMenu() {
             <nav className="flex flex-col gap-2">
               <Link 
                 to="/" 
+                onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                   location.pathname === '/' 
                     ? 'bg-blue-50 text-blue-600' 
@@ -94,6 +130,7 @@ export function MobileMenu() {
               
               <Link 
                 to="/catalogo" 
+                onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                   location.pathname === '/catalogo' 
                     ? 'bg-blue-50 text-blue-600' 
@@ -108,6 +145,7 @@ export function MobileMenu() {
                 <>
                   <Link
                     to="/mis-ordenes"
+                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       location.pathname === '/mis-ordenes' 
                         ? 'bg-blue-50 text-blue-600' 
@@ -120,6 +158,7 @@ export function MobileMenu() {
                   
                   <Link
                     to="/wishlist"
+                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       location.pathname === '/wishlist' 
                         ? 'bg-blue-50 text-blue-600' 
@@ -132,6 +171,7 @@ export function MobileMenu() {
 
                   <Link
                     to="/perfil"
+                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
                       location.pathname === '/perfil' 
                         ? 'bg-blue-50 text-blue-600' 

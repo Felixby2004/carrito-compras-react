@@ -29,8 +29,9 @@ const crearOrdenSchema = z.object({
     nombre: z.string(),
     apellido: z.string(),
     direccion: z.string(),
-    ciudad: z.string(),
     departamento: z.string().optional(),
+    provincia: z.string().optional(),
+    distrito: z.string().optional(),
     codigo_postal: z.string().optional(),
     telefono: z.string(),
   }),
@@ -320,8 +321,9 @@ export class OrdenController {
           orden_id: orden.id,
           cliente_id: clienteId,
           direccion_completa: data.direccion.direccion,
-          ciudad: data.direccion.ciudad,
           departamento: data.direccion.departamento || '',
+          provincia: data.direccion.provincia || '',
+          distrito: data.direccion.distrito || '',
           codigo_postal: data.direccion.codigo_postal || '',
           telefono: data.direccion.telefono,
           destinatario: `${data.direccion.nombre} ${data.direccion.apellido}`,
@@ -351,7 +353,6 @@ export class OrdenController {
           where: {
             cliente_id: clienteId,
             direccion_completa: data.direccion.direccion,
-            ciudad: data.direccion.ciudad,
           },
         });
         
@@ -361,8 +362,9 @@ export class OrdenController {
               cliente_id: clienteId,
               alias: 'Mi dirección',
               direccion_completa: data.direccion.direccion,
-              ciudad: data.direccion.ciudad,
               departamento: data.direccion.departamento || '',
+              provincia: data.direccion.provincia || '',
+              distrito: data.direccion.distrito || '',
               codigo_postal: data.direccion.codigo_postal || '',
               telefono: data.direccion.telefono,
               es_principal: true,
@@ -919,7 +921,7 @@ export class OrdenController {
       doc.font('Helvetica-Bold').text('Dirección de envío');
       doc.font('Helvetica')
         .text(orden.direccion_envio.destinatario || '-')
-        .text(`${orden.direccion_envio.direccion_completa || '-'}, ${orden.direccion_envio.ciudad || '-'}`);
+        .text(`${orden.direccion_envio.direccion_completa || '-'}, ${orden.direccion_envio.departamento || '-'}`);
     }
 
     doc.moveDown();

@@ -1,5 +1,6 @@
 // frontend/src/socket.ts
 import { io, Socket } from 'socket.io-client';
+import { useProductoStore } from './stores/productoStore';
 
 let socket: Socket | null = null;
 let reconnectAttempts = 0;
@@ -73,6 +74,18 @@ export const connectSocket = () => {
     socket.on('cambio-estado-orden', (data) => {
       console.log('🔄 Cambio de estado de orden:', data);
       window.dispatchEvent(new CustomEvent('cambio-estado-orden', { detail: data }));
+    });
+
+    socket.on('precio-actualizado', (data) => {
+      console.log('💲 Precio actualizado:', data);
+      const { actualizarPrecio } = useProductoStore.getState();
+      actualizarPrecio(data.productoId, data.precioNuevo);
+    });
+
+    socket.on('stock-actualizado', (data) => {
+      console.log('📦 Stock actualizado:', data);
+      const { actualizarStock } = useProductoStore.getState();
+      actualizarStock(data.productoId, data.stockFisico, data.stockReservado, data.stockDisponible);
     });
 
     socket.on('connect_error', (error) => {

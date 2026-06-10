@@ -287,7 +287,7 @@ export class ClienteController {
         throw new AppError('No autenticado', 401);
         }
         
-        const { alias, direccion_completa, ciudad, departamento, codigo_postal, telefono, es_principal } = req.body;
+        const { alias, direccion_completa, departamento, provincia, distrito, codigo_postal, telefono, es_principal } = req.body;
         
         const cliente = await prisma.cli_clientes.findUnique({
         where: { usuario_id: req.user.id },
@@ -302,8 +302,9 @@ export class ClienteController {
             cliente_id: cliente.id,
             alias,
             direccion_completa,
-            ciudad,
             departamento,
+            provincia,
+            distrito,
             codigo_postal,
             telefono,
             es_principal: es_principal || false,

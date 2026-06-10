@@ -15,8 +15,6 @@ export class ProductoService {
       marca: true,
       unidad_medida: true,
       imagenes: { orderBy: { orden: 'asc' } },
-      producto_atributos: { include: { atributo: true, valor: true } },
-      producto_etiquetas: { include: { etiqueta: true } },
       stock: true,
     },
   });
@@ -39,8 +37,8 @@ export class ProductoService {
     ? Math.round(((precioVenta - precioOferta!) / precioVenta) * 100)
     : 0;
   
-  const stockDisponible = producto.stock ? 
-    Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0) : 0;
+  const stockDisponible = (producto as any).stock ? 
+    Number((producto as any).stock.stock_fisico) - (Number((producto as any).stock.stock_reservado) || 0) : 0;
   
   return {
     ...producto,
@@ -136,8 +134,8 @@ export class ProductoService {
         ? Math.round(((precioVenta - precioOferta!) / precioVenta) * 100)
         : 0;
       
-      const stockDisponible = producto.stock ?
-        Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0) : 0;
+      const stockDisponible = (producto as any).stock ?
+        Number((producto as any).stock.stock_fisico) - (Number((producto as any).stock.stock_reservado) || 0) : 0;
       
       return {
         ...producto,
@@ -297,9 +295,6 @@ export class ProductoService {
       where: {
         activo: true,
         estado: 'activo',
-        producto_etiquetas: {
-          some: { etiqueta: { nombre: 'destacado' } }
-        }
       },
       take: limit,
       include: {
@@ -323,8 +318,8 @@ export class ProductoService {
         ? Math.round(((precioVenta - precioOferta!) / precioVenta) * 100)
         : 0;
       
-      const stockDisponible = producto.stock ?
-        Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0) : 0;
+      const stockDisponible = (producto as any).stock ?
+        Number((producto as any).stock.stock_fisico) - (Number((producto as any).stock.stock_reservado) || 0) : 0;
       
       return {
         ...producto,
@@ -368,8 +363,8 @@ export class ProductoService {
         ? Math.round(((precioVenta - precioOferta!) / precioVenta) * 100)
         : 0;
       
-      const stockDisponible = producto.stock ?
-        Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0) : 0;
+      const stockDisponible = (producto as any).stock ?
+        Number((producto as any).stock.stock_fisico) - (Number((producto as any).stock.stock_reservado) || 0) : 0;
       
       return {
         ...producto,
@@ -408,8 +403,8 @@ export class ProductoService {
         ? Math.round(((precioVenta - precioOferta!) / precioVenta) * 100)
         : 0;
       
-      const stockDisponible = producto.stock ?
-        Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0) : 0;
+      const stockDisponible = (producto as any).stock ?
+        Number((producto as any).stock.stock_fisico) - (Number((producto as any).stock.stock_reservado) || 0) : 0;
       
       return {
         ...producto,

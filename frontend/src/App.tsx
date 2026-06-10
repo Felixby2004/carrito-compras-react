@@ -29,6 +29,14 @@ import { ReportesAdminPage } from './pages/admin/ReportesAdminPage';
 import { ConfiguracionAdminPage } from './pages/admin/ConfiguracionAdminPage';
 import { notify } from './utils/notify';
 
+type TemaConfig = {
+  colorPrimario: string;
+  colorSecundario: string;
+  colorAcento: string;
+  logoUrl: string | null;
+  nombreTienda: string;
+};
+
 // Componente interno que usa useLocation
 function AppContent() {
   const { user, isAuthenticated, logout, checkAuth } = useAuthStore();
@@ -39,9 +47,17 @@ function AppContent() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
   const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: 'success' | 'error' | 'info' }>>([]);
+  const [tema, setTema] = useState<TemaConfig>({
+    colorPrimario: '#2563eb',
+    colorSecundario: '#0f172a',
+    colorAcento: '#f59e0b',
+    logoUrl: null,
+    nombreTienda: 'E-Commerce',
+  });
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isCliente = isAuthenticated && (user?.roles || []).some((r) => r === 'cliente');
+  const isAdmin = isAuthenticated && (user?.roles || []).some((r) => ['administrador', 'admin', 'gerente', 'gerente_ventas', 'gerente_inventario', 'vendedor'].includes(r));
 
   useEffect(() => {
     checkAuth();
@@ -91,10 +107,18 @@ function AppContent() {
         const res = await fetch(`${API_URL}/configuracion/publica/tema`);
         const data = await res.json();
         if (!res.ok || !data?.success) return;
-        const tema = data.data || {};
-        if (tema.colorPrimario) document.documentElement.style.setProperty('--color-primary', tema.colorPrimario);
-        if (tema.colorSecundario) document.documentElement.style.setProperty('--color-secondary', tema.colorSecundario);
-        if (tema.colorAcento) document.documentElement.style.setProperty('--color-accent', tema.colorAcento);
+        const loadedTema = {
+          colorPrimario: '#2563eb',
+          colorSecundario: '#0f172a',
+          colorAcento: '#f59e0b',
+          logoUrl: null,
+          nombreTienda: 'E-Commerce',
+          ...data.data
+        };
+        setTema(loadedTema);
+        document.documentElement.style.setProperty('--color-primary', loadedTema.colorPrimario);
+        document.documentElement.style.setProperty('--color-secondary', loadedTema.colorSecundario);
+        document.documentElement.style.setProperty('--color-accent', loadedTema.colorAcento);
       } catch {
         // best effort
       }
@@ -120,31 +144,38 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Navbar - solo visible si NO es ruta de admin */}
       {!isAdminRoute && (
-        <nav className="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-slate-100">
+        <nav className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-100">
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             {/* Logo y menú móvil */}
             <div className="flex items-center gap-4">
               {!isAdminRoute && <MobileMenu key="mobile-menu" />}
               <Link
                 to="/"
-                className="text-2xl font-bold"
+                className="flex items-center gap-3 text-2xl font-bold"
                 style={{ color: 'var(--color-primary, #2563eb)' }}
               >
-                E-Commerce
+                {tema.logoUrl ? (
+                  <img src={tema.logoUrl} alt="Logo" className="h-10 w-auto object-contain" />
+                ) : (
+                  <div className="h-10 w-10 rounded-lg flex items-center justify-center text-white font-bold" style={{ backgroundColor: tema.colorPrimario }}>
+                    {tema.nombreTienda?.charAt(0) || 'E'}
+                  </div>
+                )}
+                <span>{tema.nombreTienda || 'E-Commerce'}</span>
               </Link>
             </div>
 
             {/* Links desktop */}
-            <div className="hidden lg:flex gap-8">
-              <Link to="/" className="text-gray-700 hover:text-blue-600">Inicio</Link>
-              <Link to="/catalogo" className="text-gray-700 hover:text-blue-600">Catálogo</Link>
+            <div className="hidden lg:flex gap-8 items-center">
+              <Link to="/" className="text-gray-700 hover:text-[var(--color-primary)] transition-colors font-medium">Inicio</Link>
+              <Link to="/catalogo" className="text-gray-700 hover:text-[var(--color-primary)] transition-colors font-medium">Catálogo</Link>
               {isCliente && (
                 <>
-                  <Link to="/mis-ordenes" className="text-gray-700 hover:text-blue-600">Mis Pedidos</Link>
-                  <Link to="/wishlist" className="text-gray-700 hover:text-blue-600">Lista de Deseados</Link>
+                  <Link to="/mis-ordenes" className="text-gray-700 hover:text-[var(--color-primary)] transition-colors font-medium">Mis Pedidos</Link>
+                  <Link to="/wishlist" className="text-gray-700 hover:text-[var(--color-primary)] transition-colors font-medium">Lista de Deseos</Link>
                 </>
               )}
             </div>
@@ -155,15 +186,15 @@ function AppContent() {
               {isAuthenticated && user?.roles?.some((r) => ['administrador', 'admin', 'gerente', 'gerente_ventas', 'gerente_inventario', 'vendedor'].includes(r)) && (
                 <Link 
                   to="/admin" 
-                  className="p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                  className="p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
                   title="Panel de Administración"
                 >
                   <span className="text-lg">⚙️</span>
                 </Link>
               )}
               
-              {/* Carrito */}
-              <CartIcon onClick={() => setIsCartOpen(true)} />
+              {/* Carrito (solo para clientes/no admins) */}
+              {!isAdmin && <CartIcon onClick={() => setIsCartOpen(true)} />}
 
               {/* Usuario / Login */}
               {isAuthenticated ? (
@@ -171,37 +202,37 @@ function AppContent() {
                   <button
                     type="button"
                     onClick={() => setUserMenuOpen((v) => !v)}
-                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100"
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     <User className="w-5 h-5 text-gray-700" />
-                    <span className="hidden md:inline text-sm text-gray-700">
+                    <span className="hidden md:inline text-sm text-gray-700 font-medium">
                       {user?.email?.split('@')[0]}
                     </span>
                   </button>
                   {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
                       {isCliente && (
                         <>
                           <Link
                             to="/mis-ordenes"
                             onClick={() => setUserMenuOpen(false)}
-                            className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                            className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             Mis Pedidos
                           </Link>
                           <Link
                             to="/wishlist"
                             onClick={() => setUserMenuOpen(false)}
-                            className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                            className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
                           >
-                            Lista de Deseados
+                            Lista de Deseos
                           </Link>
                           <div className="border-t border-gray-100 my-1"></div>
                         </>
                       )}
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                        className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors font-medium"
                       >
                         Cerrar Sesión
                       </button>
@@ -211,10 +242,10 @@ function AppContent() {
               ) : (
                 <button
                   onClick={() => setIsLoginOpen(true)}
-                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors font-medium text-gray-700"
                 >
-                  <User className="w-5 h-5 text-gray-700" />
-                  <span className="hidden md:inline text-sm">Ingresar</span>
+                  <User className="w-5 h-5" />
+                  <span className="hidden md:inline">Ingresar</span>
                 </button>
               )}
             </div>
@@ -227,10 +258,11 @@ function AppContent() {
         <Route path="/" element={<HomePage onAddToCart={handleAddToCart} isAuthenticated={isAuthenticated} />} />
         <Route path="/catalogo" element={<CatalogoPage onAddToCart={handleAddToCart} />} />
         <Route path="/producto/:id" element={<ProductoDetallePage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/mis-ordenes" element={<MisOrdenesPage />} />
-        <Route path="/mis-ordenes/:id" element={<OrdenDetallePage />} />
-        <Route path="/wishlist" element={<WishlistPage />} />
+        {/* Rutas de cliente solo - bloquear para admins */}
+        <Route path="/checkout" element={!isAdmin ? <CheckoutPage /> : <Navigate to="/admin" replace />} />
+        <Route path="/mis-ordenes" element={!isAdmin ? <MisOrdenesPage /> : <Navigate to="/admin" replace />} />
+        <Route path="/mis-ordenes/:id" element={!isAdmin ? <OrdenDetallePage /> : <Navigate to="/admin" replace />} />
+        <Route path="/wishlist" element={!isAdmin ? <WishlistPage /> : <Navigate to="/admin" replace />} />
         
         {/* Rutas de administrador - anidadas */}
         <Route path="/admin" element={
@@ -265,7 +297,7 @@ function AppContent() {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`px-4 py-2 rounded-lg shadow text-sm text-white ${
+            className={`px-5 py-3 rounded-xl shadow-lg text-sm text-white font-medium transition-all ${
               toast.type === 'success' ? 'bg-emerald-600' : toast.type === 'error' ? 'bg-red-600' : 'bg-slate-700'
             }`}
           >
