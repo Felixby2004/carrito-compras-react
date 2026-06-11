@@ -82,7 +82,6 @@ export class ProductoController {
     }
   }
 
-  
   async getProductoById(req: Request, res: Response, next: NextFunction) {
     try {
       const productoId = parseInt(req.params.id);
@@ -91,7 +90,7 @@ export class ProductoController {
         where: { id: productoId },
         include: { 
           imagenes: true,
-            stock: true  // 👈 Asegurar que incluye stock
+          stock: true  // ← Asegurar que incluye stock
         }
       });
       
@@ -111,12 +110,12 @@ export class ProductoController {
       
       const precioActual = tieneOferta ? precioOferta : precioVenta;
       const descuentoPorcentaje = tieneOferta && precioVenta > 0
-        ? Math.round(((precioVenta - precioOferta) / precioVenta) * 100)
+        ? Math.round(((precioVenta - precioOferta!) / precioVenta) * 100)
         : 0;
       
-      // 👈 Calcular stock disponible correctamente
-      const stockDisponible = producto.stock 
-        ? Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0)
+      // ← Calcular stock disponible correctamente
+      const stockDisponible = producto.stock ?
+        Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0)
         : 0;
       
       // Transformar URLs de imágenes
@@ -143,7 +142,7 @@ export class ProductoController {
       next(error);
     }
   }
-  
+
   async createProducto(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const data = productoSchema.parse(req.body);
@@ -157,7 +156,7 @@ export class ProductoController {
       next(error);
     }
   }
-  
+
   async updateProducto(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const id = parseInt(req.params.id);
@@ -211,7 +210,7 @@ export class ProductoController {
       next(error);
     }
   }
-  
+
   async deleteProducto(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const id = parseInt(req.params.id);
@@ -224,7 +223,7 @@ export class ProductoController {
       next(error);
     }
   }
-  
+
   async getDestacados(req: Request, res: Response, next: NextFunction) {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
@@ -247,7 +246,7 @@ export class ProductoController {
       next(error);
     }
   }
-  
+
   async getOfertas(req: Request, res: Response, next: NextFunction) {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
@@ -270,7 +269,7 @@ export class ProductoController {
       next(error);
     }
   }
-  
+
   async getNuevos(req: Request, res: Response, next: NextFunction) {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
@@ -293,7 +292,7 @@ export class ProductoController {
       next(error);
     }
   }
-  
+
   async getRelacionados(req: Request, res: Response, next: NextFunction) {
     try {
       const id = parseInt(req.params.id);
@@ -354,6 +353,15 @@ export class ProductoController {
     }
   }
 
+  async getAtributos(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const atributos = await productoService.getAtributos();
+      res.json({ success: true, data: atributos });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // Subir imágenes de producto
   async subirImagenes(req: any, res: Response, next: NextFunction) {
     try {
@@ -398,7 +406,7 @@ export class ProductoController {
       next(error);
     }
   }
-  
+
   // Obtener imágenes de un producto
   async getImagenes(req: Request, res: Response, next: NextFunction) {
     try {
@@ -420,7 +428,7 @@ export class ProductoController {
       next(error);
     }
   }
-  
+
   // Eliminar imagen
   async eliminarImagen(req: Request, res: Response, next: NextFunction) {
     try {
@@ -444,82 +452,82 @@ export class ProductoController {
       next(error);
     }
   }
-  
+
   // Marcar imagen como principal
   async setImagenPrincipal(req: Request, res: Response, next: NextFunction) {
-  try {
-    const imagenId = parseInt(req.params.imagenId);
-    
-    // Obtener la imagen para saber el producto
-    const imagen = await prisma.cat_imagenes_producto.findUnique({
-      where: { id: imagenId },
-    });
-    
-    if (!imagen) {
-      throw new AppError('Imagen no encontrada', 404);
+    try {
+      const imagenId = parseInt(req.params.imagenId);
+      
+      // Obtener la imagen para saber el producto
+      const imagen = await prisma.cat_imagenes_producto.findUnique({
+        where: { id: imagenId },
+      });
+      
+      if (!imagen) {
+        throw new AppError('Imagen no encontrada', 404);
+      }
+      
+      // Quitar principal de todas las imágenes del producto
+      await prisma.cat_imagenes_producto.updateMany({
+        where: { producto_id: imagen.producto_id },
+        data: { es_principal: false },
+      });
+      
+      // Marcar esta como principal
+      await prisma.cat_imagenes_producto.update({
+        where: { id: imagenId },
+        data: { es_principal: true },
+      });
+      
+      res.json({ success: true, message: 'Imagen principal actualizada' });
+    } catch (error) {
+      next(error);
     }
-    
-    // Quitar principal de todas las imágenes del producto
-    await prisma.cat_imagenes_producto.updateMany({
-      where: { producto_id: imagen.producto_id },
-      data: { es_principal: false },
-    });
-    
-    // Marcar esta como principal
-    await prisma.cat_imagenes_producto.update({
-      where: { id: imagenId },
-      data: { es_principal: true },
-    });
-    
-    res.json({ success: true, message: 'Imagen principal actualizada' });
-  } catch (error) {
-    next(error);
   }
-}
 
   // Agregar imagen via URL
   async agregarImagenUrl(req: Request, res: Response, next: NextFunction) {
-  try {
-    const productoId = parseInt(req.params.id);
-    const { url } = req.body;
-    
-    if (!url) {
-      throw new AppError('URL de imagen es requerida', 400);
-    }
-
-    // Validar URL
     try {
-      new URL(url);
-    } catch {
-      throw new AppError('URL inválida', 400);
+      const productoId = parseInt(req.params.id);
+      const { url } = req.body;
+      
+      if (!url) {
+        throw new AppError('URL de imagen es requerida', 400);
+      }
+
+      // Validar URL
+      try {
+        new URL(url);
+      } catch {
+        throw new AppError('URL inválida', 400);
+      }
+      
+      const producto = await prisma.cat_productos.findUnique({
+        where: { id: productoId },
+      });
+      
+      if (!producto) {
+        throw new AppError('Producto no encontrado', 404);
+      }
+      
+      const imagenesExistentes = await prisma.cat_imagenes_producto.count({
+        where: { producto_id: productoId },
+      });
+      
+      const imagen = await prisma.cat_imagenes_producto.create({
+        data: {
+          producto_id: productoId,
+          url: url,
+          orden: imagenesExistentes,
+          es_principal: imagenesExistentes === 0,
+        },
+      });
+      
+      res.json({ success: true, data: imagen, message: 'Imagen agregada correctamente' });
+    } catch (error) {
+      next(error);
     }
-    
-    const producto = await prisma.cat_productos.findUnique({
-      where: { id: productoId },
-    });
-    
-    if (!producto) {
-      throw new AppError('Producto no encontrado', 404);
-    }
-    
-    const imagenesExistentes = await prisma.cat_imagenes_producto.count({
-      where: { producto_id: productoId },
-    });
-    
-    const imagen = await prisma.cat_imagenes_producto.create({
-      data: {
-        producto_id: productoId,
-        url: url,
-        orden: imagenesExistentes,
-        es_principal: imagenesExistentes === 0,
-      },
-    });
-    
-    res.json({ success: true, data: imagen, message: 'Imagen agregada correctamente' });
-  } catch (error) {
-    next(error);
   }
-}
 
   async getTodosProductos(_req: Request, res: Response, next: NextFunction) {
     try {

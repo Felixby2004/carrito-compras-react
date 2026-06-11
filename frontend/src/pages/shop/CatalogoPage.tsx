@@ -60,14 +60,14 @@ export function CatalogoPage({ onAddToCart }: CatalogoPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="pb-20">
+      <div className="container mx-auto px-4 py-12">
         {/* Título principal */}
-        <div className="mb-8 text-center lg:text-left">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+        <div className="mb-10 text-center lg:text-left animate-slide-up">
+          <h1 className="text-5xl md:text-6xl font-black text-slate-800 mb-4">
             Nuestro Catálogo
           </h1>
-          <p className="text-gray-500">
+          <p className="text-slate-500 text-xl">
             Encuentra los mejores productos a precios increíbles
           </p>
         </div>
@@ -77,35 +77,37 @@ export function CatalogoPage({ onAddToCart }: CatalogoPageProps) {
           <div className="lg:hidden mb-4">
             <button
               onClick={() => setShowMobileFilters(!showMobileFilters)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white/80 backdrop-blur-soft border border-white/60 rounded-2xl shadow-soft text-slate-700 font-bold hover:shadow-glow transition-all"
             >
-              <Filter className="w-5 h-5" />
+              <Filter className="w-6 h-6" />
               Filtros
             </button>
           </div>
 
           {/* Sidebar de filtros */}
-          <aside className={`lg:w-72 flex-shrink-0 ${
-            showMobileFilters ? 'fixed inset-0 z-50 bg-white p-4 lg:relative lg:p-0 lg:bg-transparent' : 'hidden lg:block'
+          <aside className={`lg:w-80 flex-shrink-0 ${
+            showMobileFilters ? 'fixed inset-y-0 left-0 z-50 bg-white p-6 lg:relative lg:p-0 lg:bg-transparent overflow-y-auto' : 'hidden lg:block'
           }`}>
             {showMobileFilters && (
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-800">Filtros</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-black text-slate-800">Filtros</h2>
                 <button
                   onClick={() => setShowMobileFilters(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
+                  className="p-3 hover:bg-slate-100 rounded-2xl transition-all"
                 >
                   ✕
                 </button>
               </div>
             )}
-            <ProductFilters onFilterChange={handleFilterChange} initialFilters={filters} />
+            <div className="bg-white/80 backdrop-blur-soft rounded-3xl shadow-soft border border-white/60 p-6">
+              <ProductFilters onFilterChange={handleFilterChange} initialFilters={filters} />
+            </div>
           </aside>
 
           {/* Overlay para móvil cuando filtros están abiertos */}
           {showMobileFilters && (
             <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
               onClick={() => setShowMobileFilters(false)}
             />
           )}
@@ -113,50 +115,52 @@ export function CatalogoPage({ onAddToCart }: CatalogoPageProps) {
           {/* Contenido principal */}
           <div className="flex-1">
             {/* Barra de herramientas */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-5 mb-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="bg-white/80 backdrop-blur-soft rounded-3xl shadow-soft border border-white/60 p-6 mb-8">
+              <div className="flex flex-wrap items-center justify-between gap-6">
                 {/* Contador de resultados */}
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Search className="w-4 h-4" />
-                  <span className="text-sm font-medium">
+                <div className="flex items-center gap-3 text-slate-600">
+                  <div className="p-2 bg-indigo-50 rounded-xl">
+                    <Search className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <span className="text-base font-semibold">
                     {loading ? 'Cargando...' : `${productos.length} productos encontrados`}
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-wrap items-center gap-6">
                   {/* Vista */}
-                  <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                  <div className="flex items-center gap-1 bg-slate-100 rounded-2xl p-2">
                     <button
                       onClick={() => setViewMode('grid')}
-                      className={`p-2 rounded-md transition-all ${
+                      className={`p-3 rounded-xl transition-all ${
                         viewMode === 'grid'
-                          ? 'bg-white shadow text-[var(--color-primary)]'
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? 'bg-gradient-primary text-white shadow-glow'
+                          : 'text-slate-500 hover:text-slate-700 hover:bg-white'
                       }`}
                       title="Vista cuadrícula"
                     >
-                      <Grid className="w-5 h-5" />
+                      <Grid className="w-6 h-6" />
                     </button>
                     <button
                       onClick={() => setViewMode('list')}
-                      className={`p-2 rounded-md transition-all ${
+                      className={`p-3 rounded-xl transition-all ${
                         viewMode === 'list'
-                          ? 'bg-white shadow text-[var(--color-primary)]'
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? 'bg-gradient-primary text-white shadow-glow'
+                          : 'text-slate-500 hover:text-slate-700 hover:bg-white'
                       }`}
                       title="Vista lista"
                     >
-                      <List className="w-5 h-5" />
+                      <List className="w-6 h-6" />
                     </button>
                   </div>
 
                   {/* Items por página */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Mostrar:</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-slate-600 font-semibold">Mostrar:</span>
                     <select
                       value={itemsPerPage}
                       onChange={handleItemsPerPageChange}
-                      className="border border-gray-200 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
+                      className="border border-slate-200 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none font-medium"
                     >
                       <option value={12}>12</option>
                       <option value={24}>24</option>
@@ -165,12 +169,12 @@ export function CatalogoPage({ onAddToCart }: CatalogoPageProps) {
                   </div>
 
                   {/* Ordenar */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Ordenar:</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-slate-600 font-semibold">Ordenar:</span>
                     <select
                       value={sortBy}
                       onChange={handleSortChange}
-                      className="border border-gray-200 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none"
+                      className="border border-slate-200 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none font-medium"
                     >
                       <option value="fecha_desc">Más recientes</option>
                       <option value="fecha_asc">Más antiguos</option>
@@ -187,19 +191,18 @@ export function CatalogoPage({ onAddToCart }: CatalogoPageProps) {
 
             {/* Resultados */}
             {loading ? (
-              <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[var(--color-primary)] border-t-transparent"></div>
-                <p className="mt-4 text-gray-500 text-lg">Cargando productos...</p>
+              <div className="text-center py-24 bg-white/80 backdrop-blur-soft rounded-3xl shadow-soft border border-white/60">
+                <div className="inline-block animate-spin-slow rounded-full h-16 w-16 border-4 border-indigo-500 border-t-transparent shadow-glow"></div>
+                <p className="mt-6 text-slate-500 text-xl font-semibold">Cargando productos...</p>
               </div>
             ) : productos.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">No se encontraron productos</h3>
-                <p className="text-gray-500 mb-4">Intenta ajustar tus filtros de búsqueda</p>
+              <div className="text-center py-24 bg-white/80 backdrop-blur-soft rounded-3xl shadow-soft border border-white/60">
+                <div className="text-7xl mb-6">🔍</div>
+                <h3 className="text-2xl font-bold text-slate-700 mb-3">No se encontraron productos</h3>
+                <p className="text-slate-500 text-lg mb-8">Intenta ajustar tus filtros de búsqueda</p>
                 <button
                   onClick={() => handleFilterChange({})}
-                  className="px-6 py-2 rounded-lg text-white font-medium transition-colors"
-                  style={{ backgroundColor: 'var(--color-primary)' }}
+                  className="px-8 py-4 rounded-2xl text-white font-bold bg-gradient-primary shadow-glow hover:scale-105 transition-all"
                 >
                   Limpiar filtros
                 </button>
@@ -207,20 +210,21 @@ export function CatalogoPage({ onAddToCart }: CatalogoPageProps) {
             ) : (
               <>
                 <div className={viewMode === 'grid'
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6'
-                  : 'flex flex-col gap-4'
+                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8'
+                  : 'flex flex-col gap-6'
                 }>
-                  {productos.map((producto) => (
-                    <ProductCard
-                      key={producto.id}
-                      producto={producto}
-                      viewMode={viewMode}
-                      onAddToCart={onAddToCart}
-                    />
+                  {productos.map((producto, index) => (
+                    <div key={producto.id} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                      <ProductCard
+                        producto={producto}
+                        viewMode={viewMode}
+                        onAddToCart={onAddToCart}
+                      />
+                    </div>
                   ))}
                 </div>
 
-                <div className="mt-8">
+                <div className="mt-12">
                   <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}

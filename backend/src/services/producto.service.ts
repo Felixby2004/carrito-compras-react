@@ -497,4 +497,13 @@ export class ProductoService {
       orderBy: { nombre: 'asc' },
     });
   }
+
+  async getAtributos() {
+    return prisma.cat_atributos.findMany({
+      include: {
+        valores: true,
+      },
+      orderBy: { nombre: 'asc' },
+    });
+  }
 }

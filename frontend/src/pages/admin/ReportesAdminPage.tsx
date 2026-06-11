@@ -1,5 +1,6 @@
 import apiClient from '../../api/client';
 import { notify } from '../../utils/notify';
+import { FileText, Sparkles } from 'lucide-react';
 
 const reportesOperacionales = [
   { key: 'ordenes-periodo', label: 'Órdenes del período' },
@@ -48,15 +49,29 @@ export function ReportesAdminPage() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Gestión de Reportes</h1>
+    <div className="p-6 space-y-6 animate-slide-up">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-amber-500 bg-clip-text text-transparent flex items-center gap-3">
+            <FileText className="w-9 h-9 text-indigo-500" />
+            Gestión de Reportes
+            <Sparkles className="w-6 h-6 text-amber-500 animate-pulse-glow" />
+          </h1>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-6">
-        <div className="bg-white rounded-lg shadow p-4">
-          <h2 className="font-semibold mb-3">Reportes Operacionales</h2>
-          <div className="space-y-2">
-            {reportesOperacionales.map((r) => (
-              <button key={r.key} onClick={() => abrir('operacional', r.key)} className="w-full text-left border rounded p-2 hover:bg-gray-50">
-                {r.label}
+        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 p-6">
+          <h2 className="text-xl font-semibold text-slate-800 mb-6">Reportes Operacionales</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {reportesOperacionales.map((r, index) => (
+              <button
+                key={r.key}
+                onClick={() => abrir('operacional', r.key)}
+                className="p-4 bg-gradient-to-br from-indigo-50 to-amber-50 hover:from-indigo-100 hover:to-amber-100 border border-slate-200 rounded-xl text-left transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className="text-lg font-semibold text-slate-800">{r.label}</div>
               </button>
             ))}
           </div>

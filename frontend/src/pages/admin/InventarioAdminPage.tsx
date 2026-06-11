@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, AlertTriangle, TrendingUp, TrendingDown, Plus, Eye } from 'lucide-react';
+import { Search, AlertTriangle, TrendingUp, TrendingDown, Plus, Eye, Sparkles, Package } from 'lucide-react';
 import apiClient from '../../api/client';
 import { notify } from '../../utils/notify';
 import { Pagination } from '../../components/ui/Pagination';
@@ -182,11 +182,11 @@ export function InventarioAdminPage() {
   const registrarRecepcion = async (ordenId: number) => {
     try {
       await apiClient.post(`/inventario/ordenes-compra/${ordenId}/recibir`, {});
-      notify('Mercaderia recibida. Stock actualizado.', 'success');
+      notify('Mercadería recibida. Stock actualizado.', 'success');
       cargarDatos();
     } catch (error) {
       console.error('Error registrando recepción:', error);
-      notify(getErrorMessage(error, 'Error registrando recepcion'), 'error');
+      notify(getErrorMessage(error, 'Error registrando recepción'), 'error');
     }
   };
 
@@ -229,44 +229,71 @@ export function InventarioAdminPage() {
           : ordenesCompra.length;
   const totalPages = Math.ceil(totalItemsByTab / ITEMS_PER_PAGE);
 
-  if (loading) return <div className="text-center py-12">Cargando inventario...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full py-20">
+        <div className="text-center animate-slide-up">
+          <div className="inline-block w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-slate-600 text-lg">Cargando inventario...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Gestión de Inventario</h1>
+    <div className="p-6 space-y-6 animate-slide-up">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-amber-500 bg-clip-text text-transparent flex items-center gap-3">
+            <Package className="w-9 h-9 text-indigo-500" />
+            Gestión de Inventario
+            <Sparkles className="w-6 h-6 text-amber-500 animate-pulse-glow" />
+          </h1>
+        </div>
+      </div>
 
       {/* Alertas de stock bajo */}
       {(stockBajo.length > 0 || stockAgotado.length > 0) && (
-        <div className="mb-6 space-y-2">
+        <div className="space-y-3">
           {stockAgotado.length > 0 && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              <AlertTriangle className="inline w-5 h-5 mr-2" />
-              <strong>¡Stock agotado!</strong> {stockAgotado.length} productos sin stock.
+            <div className="bg-gradient-to-r from-red-100 to-rose-100 border border-red-300 text-red-700 px-6 py-4 rounded-xl">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-6 h-6" />
+                <strong className="text-lg">¡Stock agotado!</strong>
+                <span>{stockAgotado.length} productos sin stock.</span>
+              </div>
             </div>
           )}
           {stockBajo.length > 0 && (
-            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-              <AlertTriangle className="inline w-5 h-5 mr-2" />
-              <strong>Stock bajo:</strong> {stockBajo.length} productos por debajo del mínimo.
+            <div className="bg-gradient-to-r from-amber-100 to-yellow-100 border border-amber-300 text-amber-700 px-6 py-4 rounded-xl">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-6 h-6" />
+                <strong className="text-lg">Stock bajo:</strong>
+                <span>{stockBajo.length} productos por debajo del mínimo.</span>
+              </div>
             </div>
           )}
         </div>
       )}
 
       {/* Pestañas */}
-      <div className="flex gap-2 mb-6 border-b">
-        {['stock', 'movimientos', 'proveedores', 'compras'].map((tab) => (
+      <div className="flex gap-3 border-b border-slate-200">
+        {[
+          { id: 'stock', label: 'Stock' },
+          { id: 'movimientos', label: 'Movimientos' },
+          { id: 'proveedores', label: 'Proveedores' },
+          { id: 'compras', label: 'Órdenes de Compra' }
+        ].map((tab) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab as any)}
-            className={`px-4 py-2 font-medium transition ${
-              activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`px-6 py-4 font-semibold transition-all duration-300 ${
+              activeTab === tab.id
+                ? 'text-indigo-600 border-b-2 border-indigo-600 bg-gradient-to-r from-indigo-50 to-transparent'
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
             }`}
           >
-            {tab === 'stock' && 'Stock'}
-            {tab === 'movimientos' && 'Movimientos'}
-            {tab === 'proveedores' && 'Proveedores'}
-            {tab === 'compras' && 'Órdenes de Compra'}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -274,139 +301,147 @@ export function InventarioAdminPage() {
       {/* Tabla de Stock */}
       {activeTab === 'stock' && (
         <>
-          <div className="flex justify-between items-center mb-4">
-            <div className="relative w-96">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Buscar producto..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg"
+                className="w-full pl-14 pr-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
               />
             </div>
             <button
               onClick={() => { setModalType('ajuste'); setShowModal(true); }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-amber-500 text-white rounded-xl hover:from-indigo-700 hover:to-amber-600 transition-all duration-300 font-semibold hover:scale-105 shadow-xl"
             >
-              <Plus className="w-4 h-4" /> Ajustar Stock
+              <Plus className="w-5 h-5" />
+              Ajustar Stock
             </button>
           </div>
 
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-4 py-3 text-left">Producto</th>
-                  <th className="px-4 py-3 text-right">Stock Físico</th>
-                  <th className="px-4 py-3 text-right">Reservado</th>
-                  <th className="px-4 py-3 text-right">Disponible</th>
-                  <th className="px-4 py-3 text-right">Stock Mínimo</th>
-                  <th className="px-4 py-3 text-center">Ubicación</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedStock.map((item) => (
-                  <tr key={item.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium">{item.producto.nombre}</p>
-                        <p className="text-xs text-gray-500">{item.producto.sku}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right">{item.stock_fisico}</td>
-                    <td className="px-4 py-3 text-right">{item.stock_reservado}</td>
-                    <td className={`px-4 py-3 text-right font-medium ${
-                      item.stock_disponible <= item.stock_minimo ? 'text-red-600' : 'text-green-600'
-                    }`}>
-                      {item.stock_disponible}
-                    </td>
-                    <td className="px-4 py-3 text-right">{item.stock_minimo}</td>
-                    <td className="px-4 py-3 text-center">{item.ubicacion_almacen || '-'}</td>
+          <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-indigo-500/10 to-amber-500/10 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Producto</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Stock Físico</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Reservado</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Disponible</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Stock Mínimo</th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Ubicación</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {paginatedStock.map((item, index) => (
+                    <tr key={item.id} className="hover:bg-gradient-to-r from-indigo-500/5 to-amber-500/5 transition-all duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="font-semibold text-slate-800">{item.producto.nombre}</p>
+                          <p className="text-sm text-slate-500 font-mono">{item.producto.sku}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right text-slate-700">{item.stock_fisico}</td>
+                      <td className="px-6 py-4 text-right text-slate-700">{item.stock_reservado}</td>
+                      <td className={`px-6 py-4 text-right font-bold ${
+                        item.stock_disponible <= item.stock_minimo ? 'text-red-600' : 'text-green-600'
+                      }`}>
+                        {item.stock_disponible}
+                      </td>
+                      <td className="px-6 py-4 text-right text-slate-700">{item.stock_minimo}</td>
+                      <td className="px-6 py-4 text-center text-slate-600">{item.ubicacion_almacen || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}
 
       {/* Tabla de Movimientos */}
       {activeTab === 'movimientos' && (
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-4 py-3 text-left">Producto</th>
-                <th className="px-4 py-3 text-center">Tipo</th>
-                <th className="px-4 py-3 text-right">Cantidad</th>
-                <th className="px-4 py-3 text-left">Motivo</th>
-                <th className="px-4 py-3 text-center">Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedMovimientos.map((mov) => (
-                <tr key={mov.id} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-3">{mov.producto?.nombre || '-'}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`flex items-center justify-center gap-1 ${
-                      isMovimientoPositivo(mov) ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {isMovimientoPositivo(mov)
-                        ? <TrendingUp className="w-4 h-4" />
-                        : <TrendingDown className="w-4 h-4" />}
-                      {mov.tipo_movimiento}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">{mov.cantidad}</td>
-                  <td className="px-4 py-3">{mov.motivo}</td>
-                  <td className="px-4 py-3 text-center">{new Date(mov.fecha_movimiento).toLocaleDateString()}</td>
+        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gradient-to-r from-indigo-500/10 to-amber-500/10 border-b border-slate-200">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Producto</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Tipo</th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Cantidad</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Motivo</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Fecha</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {paginatedMovimientos.map((mov, index) => (
+                  <tr key={mov.id} className="hover:bg-gradient-to-r from-indigo-500/5 to-amber-500/5 transition-all duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                    <td className="px-6 py-4 text-slate-700">{mov.producto?.nombre || '-'}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`flex items-center justify-center gap-2 ${
+                        isMovimientoPositivo(mov) ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {isMovimientoPositivo(mov)
+                          ? <TrendingUp className="w-5 h-5" />
+                          : <TrendingDown className="w-5 h-5" />}
+                        {mov.tipo_movimiento}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right font-bold text-slate-800">{mov.cantidad}</td>
+                    <td className="px-6 py-4 text-slate-700">{mov.motivo}</td>
+                    <td className="px-6 py-4 text-center text-slate-600">{new Date(mov.fecha_movimiento).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {/* Tabla de Proveedores */}
       {activeTab === 'proveedores' && (
         <>
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end">
             <button
               onClick={() => { setModalType('proveedor'); setShowModal(true); }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-amber-500 text-white rounded-xl hover:from-indigo-700 hover:to-amber-600 transition-all duration-300 font-semibold hover:scale-105 shadow-xl"
             >
-              <Plus className="w-4 h-4" /> Nuevo Proveedor
+              <Plus className="w-5 h-5" />
+              Nuevo Proveedor
             </button>
           </div>
 
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-4 py-3 text-left">Razón Social</th>
-                  <th className="px-4 py-3 text-left">RUC</th>
-                  <th className="px-4 py-3 text-left">Email</th>
-                  <th className="px-4 py-3 text-left">Teléfono</th>
-                  <th className="px-4 py-3 text-center">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedProveedores.map((prov) => (
-                  <tr key={prov.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3">{prov.razon_social}</td>
-                    <td className="px-4 py-3">{prov.ruc}</td>
-                    <td className="px-4 py-3">{prov.email}</td>
-                    <td className="px-4 py-3">{prov.telefono}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`px-2 py-1 rounded-full text-xs ${prov.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {prov.activo ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </td>
+          <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-indigo-500/10 to-amber-500/10 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Razón Social</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">RUC</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Teléfono</th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Estado</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {paginatedProveedores.map((prov, index) => (
+                    <tr key={prov.id} className="hover:bg-gradient-to-r from-indigo-500/5 to-amber-500/5 transition-all duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                      <td className="px-6 py-4 text-slate-700">{prov.razon_social}</td>
+                      <td className="px-6 py-4 text-slate-600">{prov.ruc}</td>
+                      <td className="px-6 py-4 text-slate-700">{prov.email}</td>
+                      <td className="px-6 py-4 text-slate-600">{prov.telefono}</td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold ${prov.activo ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700' : 'bg-gradient-to-r from-red-100 to-rose-100 text-red-700'}`}>
+                          {prov.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}
@@ -414,69 +449,72 @@ export function InventarioAdminPage() {
       {/* Tabla de Órdenes de Compra */}
       {activeTab === 'compras' && (
         <>
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end">
             <button
               onClick={() => { setModalType('compra'); setShowModal(true); }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-amber-500 text-white rounded-xl hover:from-indigo-700 hover:to-amber-600 transition-all duration-300 font-semibold hover:scale-105 shadow-xl"
             >
-              <Plus className="w-4 h-4" /> Nueva Orden de Compra
+              <Plus className="w-5 h-5" />
+              Nueva Orden de Compra
             </button>
           </div>
 
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-4 py-3 text-left">N° OC</th>
-                  <th className="px-4 py-3 text-left">Proveedor</th>
-                  <th className="px-4 py-3 text-right">Total</th>
-                  <th className="px-4 py-3 text-center">Estado</th>
-                  <th className="px-4 py-3 text-center">Fecha</th>
-                  <th className="px-4 py-3 text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedCompras.map((oc) => (
-                  <tr key={oc.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3">{oc.numero_oc}</td>
-                    <td className="px-4 py-3">{oc.proveedor?.razon_social}</td>
-                    <td className="px-4 py-3 text-right">S/ {toNumber(oc.total).toFixed(2)}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        oc.estado === 'recibida' ? 'bg-green-100 text-green-700' :
-                        oc.estado === 'enviada' ? 'bg-blue-100 text-blue-700' :
-                        'bg-yellow-100 text-yellow-700'
-                      }`}>
-                        {oc.estado}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">{new Date(oc.fecha_emision).toLocaleDateString()}</td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => {
-                            setOrdenDetalle(oc);
-                            setShowDetalleOC(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-800"
-                          title="Ver detalle"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        {oc.estado !== 'recibida' && (
-                          <button
-                            onClick={() => registrarRecepcion(oc.id)}
-                            className="text-green-600 hover:text-green-800 text-sm"
-                          >
-                            Recibir
-                          </button>
-                        )}
-                      </div>
-                    </td>
+          <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-indigo-500/10 to-amber-500/10 border-b border-slate-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">N° OC</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Proveedor</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Total</th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Estado</th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Fecha</th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {paginatedCompras.map((oc, index) => (
+                    <tr key={oc.id} className="hover:bg-gradient-to-r from-indigo-500/5 to-amber-500/5 transition-all duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                      <td className="px-6 py-4 font-mono text-sm font-medium text-slate-700">{oc.numero_oc}</td>
+                      <td className="px-6 py-4 text-slate-700">{oc.proveedor?.razon_social}</td>
+                      <td className="px-6 py-4 text-right font-bold text-slate-800">S/ {toNumber(oc.total).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold ${
+                          oc.estado === 'recibida' ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700' :
+                          oc.estado === 'enviada' ? 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700' :
+                          'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700'
+                        }`}>
+                          {oc.estado}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center text-slate-600">{new Date(oc.fecha_emision).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => {
+                              setOrdenDetalle(oc);
+                              setShowDetalleOC(true);
+                            }}
+                            className="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-xl transition-all duration-300 hover:scale-110"
+                            title="Ver detalle"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                          {oc.estado !== 'recibida' && (
+                            <button
+                              onClick={() => registrarRecepcion(oc.id)}
+                              className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold hover:scale-105"
+                            >
+                              Recibir
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}
@@ -490,36 +528,40 @@ export function InventarioAdminPage() {
       />
 
       {showDetalleOC && ordenDetalle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowDetalleOC(false)} />
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
-            <h2 className="text-xl font-bold mb-4">Detalle de Orden de Compra {ordenDetalle.numero_oc}</h2>
-            <p className="text-sm text-gray-600 mb-2">Proveedor: {ordenDetalle.proveedor?.razon_social}</p>
-            <p className="text-sm text-gray-600 mb-4">Estado: {ordenDetalle.estado}</p>
-            <div className="max-h-80 overflow-y-auto border rounded">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-scale-in">
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowDetalleOC(false)} />
+          <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-8 border border-slate-200">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-amber-500 bg-clip-text text-transparent mb-4">
+              Detalle de Orden de Compra {ordenDetalle.numero_oc}
+            </h2>
+            <p className="text-slate-600 mb-2">Proveedor: {ordenDetalle.proveedor?.razon_social}</p>
+            <p className="text-slate-600 mb-6">Estado: {ordenDetalle.estado}</p>
+            <div className="max-h-80 overflow-y-auto border border-slate-200 rounded-xl">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-gradient-to-r from-indigo-500/10 to-amber-500/10 border-b border-slate-200">
                   <tr>
-                    <th className="px-3 py-2 text-left">Producto</th>
-                    <th className="px-3 py-2 text-right">Cantidad</th>
-                    <th className="px-3 py-2 text-right">Costo unit.</th>
-                    <th className="px-3 py-2 text-right">Subtotal</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Producto</th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Cantidad</th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Costo unit.</th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Subtotal</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-200">
                   {(ordenDetalle.detalles || []).map((d: any) => (
-                    <tr key={d.id} className="border-b">
-                      <td className="px-3 py-2">{d.producto?.nombre || d.producto_id}</td>
-                      <td className="px-3 py-2 text-right">{d.cantidad}</td>
-                      <td className="px-3 py-2 text-right">S/ {toNumber(d.costo_unitario).toFixed(2)}</td>
-                      <td className="px-3 py-2 text-right">S/ {toNumber(d.subtotal).toFixed(2)}</td>
+                    <tr key={d.id}>
+                      <td className="px-4 py-3 text-slate-700">{d.producto?.nombre || d.producto_id}</td>
+                      <td className="px-4 py-3 text-right text-slate-700">{d.cantidad}</td>
+                      <td className="px-4 py-3 text-right text-slate-700">S/ {toNumber(d.costo_unitario).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right font-bold text-slate-800">S/ {toNumber(d.subtotal).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="flex justify-end pt-4">
-              <button onClick={() => setShowDetalleOC(false)} className="px-4 py-2 border rounded-lg">Cerrar</button>
+            <div className="flex justify-end pt-6 mt-4 border-t border-slate-200">
+              <button onClick={() => setShowDetalleOC(false)} className="px-6 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl hover:bg-white/90 text-slate-700 transition-all duration-300 font-semibold hover:scale-105">
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
@@ -527,10 +569,10 @@ export function InventarioAdminPage() {
 
       {/* Modal para ajustes, proveedores y compras */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowModal(false)} />
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h2 className="text-xl font-bold mb-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-scale-in">
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+          <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 border border-slate-200">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-amber-500 bg-clip-text text-transparent mb-6">
               {modalType === 'ajuste' && 'Ajustar Stock'}
               {modalType === 'proveedor' && 'Nuevo Proveedor'}
               {modalType === 'compra' && 'Nueva Orden de Compra'}
@@ -538,125 +580,163 @@ export function InventarioAdminPage() {
 
             {modalType === 'ajuste' && (
               <div className="space-y-4">
-                <select
-                  value={formData.producto_id}
-                  onChange={(e) => setFormData({ ...formData, producto_id: e.target.value })}
-                  className="w-full border rounded-lg p-2"
-                >
-                  <option value="">Seleccionar producto</option>
-                  {productos.map(p => <option key={p.producto_id} value={p.producto_id}>{p.producto.nombre} (Stock: {p.stock_disponible})</option>)}
-                </select>
-                <select
-                  value={formData.tipo_ajuste}
-                  onChange={(e) => setFormData({ ...formData, tipo_ajuste: e.target.value })}
-                  className="w-full border rounded-lg p-2"
-                >
-                  <option value="positivo">Entrada (+)</option>
-                  <option value="negativo">Salida (-)</option>
-                </select>
-                <input
-                  type="number"
-                  placeholder="Cantidad"
-                  value={formData.cantidad}
-                  onChange={(e) => setFormData({ ...formData, cantidad: e.target.value })}
-                  className="w-full border rounded-lg p-2"
-                />
-                <textarea
-                  placeholder="Motivo del ajuste"
-                  value={formData.motivo}
-                  onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}
-                  className="w-full border rounded-lg p-2"
-                  rows={3}
-                />
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Producto</label>
+                  <select
+                    value={formData.producto_id}
+                    onChange={(e) => setFormData({ ...formData, producto_id: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                  >
+                    <option value="">Seleccionar producto</option>
+                    {productos.map(p => <option key={p.producto_id} value={p.producto_id}>{p.producto.nombre} (Stock: {p.stock_disponible})</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Tipo de ajuste</label>
+                  <select
+                    value={formData.tipo_ajuste}
+                    onChange={(e) => setFormData({ ...formData, tipo_ajuste: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                  >
+                    <option value="positivo">Entrada (+)</option>
+                    <option value="negativo">Salida (-)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Cantidad</label>
+                  <input
+                    type="number"
+                    placeholder="Cantidad"
+                    value={formData.cantidad}
+                    onChange={(e) => setFormData({ ...formData, cantidad: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Motivo del ajuste</label>
+                  <textarea
+                    placeholder="Motivo del ajuste"
+                    value={formData.motivo}
+                    onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                    rows={3}
+                  />
+                </div>
               </div>
             )}
 
             {modalType === 'proveedor' && (
               <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Razón Social"
-                  value={formData.proveedor.razon_social}
-                  onChange={(e) => setFormData({ ...formData, proveedor: { ...formData.proveedor, razon_social: e.target.value } })}
-                  className="w-full border rounded-lg p-2"
-                />
-                <input
-                  type="text"
-                  placeholder="RUC"
-                  value={formData.proveedor.ruc}
-                  onChange={(e) => setFormData({ ...formData, proveedor: { ...formData.proveedor, ruc: e.target.value } })}
-                  className="w-full border rounded-lg p-2"
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={formData.proveedor.email}
-                  onChange={(e) => setFormData({ ...formData, proveedor: { ...formData.proveedor, email: e.target.value } })}
-                  className="w-full border rounded-lg p-2"
-                />
-                <input
-                  type="tel"
-                  placeholder="Teléfono"
-                  value={formData.proveedor.telefono}
-                  onChange={(e) => setFormData({ ...formData, proveedor: { ...formData.proveedor, telefono: e.target.value } })}
-                  className="w-full border rounded-lg p-2"
-                />
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Razón Social</label>
+                  <input
+                    type="text"
+                    placeholder="Razón Social"
+                    value={formData.proveedor.razon_social}
+                    onChange={(e) => setFormData({ ...formData, proveedor: { ...formData.proveedor, razon_social: e.target.value } })}
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">RUC</label>
+                  <input
+                    type="text"
+                    placeholder="RUC"
+                    value={formData.proveedor.ruc}
+                    onChange={(e) => setFormData({ ...formData, proveedor: { ...formData.proveedor, ruc: e.target.value } })}
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={formData.proveedor.email}
+                    onChange={(e) => setFormData({ ...formData, proveedor: { ...formData.proveedor, email: e.target.value } })}
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Teléfono</label>
+                  <input
+                    type="tel"
+                    placeholder="Teléfono"
+                    value={formData.proveedor.telefono}
+                    onChange={(e) => setFormData({ ...formData, proveedor: { ...formData.proveedor, telefono: e.target.value } })}
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                  />
+                </div>
               </div>
             )}
 
             {modalType === 'compra' && (
               <div className="space-y-4">
-                <select
-                  value={formData.compra.proveedor_id}
-                  onChange={(e) => setFormData({ ...formData, compra: { ...formData.compra, proveedor_id: e.target.value } })}
-                  className="w-full border rounded-lg p-2"
-                >
-                  <option value="">Seleccionar proveedor</option>
-                  {proveedores.map(p => <option key={p.id} value={p.id}>{p.razon_social}</option>)}
-                </select>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Proveedor</label>
+                  <select
+                    value={formData.compra.proveedor_id}
+                    onChange={(e) => setFormData({ ...formData, compra: { ...formData.compra, proveedor_id: e.target.value } })}
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                  >
+                    <option value="">Seleccionar proveedor</option>
+                    {proveedores.map(p => <option key={p.id} value={p.id}>{p.razon_social}</option>)}
+                  </select>
+                </div>
                 {formData.compra.items.map((item, index) => (
-                  <div key={index} className="grid grid-cols-3 gap-2">
-                    <select
-                      value={item.producto_id}
-                      onChange={(e) => {
-                        const items = [...formData.compra.items];
-                        items[index].producto_id = e.target.value;
-                        setFormData({ ...formData, compra: { ...formData.compra, items } });
-                      }}
-                      className="border rounded-lg p-2 col-span-2"
-                    >
-                      <option value="">Producto</option>
-                      {productos.map((p) => (
-                        <option key={`oc-${p.producto_id}`} value={p.producto_id}>
-                          {p.producto.nombre}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="Cant."
-                      value={item.cantidad}
-                      onChange={(e) => {
-                        const items = [...formData.compra.items];
-                        items[index].cantidad = e.target.value;
-                        setFormData({ ...formData, compra: { ...formData.compra, items } });
-                      }}
-                      className="border rounded-lg p-2"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="Costo unitario"
-                      value={item.costo_unitario}
-                      onChange={(e) => {
-                        const items = [...formData.compra.items];
-                        items[index].costo_unitario = e.target.value;
-                        setFormData({ ...formData, compra: { ...formData.compra, items } });
-                      }}
-                      className="border rounded-lg p-2 col-span-3"
-                    />
+                  <div key={index} className="space-y-3 p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-100">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Producto {index + 1}</label>
+                      <select
+                        value={item.producto_id}
+                        onChange={(e) => {
+                          const items = [...formData.compra.items];
+                          items[index].producto_id = e.target.value;
+                          setFormData({ ...formData, compra: { ...formData.compra, items } });
+                        }}
+                        className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                      >
+                        <option value="">Producto</option>
+                        {productos.map((p) => (
+                          <option key={`oc-${p.producto_id}`} value={p.producto_id}>
+                            {p.producto.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Cantidad</label>
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="Cant."
+                          value={item.cantidad}
+                          onChange={(e) => {
+                            const items = [...formData.compra.items];
+                            items[index].cantidad = e.target.value;
+                            setFormData({ ...formData, compra: { ...formData.compra, items } });
+                          }}
+                          className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Costo unitario</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="Costo unitario"
+                          value={item.costo_unitario}
+                          onChange={(e) => {
+                            const items = [...formData.compra.items];
+                            items[index].costo_unitario = e.target.value;
+                            setFormData({ ...formData, compra: { ...formData.compra, items } });
+                          }}
+                          className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
                 <button
@@ -670,22 +750,25 @@ export function InventarioAdminPage() {
                       },
                     })
                   }
-                  className="text-sm text-blue-600 hover:text-blue-700"
+                  className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold transition-all duration-300 hover:scale-105"
                 >
-                  + Agregar otro producto
+                  <Plus className="w-5 h-5" />
+                  Agregar otro producto
                 </button>
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-4">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg">Cancelar</button>
+            <div className="flex justify-end gap-3 pt-6 mt-4 border-t border-slate-200">
+              <button onClick={() => setShowModal(false)} className="px-6 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl hover:bg-white/90 text-slate-700 transition-all duration-300 font-semibold hover:scale-105">
+                Cancelar
+              </button>
               <button
                 onClick={() => {
                   if (modalType === 'ajuste') realizarAjuste();
                   else if (modalType === 'proveedor') crearProveedor();
                   else if (modalType === 'compra') crearOrdenCompra();
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-amber-500 text-white rounded-xl hover:from-indigo-700 hover:to-amber-600 transition-all duration-300 font-semibold hover:scale-105 shadow-xl"
               >
                 Guardar
               </button>

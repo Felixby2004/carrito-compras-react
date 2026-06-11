@@ -144,52 +144,51 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Navbar - solo visible si NO es ruta de admin */}
       {!isAdminRoute && (
-        <nav className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-100">
-          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+        <nav className="bg-white/80 backdrop-blur-soft shadow-soft sticky top-0 z-40 border-b border-white/50">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             {/* Logo y menú móvil */}
             <div className="flex items-center gap-4">
               {!isAdminRoute && <MobileMenu key="mobile-menu" />}
               <Link
                 to="/"
-                className="flex items-center gap-3 text-2xl font-bold"
-                style={{ color: 'var(--color-primary, #2563eb)' }}
+                className="flex items-center gap-3 text-2xl font-black"
               >
                 {tema.logoUrl ? (
-                  <img src={tema.logoUrl} alt="Logo" className="h-10 w-auto object-contain" />
+                  <img src={tema.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
                 ) : (
-                  <div className="h-10 w-10 rounded-lg flex items-center justify-center text-white font-bold" style={{ backgroundColor: tema.colorPrimario }}>
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-primary shadow-glow flex items-center justify-center text-white font-black text-xl">
                     {tema.nombreTienda?.charAt(0) || 'E'}
                   </div>
                 )}
-                <span>{tema.nombreTienda || 'E-Commerce'}</span>
+                <span className="text-slate-800">{tema.nombreTienda || 'E-Commerce'}</span>
               </Link>
             </div>
 
             {/* Links desktop */}
             <div className="hidden lg:flex gap-8 items-center">
-              <Link to="/" className="text-gray-700 hover:text-[var(--color-primary)] transition-colors font-medium">Inicio</Link>
-              <Link to="/catalogo" className="text-gray-700 hover:text-[var(--color-primary)] transition-colors font-medium">Catálogo</Link>
+              <Link to="/" className="text-slate-700 hover:text-indigo-600 transition-colors font-semibold text-lg">Inicio</Link>
+              <Link to="/catalogo" className="text-slate-700 hover:text-indigo-600 transition-colors font-semibold text-lg">Catálogo</Link>
               {isCliente && (
                 <>
-                  <Link to="/mis-ordenes" className="text-gray-700 hover:text-[var(--color-primary)] transition-colors font-medium">Mis Pedidos</Link>
-                  <Link to="/wishlist" className="text-gray-700 hover:text-[var(--color-primary)] transition-colors font-medium">Lista de Deseos</Link>
+                  <Link to="/mis-ordenes" className="text-slate-700 hover:text-indigo-600 transition-colors font-semibold text-lg">Mis Pedidos</Link>
+                  <Link to="/wishlist" className="text-slate-700 hover:text-indigo-600 transition-colors font-semibold text-lg">Lista de Deseos</Link>
                 </>
               )}
             </div>
 
             {/* Iconos derecha */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               {/* Enlace a Admin (solo para administradores) */}
               {isAuthenticated && user?.roles?.some((r) => ['administrador', 'admin', 'gerente', 'gerente_ventas', 'gerente_inventario', 'vendedor'].includes(r)) && (
                 <Link 
                   to="/admin" 
-                  className="p-2 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+                  className="p-3 rounded-2xl hover:bg-slate-100 text-slate-700 transition-all hover:scale-105 shadow-soft"
                   title="Panel de Administración"
                 >
-                  <span className="text-lg">⚙️</span>
+                  <span className="text-xl">⚙️</span>
                 </Link>
               )}
               
@@ -202,37 +201,39 @@ function AppContent() {
                   <button
                     type="button"
                     onClick={() => setUserMenuOpen((v) => !v)}
-                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-100 transition-all hover:scale-105 shadow-soft"
                   >
-                    <User className="w-5 h-5 text-gray-700" />
-                    <span className="hidden md:inline text-sm text-gray-700 font-medium">
+                    <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center text-white font-bold shadow-glow">
+                      {user?.email?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <span className="hidden md:inline text-slate-700 font-semibold">
                       {user?.email?.split('@')[0]}
                     </span>
                   </button>
                   {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                    <div className="absolute right-0 mt-3 w-64 bg-white/90 backdrop-blur-soft rounded-2xl shadow-glow border border-white/60 py-3 z-50 animate-scale-in">
                       {isCliente && (
                         <>
                           <Link
                             to="/mis-ordenes"
                             onClick={() => setUserMenuOpen(false)}
-                            className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="block w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-100 transition-colors font-semibold rounded-xl mx-2 mb-1"
                           >
                             Mis Pedidos
                           </Link>
                           <Link
                             to="/wishlist"
                             onClick={() => setUserMenuOpen(false)}
-                            className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="block w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-100 transition-colors font-semibold rounded-xl mx-2 mb-1"
                           >
                             Lista de Deseos
                           </Link>
-                          <div className="border-t border-gray-100 my-1"></div>
+                          <div className="border-t border-slate-200 my-2 mx-4"></div>
                         </>
                       )}
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors font-medium"
+                        className="w-full text-left px-6 py-3 text-red-600 hover:bg-red-50 transition-colors font-bold rounded-xl mx-2"
                       >
                         Cerrar Sesión
                       </button>
@@ -242,7 +243,7 @@ function AppContent() {
               ) : (
                 <button
                   onClick={() => setIsLoginOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors font-medium text-gray-700"
+                  className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-primary text-white font-bold shadow-glow hover:scale-105 transition-all"
                 >
                   <User className="w-5 h-5" />
                   <span className="hidden md:inline">Ingresar</span>

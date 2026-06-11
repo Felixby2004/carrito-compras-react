@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Eye, Truck, Printer, RefreshCw } from 'lucide-react';
+import { Search, Eye, Truck, Printer, RefreshCw, Sparkles } from 'lucide-react';
 import apiClient from '../../api/client';
 import { notify } from '../../utils/notify';
 import { Pagination } from '../../components/ui/Pagination';
@@ -31,13 +31,13 @@ const normalizarEstado = (estado: string) => {
 };
 
 const estados = [
-  { value: 'pendiente_pago', label: 'Pendiente pago', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'pagada', label: 'Pagada', color: 'bg-blue-100 text-blue-800' },
-  { value: 'en_proceso', label: 'En proceso', color: 'bg-purple-100 text-purple-800' },
-  { value: 'enviada', label: 'Enviada', color: 'bg-indigo-100 text-indigo-800' },
-  { value: 'entregada', label: 'Entregada', color: 'bg-green-100 text-green-800' },
-  { value: 'cancelada', label: 'Cancelada', color: 'bg-red-100 text-red-800' },
-  { value: 'devuelta', label: 'Devuelta', color: 'bg-gray-100 text-gray-800' },
+  { value: 'pendiente_pago', label: 'Pendiente pago', color: 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700' },
+  { value: 'pagada', label: 'Pagada', color: 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700' },
+  { value: 'en_proceso', label: 'En proceso', color: 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700' },
+  { value: 'enviada', label: 'Enviada', color: 'bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-700' },
+  { value: 'entregada', label: 'Entregada', color: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700' },
+  { value: 'cancelada', label: 'Cancelada', color: 'bg-gradient-to-r from-red-100 to-rose-100 text-red-700' },
+  { value: 'devuelta', label: 'Devuelta', color: 'bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700' },
 ];
 const transiciones: Record<string, string[]> = {
   pendiente_pago: ['pagada', 'cancelada'],
@@ -233,33 +233,52 @@ export function OrdenesAdminPage() {
     setCurrentPage(1);
   }, [searchTerm, filtroEstado, filtroFecha]);
 
-  if (loading) return <div className="text-center py-12">Cargando órdenes...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full py-20">
+        <div className="text-center animate-slide-up">
+          <div className="inline-block w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-slate-600 text-lg">Cargando órdenes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Gestión de Pedidos</h1>
-        <button onClick={cargarOrdenes} className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50">
-          <RefreshCw className="w-4 h-4" /> Actualizar
+    <div className="p-6 space-y-6 animate-slide-up">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-amber-500 bg-clip-text text-transparent flex items-center gap-3">
+            <Truck className="w-9 h-9 text-indigo-500" />
+            Gestión de Pedidos
+            <Sparkles className="w-6 h-6 text-amber-500 animate-pulse-glow" />
+          </h1>
+        </div>
+        <button 
+          onClick={cargarOrdenes} 
+          className="flex items-center gap-2 px-5 py-2.5 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl hover:bg-white/90 text-slate-700 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+        >
+          <RefreshCw className="w-5 h-5" /> 
+          Actualizar
         </button>
       </div>
 
       {/* Filtros */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
             type="text"
             placeholder="Buscar por número o cliente..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg"
+            className="w-full pl-14 pr-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
           />
         </div>
         <select
           value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value)}
-          className="border rounded-lg p-2"
+          className="px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
         >
           <option value="">Todos los estados</option>
           {estados.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
@@ -268,74 +287,80 @@ export function OrdenesAdminPage() {
           type="date"
           value={filtroFecha}
           onChange={(e) => setFiltroFecha(e.target.value)}
-          className="border rounded-lg p-2"
+          className="px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
         />
       </div>
 
       {/* Tabla de órdenes */}
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="px-4 py-3 text-left">N° Orden</th>
-              <th className="px-4 py-3 text-left">Cliente</th>
-              <th className="px-4 py-3 text-right">Total</th>
-              <th className="px-4 py-3 text-center">Estado</th>
-              <th className="px-4 py-3 text-center">Fecha</th>
-              <th className="px-4 py-3 text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedOrdenes.map((orden) => {
+      <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gradient-to-r from-indigo-500/10 to-amber-500/10 border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">N° Orden</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Cliente</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Total</th>
+                <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Estado</th>
+                <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Fecha</th>
+                <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {paginatedOrdenes.map((orden, index) => {
                 const estadoNormalizado = normalizarEstado(orden.estado);
                 const esFinal = ['cancelada', 'devuelta'].includes(estadoNormalizado);
                 return (
-              <tr key={orden.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3 font-mono text-sm">{orden.orden_numero}</td>
-                <td className="px-4 py-3">{orden.cliente?.usuario?.email || 'N/A'}</td>
-                <td className="px-4 py-3 text-right font-medium">S/ {toNumber(orden.total).toFixed(2)}</td>
-                <td className="px-4 py-3 text-center">
-                  <span className={`px-2 py-1 rounded-full text-xs ${estados.find(e => e.value === estadoNormalizado)?.color || 'bg-gray-100'}`}>
-                    {estados.find(e => e.value === estadoNormalizado)?.label || orden.estado}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center text-sm">{new Date(orden.created_at).toLocaleDateString()}</td>
-                <td className="px-4 py-3 text-center">
-                  <div className="flex justify-center gap-2">
-                    <button
-                      disabled={esFinal}
-                      onClick={() => {
-                        setSelectedOrden(orden);
-                        const opciones = transiciones[estadoNormalizado] || [];
-                        setNuevoEstado(opciones[0] || '');
-                        setShowModal(true);
-                      }}
-                      className={`text-blue-600 hover:text-blue-800 ${esFinal ? 'opacity-40 cursor-not-allowed' : ''}`}
-                      title="Cambiar estado"
-                    >
-                      <Truck className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => imprimirGuia(orden)}
-                      className="text-gray-600 hover:text-gray-800"
-                      title="Imprimir guía"
-                    >
-                      <Printer className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => imprimirFactura(orden)}
-                      className="text-green-600 hover:text-green-800"
-                      title="Imprimir factura"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                  <tr 
+                    key={orden.id} 
+                    className="hover:bg-gradient-to-r from-indigo-500/5 to-amber-500/5 transition-all duration-300"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <td className="px-6 py-4 font-mono text-sm font-medium text-slate-600">{orden.orden_numero}</td>
+                    <td className="px-6 py-4 text-slate-700">{orden.cliente?.usuario?.email || 'N/A'}</td>
+                    <td className="px-6 py-4 text-right font-bold text-slate-800">S/ {toNumber(orden.total).toFixed(2)}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold ${estados.find(e => e.value === estadoNormalizado)?.color || 'bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700'}`}>
+                        {estados.find(e => e.value === estadoNormalizado)?.label || orden.estado}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center text-sm text-slate-600">{new Date(orden.created_at).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          disabled={esFinal}
+                          onClick={() => {
+                            setSelectedOrden(orden);
+                            const opciones = transiciones[estadoNormalizado] || [];
+                            setNuevoEstado(opciones[0] || '');
+                            setShowModal(true);
+                          }}
+                          className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${esFinal ? 'text-slate-300 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-700 hover:bg-gradient-to-r from-indigo-100 to-indigo-50'}`}
+                          title="Cambiar estado"
+                        >
+                          <Truck className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => imprimirGuia(orden)}
+                          className="p-2 text-slate-500 hover:text-slate-700 hover:bg-gradient-to-r from-slate-100 to-gray-50 rounded-xl transition-all duration-300 hover:scale-110"
+                          title="Imprimir guía"
+                        >
+                          <Printer className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => imprimirFactura(orden)}
+                          className="p-2 text-green-600 hover:text-green-700 hover:bg-gradient-to-r from-green-100 to-emerald-50 rounded-xl transition-all duration-300 hover:scale-110"
+                          title="Imprimir factura"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 );
               })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <Pagination
@@ -348,16 +373,21 @@ export function OrdenesAdminPage() {
 
       {/* Modal cambio de estado */}
       {showModal && selectedOrden && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowModal(false)} />
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h2 className="text-xl font-bold mb-4">Cambiar Estado - Orden {selectedOrden.orden_numero}</h2>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-scale-in">
+          <div 
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" 
+            onClick={() => setShowModal(false)}
+          />
+          <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-md p-8 border border-slate-200">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-amber-500 bg-clip-text text-transparent mb-6">
+              Cambiar Estado - Orden {selectedOrden.orden_numero}
+            </h2>
             
             <div className="space-y-4">
               <select
                 value={nuevoEstado}
                 onChange={(e) => setNuevoEstado(e.target.value)}
-                className="w-full border rounded-lg p-2"
+                className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
               >
                 {(transiciones[normalizarEstado(selectedOrden.estado)] || []).map((estado) => (
                   <option key={estado} value={estado}>
@@ -366,7 +396,7 @@ export function OrdenesAdminPage() {
                 ))}
               </select>
               {(transiciones[normalizarEstado(selectedOrden.estado)] || []).length === 0 && (
-                <p className="text-sm text-gray-500">Este pedido no admite más cambios de estado.</p>
+                <p className="text-sm text-slate-500">Este pedido no admite más cambios de estado.</p>
               )}
               
               {nuevoEstado === 'devuelta' && (
@@ -375,29 +405,34 @@ export function OrdenesAdminPage() {
                     placeholder="Motivo de devolución *"
                     value={motivoDevolucion}
                     onChange={(e) => setMotivoDevolucion(e.target.value)}
-                    className="w-full border rounded-lg p-2"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                     rows={2}
                     required
                   />
                   <div>
-                    <label className="block text-sm mb-1">Monto de reembolso (S/)</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Monto de reembolso (S/)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={reembolso}
                       onChange={(e) => setReembolso(parseFloat(e.target.value))}
-                      className="w-full border rounded-lg p-2"
+                      className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                     />
                   </div>
                 </>
               )}
               
               <div className="flex justify-end gap-3 pt-4">
-                <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg">Cancelar</button>
+                <button 
+                  onClick={() => setShowModal(false)} 
+                  className="px-6 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl hover:bg-white/90 text-slate-700 transition-all duration-300 font-semibold hover:scale-105"
+                >
+                  Cancelar
+                </button>
                 <button
                   onClick={() => cambiarEstado(selectedOrden.id, nuevoEstado)}
                   disabled={!nuevoEstado || (transiciones[normalizarEstado(selectedOrden.estado)] || []).length === 0}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-amber-500 text-white rounded-xl hover:from-indigo-700 hover:to-amber-600 transition-all duration-300 font-semibold hover:scale-105 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   Confirmar
                 </button>

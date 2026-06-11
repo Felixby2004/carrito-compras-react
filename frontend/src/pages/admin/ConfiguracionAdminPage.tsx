@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../../api/client';
 import { notify } from '../../utils/notify';
-import { Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2, Sparkles, Settings, Save, RotateCcw } from 'lucide-react';
 
 type TemaConfig = {
   colorPrimario: string;
@@ -60,7 +60,6 @@ export function ConfiguracionAdminPage() {
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // For simplicity, we'll just use a FileReader to convert to base64
       const reader = new FileReader();
       reader.onloadend = () => {
         setTema(prev => ({ ...prev, logoUrl: reader.result as string }));
@@ -77,45 +76,62 @@ export function ConfiguracionAdminPage() {
     cargar();
   }, []);
 
-  if (loading) return <div className="text-center py-12">Cargando configuración...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full py-20">
+        <div className="text-center animate-slide-up">
+          <div className="inline-block w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-slate-600 text-lg">Cargando configuración...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-2">Configuración del Sistema</h1>
-      <p className="text-sm text-slate-600 mb-6">Personaliza colores, logo y nombre de tu tienda sin tocar código.</p>
+    <div className="p-6 space-y-6 animate-slide-up">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-amber-500 bg-clip-text text-transparent flex items-center gap-3">
+            <Settings className="w-9 h-9 text-indigo-500" />
+            Configuración del Sistema
+            <Sparkles className="w-6 h-6 text-amber-500 animate-pulse-glow" />
+          </h1>
+          <p className="text-sm text-slate-600 mt-2">Personaliza colores, logo y nombre de tu tienda sin tocar código.</p>
+        </div>
+      </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6 max-w-4xl">
+      <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 p-6 space-y-6 max-w-5xl">
         {/* Nombre de la tienda */}
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-2">Nombre de la Tienda</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-3">Nombre de la Tienda</label>
           <input
             type="text"
             value={tema.nombreTienda || ''}
             onChange={(e) => setTema((prev) => ({ ...prev, nombreTienda: e.target.value }))}
             placeholder="Mi Tienda"
-            className="w-full border border-gray-200 rounded-xl p-3 text-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all outline-none"
+            className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300 text-lg"
           />
         </div>
 
         {/* Logo */}
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-2">Logo de la Tienda</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-3">Logo de la Tienda</label>
           <div className="flex items-center gap-4">
             {tema.logoUrl ? (
               <div className="flex items-center gap-4">
-                <img src={tema.logoUrl} alt="Logo" className="h-16 w-auto object-contain bg-gray-50 rounded-lg p-2" />
+                <img src={tema.logoUrl} alt="Logo" className="h-16 w-auto object-contain bg-gradient-to-br from-slate-50 to-white rounded-xl p-2 border border-slate-200" />
                 <button
                   onClick={removeLogo}
-                  className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-100 to-rose-100 hover:from-red-200 hover:to-rose-200 text-red-700 rounded-xl transition-all duration-300 font-semibold hover:scale-105"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-5 h-5" />
                   Eliminar
                 </button>
               </div>
             ) : (
-              <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[var(--color-primary)] hover:bg-gray-50 transition-all">
-                <Upload className="w-5 h-5 text-gray-500" />
-                <span className="text-gray-600">Subir logo (PNG, JPG, SVG)</span>
+              <label className="flex items-center gap-3 px-6 py-4 border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-gradient-to-br from-indigo-50 to-amber-50 rounded-xl cursor-pointer transition-all duration-300">
+                <Upload className="w-6 h-6 text-slate-500 hover:text-indigo-600" />
+                <span className="text-slate-600 font-semibold">Subir logo (PNG, JPG, SVG)</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -129,74 +145,74 @@ export function ConfiguracionAdminPage() {
 
         {/* Colores */}
         <div>
-          <h3 className="text-base font-semibold text-gray-800 mb-4">Colores del Tema</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <h3 className="text-xl font-semibold text-slate-800 mb-6">Colores del Tema</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <label className="text-sm">
-              <span className="block mb-2 font-medium text-gray-700">Color primario</span>
-              <div className="flex items-center gap-3">
+              <span className="block mb-3 font-semibold text-slate-700">Color primario</span>
+              <div className="flex items-center gap-4">
                 <input
                   type="color"
                   value={tema.colorPrimario}
                   onChange={(e) => setTema((prev) => ({ ...prev, colorPrimario: e.target.value }))}
-                  className="w-16 h-12 rounded-lg cursor-pointer border-0"
+                  className="w-20 h-16 rounded-xl cursor-pointer border-0"
                 />
-                <span className="text-sm text-gray-500 font-mono">{tema.colorPrimario}</span>
+                <span className="text-sm text-slate-500 font-mono">{tema.colorPrimario}</span>
               </div>
             </label>
             <label className="text-sm">
-              <span className="block mb-2 font-medium text-gray-700">Color secundario</span>
-              <div className="flex items-center gap-3">
+              <span className="block mb-3 font-semibold text-slate-700">Color secundario</span>
+              <div className="flex items-center gap-4">
                 <input
                   type="color"
                   value={tema.colorSecundario}
                   onChange={(e) => setTema((prev) => ({ ...prev, colorSecundario: e.target.value }))}
-                  className="w-16 h-12 rounded-lg cursor-pointer border-0"
+                  className="w-20 h-16 rounded-xl cursor-pointer border-0"
                 />
-                <span className="text-sm text-gray-500 font-mono">{tema.colorSecundario}</span>
+                <span className="text-sm text-slate-500 font-mono">{tema.colorSecundario}</span>
               </div>
             </label>
             <label className="text-sm">
-              <span className="block mb-2 font-medium text-gray-700">Color acento</span>
-              <div className="flex items-center gap-3">
+              <span className="block mb-3 font-semibold text-slate-700">Color acento</span>
+              <div className="flex items-center gap-4">
                 <input
                   type="color"
                   value={tema.colorAcento}
                   onChange={(e) => setTema((prev) => ({ ...prev, colorAcento: e.target.value }))}
-                  className="w-16 h-12 rounded-lg cursor-pointer border-0"
+                  className="w-20 h-16 rounded-xl cursor-pointer border-0"
                 />
-                <span className="text-sm text-gray-500 font-mono">{tema.colorAcento}</span>
+                <span className="text-sm text-slate-500 font-mono">{tema.colorAcento}</span>
               </div>
             </label>
           </div>
         </div>
 
         {/* Vista previa */}
-        <div className="border border-gray-200 rounded-2xl p-6 bg-gray-50">
-          <p className="text-sm font-semibold text-gray-700 mb-4">Vista previa</p>
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-              <div className="flex items-center gap-3">
+        <div className="border border-slate-200 rounded-2xl p-6 bg-gradient-to-br from-slate-50 to-white">
+          <p className="text-sm font-semibold text-slate-700 mb-6">Vista previa</p>
+          <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+              <div className="flex items-center gap-4">
                 {tema.logoUrl ? (
-                  <img src={tema.logoUrl} alt="Logo" className="h-10 w-auto object-contain" />
+                  <img src={tema.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
                 ) : (
-                  <div className="h-10 w-10 rounded-lg flex items-center justify-center text-white font-bold" style={{ backgroundColor: tema.colorPrimario }}>
+                  <div className="h-12 w-12 rounded-lg flex items-center justify-center text-white font-bold text-xl" style={{ backgroundColor: tema.colorPrimario }}>
                     {tema.nombreTienda?.charAt(0) || 'E'}
                   </div>
                 )}
-                <span className="font-bold text-xl" style={{ color: tema.colorPrimario }}>{tema.nombreTienda || 'E-Commerce'}</span>
+                <span className="font-bold text-2xl" style={{ color: tema.colorPrimario }}>{tema.nombreTienda || 'E-Commerce'}</span>
               </div>
-              <div className="flex gap-2">
-                <span className="px-4 py-2 rounded-lg text-white font-medium" style={{ backgroundColor: tema.colorPrimario }}>Primario</span>
-                <span className="px-4 py-2 rounded-lg text-white font-medium" style={{ backgroundColor: tema.colorSecundario }}>Secundario</span>
-                <span className="px-4 py-2 rounded-lg text-black font-medium" style={{ backgroundColor: tema.colorAcento }}>Acento</span>
+              <div className="flex gap-3">
+                <span className="px-6 py-3 rounded-xl text-white font-semibold shadow-md" style={{ backgroundColor: tema.colorPrimario }}>Primario</span>
+                <span className="px-6 py-3 rounded-xl text-white font-semibold shadow-md" style={{ backgroundColor: tema.colorSecundario }}>Secundario</span>
+                <span className="px-6 py-3 rounded-xl text-black font-semibold shadow-md" style={{ backgroundColor: tema.colorAcento }}>Acento</span>
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="bg-gray-50 rounded-xl p-4 text-center">
-                  <div className="w-full h-24 bg-gray-200 rounded-lg mb-3"></div>
-                  <p className="text-sm font-medium text-gray-700">Producto {i}</p>
-                  <p className="text-sm font-bold mt-1" style={{ color: tema.colorPrimario }}>$99.99</p>
+                <div key={i} className="bg-gradient-to-br from-slate-50 to-white rounded-xl p-4 text-center border border-slate-100 shadow-sm">
+                  <div className="w-full h-24 bg-gradient-to-br from-slate-200 to-slate-100 rounded-lg mb-3"></div>
+                  <p className="text-sm font-semibold text-slate-700">Producto {i}</p>
+                  <p className="text-sm font-bold mt-2" style={{ color: tema.colorPrimario }}>$99.99</p>
                 </div>
               ))}
             </div>
@@ -204,19 +220,21 @@ export function ConfiguracionAdminPage() {
         </div>
 
         {/* Botones */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-4 pt-4">
           <button
             onClick={guardar}
             disabled={saving}
-            className="px-6 py-3 rounded-xl text-white disabled:opacity-50 font-semibold transition-all hover:opacity-90 shadow-lg"
+            className="flex items-center gap-2 px-8 py-3 rounded-xl text-white disabled:opacity-50 font-semibold transition-all duration-300 hover:scale-105 shadow-xl"
             style={{ backgroundColor: tema.colorPrimario }}
           >
-            {saving ? 'Guardando…' : 'Guardar Configuración'}
+            <Save className="w-5 h-5" />
+            {saving ? 'Guardando...' : 'Guardar Configuración'}
           </button>
           <button
             onClick={cargar}
-            className="px-6 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 font-semibold text-gray-700 transition-all"
+            className="flex items-center gap-2 px-8 py-3 rounded-xl border border-slate-200 hover:bg-slate-50 font-semibold text-slate-700 transition-all duration-300 hover:scale-105"
           >
+            <RotateCcw className="w-5 h-5" />
             Recargar
           </button>
         </div>
@@ -224,4 +242,3 @@ export function ConfiguracionAdminPage() {
     </div>
   );
 }
-

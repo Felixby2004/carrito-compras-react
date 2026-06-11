@@ -31,33 +31,33 @@ export function Pagination({ currentPage, totalPages, onPageChange, totalItems, 
   const to = totalItems && itemsPerPage ? Math.min(currentPage * itemsPerPage, totalItems) : undefined;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
       {totalItems !== undefined && from !== undefined && to !== undefined && (
-        <p className="text-sm text-gray-500">
-          Mostrando <span className="font-medium">{from}–{to}</span> de <span className="font-medium">{totalItems}</span> registros
+        <p className="text-base text-slate-500 font-semibold">
+          Mostrando <span className="text-indigo-600 font-black">{from}–{to}</span> de <span className="text-indigo-600 font-black">{totalItems}</span> productos
         </p>
       )}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          className="p-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-105 shadow-soft"
           aria-label="Página anterior"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-6 h-6 text-slate-700" />
         </button>
 
         {getPageNumbers().map((page, idx) =>
           page === '...' ? (
-            <span key={`ellipsis-${idx}`} className="w-9 text-center text-gray-400 text-sm">…</span>
+            <span key={`ellipsis-${idx}`} className="w-12 text-center text-slate-400 text-lg font-bold">…</span>
           ) : (
             <button
               key={page}
               onClick={() => onPageChange(page as number)}
-              className={`w-9 h-9 rounded-lg text-sm font-medium transition border ${
+              className={`w-12 h-12 rounded-2xl text-base font-black transition-all border ${
                 currentPage === page
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                  : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-gradient-primary text-white border-indigo-500 shadow-glow scale-105'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:scale-105 shadow-soft'
               }`}
             >
               {page}
@@ -68,10 +68,10 @@ export function Pagination({ currentPage, totalPages, onPageChange, totalItems, 
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          className="p-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-105 shadow-soft"
           aria-label="Página siguiente"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-6 h-6 text-slate-700" />
         </button>
       </div>
     </div>

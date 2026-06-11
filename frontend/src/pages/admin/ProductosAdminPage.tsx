@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Download, Search, X, Eye, Package } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Search, X, Eye, Package, Sparkles } from 'lucide-react';
 import type { Producto } from '../../types';
 import apiClient from '../../api/client';
 import { notify } from '../../utils/notify';
@@ -348,31 +348,32 @@ export function ProductosAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full py-20">
-        <div className="text-center">
-          <div className="inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-600">Cargando productos...</p>
+        <div className="text-center animate-slide-up">
+          <div className="inline-block w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-slate-600 text-lg">Cargando productos...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6 animate-slide-up">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Package className="w-7 h-7 text-blue-600" />
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-amber-500 bg-clip-text text-transparent flex items-center gap-3">
+            <Package className="w-9 h-9 text-indigo-500" />
             Gestión de Productos
+            <Sparkles className="w-6 h-6 text-amber-500 animate-pulse-glow" />
           </h1>
-          <p className="text-gray-500 mt-1">Administra tu catálogo de productos</p>
+          <p className="text-slate-500 mt-2">Administra tu catálogo de productos</p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl hover:bg-white/90 text-slate-700 transition-all duration-300 hover:scale-105 hover:shadow-lg"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-5 h-5" />
             Exportar CSV
           </button>
           <button
@@ -381,46 +382,50 @@ export function ProductosAdminPage() {
               resetForm();
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all duration-300 hover:scale-105 hover:shadow-xl shadow-lg"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5" />
             Nuevo Producto
           </button>
         </div>
       </div>
 
       {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-slate-400" />
         <input
           type="text"
           placeholder="Buscar producto por nombre o SKU..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+          className="w-full pl-14 pr-6 py-4 bg-white/70 backdrop-blur-md border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300 text-lg"
         />
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gradient-to-r from-indigo-500/10 to-amber-500/10 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Producto</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">SKU</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Precio</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Stock</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Estado</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Producto</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">SKU</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Precio</th>
+                <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Stock</th>
+                <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Estado</th>
+                <th className="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {paginatedProductos.map((producto) => (
-                <tr key={producto.id} className="hover:bg-gray-50 transition-colors">
+            <tbody className="divide-y divide-slate-200">
+              {paginatedProductos.map((producto, index) => (
+                <tr 
+                  key={producto.id} 
+                  className="hover:bg-gradient-to-r from-indigo-500/5 to-amber-500/5 transition-all duration-300"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+                      <div className="w-14 h-14 bg-gradient-to-br from-indigo-100 to-amber-100 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 shadow-inner">
                         {producto.imagenes && producto.imagenes.length > 0 ? (
                           <img 
                             src={fixImageUrl(producto.imagenes[0].url)} 
@@ -428,35 +433,35 @@ export function ProductosAdminPage() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="text-gray-400">
-                            <Package className="w-6 h-6" />
+                          <div className="text-slate-400">
+                            <Package className="w-7 h-7" />
                           </div>
                         )}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{producto.nombre}</p>
-                        <p className="text-sm text-gray-500">{producto.categoria?.nombre || '-'}</p>
+                        <p className="font-semibold text-slate-800">{producto.nombre}</p>
+                        <p className="text-sm text-slate-500">{producto.categoria?.nombre || '-'}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 font-mono">{producto.sku}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                  <td className="px-6 py-4 text-sm text-slate-600 font-mono font-medium">{producto.sku}</td>
+                  <td className="px-6 py-4 text-sm font-bold text-slate-800">
                     S/ {producto.precio_venta?.toFixed(2) || '0.00'}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      (producto.stock_disponible || 0) > 10 ? 'bg-green-100 text-green-700' :
-                      (producto.stock_disponible || 0) > 0 ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold ${
+                      (producto.stock_disponible || 0) > 10 ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700' :
+                      (producto.stock_disponible || 0) > 0 ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700' :
+                      'bg-gradient-to-r from-red-100 to-rose-100 text-red-700'
                     }`}>
                       {producto.stock_disponible || 0}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      producto.estado === 'activo' ? 'bg-green-100 text-green-700' :
-                      producto.estado === 'inactivo' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-gray-100 text-gray-700'
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold ${
+                      producto.estado === 'activo' ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700' :
+                      producto.estado === 'inactivo' ? 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700' :
+                      'bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700'
                     }`}>
                       {producto.estado === 'activo' ? 'Activo' : 
                        producto.estado === 'inactivo' ? 'Inactivo' : 'Borrador'}
@@ -466,24 +471,24 @@ export function ProductosAdminPage() {
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => window.open(`/producto/${producto.id}`, '_blank')}
-                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-xl transition-all duration-300 hover:scale-110"
                         title="Ver"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => openEditModal(producto)}
-                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-xl transition-all duration-300 hover:scale-110"
                         title="Editar"
                       >
-                        <Edit className="w-4 h-4" />
+                        <Edit className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => handleDelete(producto.id)}
-                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-slate-500 hover:text-red-600 hover:bg-gradient-to-r from-red-100 to-rose-50 rounded-xl transition-all duration-300 hover:scale-110"
                         title="Eliminar"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     </div>
                   </td>
@@ -495,8 +500,8 @@ export function ProductosAdminPage() {
         
         {filteredProductos.length === 0 && (
           <div className="text-center py-12">
-            <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No hay productos para mostrar</p>
+            <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-500 text-lg">No hay productos para mostrar</p>
           </div>
         )}
       </div>
@@ -513,44 +518,44 @@ export function ProductosAdminPage() {
 
       {/* Product Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-scale-in">
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" 
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" 
             onClick={() => setShowModal(false)}
           />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="text-xl font-bold text-gray-900">
+          <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto border border-slate-200">
+            <div className="sticky top-0 bg-gradient-to-r from-indigo-500/10 to-amber-500/10 backdrop-blur-xl border-b border-slate-200 px-8 py-5 flex items-center justify-between z-10">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-amber-500 bg-clip-text text-transparent">
                 {editingProducto ? 'Editar Producto' : 'Nuevo Producto'}
               </h2>
               <button 
                 onClick={() => setShowModal(false)} 
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-white/70 rounded-xl transition-all duration-300 hover:scale-110"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="p-8 space-y-6">
               {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">SKU *</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">SKU *</label>
                   <input
                     type="text"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Nombre *</label>
                   <input
                     type="text"
                     value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                     required
                   />
                 </div>
@@ -558,35 +563,35 @@ export function ProductosAdminPage() {
 
               {/* Descriptions */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción Corta</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Descripción Corta</label>
                 <textarea
                   value={formData.descripcion_corta}
                   onChange={(e) => setFormData({ ...formData, descripcion_corta: e.target.value })}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción Larga</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Descripción Larga</label>
                 <textarea
                   value={formData.descripcion_larga}
                   onChange={(e) => setFormData({ ...formData, descripcion_larga: e.target.value })}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                 />
               </div>
 
               {/* Categories & Brand */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Categoría *</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Categoría *</label>
                   <select
                     value={formData.categoria_id}
                     onChange={(e) => {
                       setFormData({ ...formData, categoria_id: e.target.value, subcategoria_id: '' });
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                     required
                   >
                     <option value="">Seleccionar categoría</option>
@@ -597,11 +602,11 @@ export function ProductosAdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Subcategoría</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Subcategoría</label>
                   <select
                     value={formData.subcategoria_id}
                     onChange={(e) => setFormData({ ...formData, subcategoria_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                     disabled={!formData.categoria_id}
                   >
                     <option value="">Seleccionar subcategoría</option>
@@ -612,11 +617,11 @@ export function ProductosAdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Marca</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Marca</label>
                   <select
                     value={formData.marca_id}
                     onChange={(e) => setFormData({ ...formData, marca_id: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                   >
                     <option value="">Seleccionar marca</option>
                     {marcas.map((marca) => (
@@ -628,11 +633,11 @@ export function ProductosAdminPage() {
 
               {/* Unit of Measurement */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Unidad de Medida</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Unidad de Medida</label>
                 <select
                   value={formData.unidad_medida_id}
                   onChange={(e) => setFormData({ ...formData, unidad_medida_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                 >
                   <option value="">Seleccionar unidad de medida</option>
                   {unidadesMedida.map((um) => (
@@ -644,23 +649,23 @@ export function ProductosAdminPage() {
               {/* Prices */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Precio Costo (S/)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Precio Costo (S/)</label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.precio_costo}
                     onChange={(e) => setFormData({ ...formData, precio_costo: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Precio Venta (S/) *</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Precio Venta (S/) *</label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.precio_venta}
                     onChange={(e) => setFormData({ ...formData, precio_venta: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                     required
                   />
                 </div>
@@ -669,31 +674,31 @@ export function ProductosAdminPage() {
               {/* Offer */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Precio Oferta</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Precio Oferta</label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.precio_oferta}
                     onChange={(e) => setFormData({ ...formData, precio_oferta: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Inicio Oferta</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Inicio Oferta</label>
                   <input
                     type="date"
                     value={formData.fecha_inicio_oferta}
                     onChange={(e) => setFormData({ ...formData, fecha_inicio_oferta: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Fin Oferta</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Fin Oferta</label>
                   <input
                     type="date"
                     value={formData.fecha_fin_oferta}
                     onChange={(e) => setFormData({ ...formData, fecha_fin_oferta: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                   />
                 </div>
               </div>
@@ -701,22 +706,22 @@ export function ProductosAdminPage() {
               {/* Stock */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Stock *</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Stock *</label>
                   <input
                     type="number"
                     value={formData.stock}
                     onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Stock Mínimo</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Stock Mínimo</label>
                   <input
                     type="number"
                     value={formData.stock_minimo}
                     onChange={(e) => setFormData({ ...formData, stock_minimo: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                   />
                 </div>
               </div>
@@ -724,54 +729,54 @@ export function ProductosAdminPage() {
               {/* Dimensions */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Peso (kg)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Peso (kg)</label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.peso}
                     onChange={(e) => setFormData({ ...formData, peso: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Ancho (cm)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Ancho (cm)</label>
                   <input
                     type="number"
                     step="0.1"
                     value={formData.ancho}
                     onChange={(e) => setFormData({ ...formData, ancho: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Alto (cm)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Alto (cm)</label>
                   <input
                     type="number"
                     step="0.1"
                     value={formData.alto}
                     onChange={(e) => setFormData({ ...formData, alto: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Profundidad (cm)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Profundidad (cm)</label>
                   <input
                     type="number"
                     step="0.1"
                     value={formData.profundidad}
                     onChange={(e) => setFormData({ ...formData, profundidad: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                   />
                 </div>
               </div>
 
               {/* Status */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Estado</label>
                 <select
                   value={formData.estado}
                   onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                 >
                   <option value="activo">Activo</option>
                   <option value="inactivo">Inactivo</option>
@@ -782,13 +787,13 @@ export function ProductosAdminPage() {
               {/* Images - Only shown when editing */}
               {editingProducto && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-4">Imágenes del Producto</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-4">Imágenes del Producto</label>
                   
                   {/* Existing Images */}
                   {imagenesProducto.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                       {imagenesProducto.map((img) => (
-                        <div key={img.id} className="relative group aspect-square bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+                        <div key={img.id} className="relative group aspect-square bg-gradient-to-br from-slate-100 to-slate-50 rounded-2xl overflow-hidden border border-slate-200 transition-all duration-300 hover:scale-105 hover:shadow-xl">
                           <img
                             src={fixImageUrl(img.url)}
                             alt="Producto"
@@ -799,7 +804,7 @@ export function ProductosAdminPage() {
                           <button
                             type="button"
                             onClick={() => handleDeleteImage(img.id)}
-                            className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600"
+                            className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-rose-500 text-white p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 shadow-lg"
                             title="Eliminar"
                           >
                             <X className="w-4 h-4" />
@@ -810,7 +815,7 @@ export function ProductosAdminPage() {
                             <button
                               type="button"
                               onClick={() => handleSetMainImage(img.id)}
-                              className="absolute bottom-2 left-2 bg-white text-gray-700 text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-gray-100 font-medium"
+                              className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md text-slate-700 text-xs px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white font-semibold shadow-lg"
                               title="Establecer como principal"
                             >
                               Principal
@@ -819,7 +824,7 @@ export function ProductosAdminPage() {
                           
                           {/* Main Badge */}
                           {img.es_principal && (
-                            <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs px-3 py-1.5 rounded-lg font-medium">
+                            <div className="absolute bottom-3 left-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-4 py-2 rounded-xl font-semibold shadow-lg">
                               Principal
                             </div>
                           )}
@@ -830,19 +835,19 @@ export function ProductosAdminPage() {
 
                   {/* Add via URL */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Agregar via URL</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Agregar via URL</label>
                     <div className="flex gap-3">
                       <input
                         type="text"
                         placeholder="Pega la URL de la imagen..."
                         value={imageUrlInput}
                         onChange={(e) => setImageUrlInput(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        className="flex-1 px-4 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-300"
                       />
                       <button
                         type="button"
                         onClick={agregarImagenViaUrl}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                        className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all duration-300 font-semibold hover:scale-105 shadow-lg"
                       >
                         Agregar
                       </button>
@@ -850,7 +855,7 @@ export function ProductosAdminPage() {
                   </div>
 
                   {/* File Upload */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50">
+                  <div className="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-gradient-to-br from-slate-50 to-white">
                     <input
                       type="file"
                       multiple
@@ -862,30 +867,30 @@ export function ProductosAdminPage() {
                     />
                     <label
                       htmlFor="image-upload"
-                      className="cursor-pointer inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                      className="cursor-pointer inline-flex items-center gap-3 text-indigo-600 hover:text-indigo-700 font-semibold transition-all duration-300"
                     >
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                        <div className="text-2xl">📸</div>
+                      <div className="w-12 h-12 bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-full flex items-center justify-center mr-3">
+                        <div className="text-3xl">📸</div>
                       </div>
                       {uploadingImages ? 'Subiendo imágenes...' : 'Haz clic para subir imágenes o arrástralas aquí'}
                     </label>
-                    <p className="text-sm text-gray-500 mt-2">PNG, JPG hasta 5MB cada una</p>
+                    <p className="text-sm text-slate-500 mt-3">PNG, JPG hasta 5MB cada una</p>
                   </div>
                 </div>
               )}
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+              <div className="flex justify-end gap-3 pt-6 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-5 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors font-medium"
+                  className="px-6 py-3 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl hover:bg-white/90 text-slate-700 transition-all duration-300 font-semibold hover:scale-105"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+                  className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-amber-500 text-white rounded-xl hover:from-indigo-700 hover:to-amber-600 transition-all duration-300 font-semibold hover:scale-105 shadow-xl"
                 >
                   {editingProducto ? 'Actualizar Producto' : 'Crear Producto'}
                 </button>
