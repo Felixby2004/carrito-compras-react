@@ -4,7 +4,16 @@ exports.InventarioController = void 0;
 const client_1 = require("@prisma/client");
 const errorHandler_1 = require("../middlewares/errorHandler");
 const zod_1 = require("zod");
+const index_1 = require("../index");
 const prisma = new client_1.PrismaClient();
+const emitirActualizacionStock = (productoId, stockFisico, stockReservado = 0) => {
+    index_1.io.emit('stock-actualizado', {
+        productoId,
+        stockFisico,
+        stockReservado,
+        stockDisponible: stockFisico - stockReservado
+    });
+};
 const ajusteInventarioSchema = zod_1.z.object({
     cantidad: zod_1.z.number().int().positive(),
     motivo: zod_1.z.string().min(5),
@@ -79,21 +88,11 @@ class InventarioController {
             const productoId = parseInt(req.params.id);
             const stock = await prisma.inv_stock_producto.findUnique({
                 where: { producto_id: productoId },
+            });
+            const producto = await prisma.cat_productos.findUnique({
+                where: { id: productoId },
                 include: {
-                    producto: {
-                        select: {
-                            id: true,
-                            nombre: true,
-                            sku: true,
-                            precio_costo: true,
-                            precio_venta: true,
-                            categoria: {
-                                select: {
-                                    nombre: true,
-                                },
-                            },
-                        },
-                    },
+                    categoria: true,
                     movimientos: {
                         orderBy: { fecha_movimiento: 'desc' },
                         take: 10,
@@ -103,12 +102,24 @@ class InventarioController {
             if (!stock) {
                 throw new errorHandler_1.AppError('Stock no encontrado', 404);
             }
+            if (!producto) {
+                throw new errorHandler_1.AppError('Producto no encontrado', 404);
+            }
             res.json({
                 success: true,
                 data: {
                     ...stock,
+                    producto: {
+                        id: producto.id,
+                        nombre: producto.nombre,
+                        sku: producto.sku,
+                        precio_costo: producto.precio_costo,
+                        precio_venta: producto.precio_venta,
+                        categoria: producto.categoria,
+                    },
+                    movimientos: producto.movimientos,
                     stock_disponible: stock.stock_fisico - stock.stock_reservado,
-                    valor_inventario: Number(stock.producto.precio_costo) * stock.stock_fisico,
+                    valor_inventario: Number(producto.precio_costo) * stock.stock_fisico,
                 },
             });
         }
@@ -134,6 +145,8 @@ class InventarioController {
                 where: { producto_id: productoId },
                 data: { stock_fisico: stockDespues },
             });
+            // Emitir evento de actualización de stock
+            emitirActualizacionStock(productoId, stockActualizado.stock_fisico, stockActualizado.stock_reservado);
             // Registrar movimiento
             await prisma.inv_movimientos_inventario.create({
                 data: {
@@ -182,10 +195,12 @@ class InventarioController {
                 stockDespues = stockAntes + datos.cantidad;
             }
             // Actualizar stock
-            await prisma.inv_stock_producto.update({
+            const stockActualizado = await prisma.inv_stock_producto.update({
                 where: { producto_id: datos.producto_id },
                 data: { stock_fisico: stockDespues },
             });
+            // Emitir evento de actualización de stock
+            emitirActualizacionStock(datos.producto_id, stockActualizado.stock_fisico, stockActualizado.stock_reservado);
             // Registrar movimiento
             const movimiento = await prisma.inv_movimientos_inventario.create({
                 data: {
@@ -232,11 +247,7 @@ class InventarioController {
             const movimientos = await prisma.inv_movimientos_inventario.findMany({
                 where,
                 include: {
-                    producto: {
-                        include: {
-                            producto: true,
-                        },
-                    },
+                    producto: true,
                 },
                 skip,
                 take: Number(limite),
@@ -245,11 +256,11 @@ class InventarioController {
             const total = await prisma.inv_movimientos_inventario.count({ where });
             const data = movimientos.map((mov) => ({
                 ...mov,
-                producto: mov.producto?.producto
+                producto: mov.producto
                     ? {
-                        id: mov.producto.producto.id,
-                        nombre: mov.producto.producto.nombre,
-                        sku: mov.producto.producto.sku,
+                        id: mov.producto.id,
+                        nombre: mov.producto.nombre,
+                        sku: mov.producto.sku,
                     }
                     : null,
             }));
@@ -433,7 +444,7 @@ class InventarioController {
                 const stockAntes = stock ? stock.stock_fisico : 0;
                 const stockDespues = stockAntes + cantidadRecibida;
                 // Actualizar o crear stock
-                await prisma.inv_stock_producto.upsert({
+                const stockActualizado = await prisma.inv_stock_producto.upsert({
                     where: { producto_id: item.producto_id },
                     update: {
                         stock_fisico: { increment: cantidadRecibida },
@@ -445,6 +456,8 @@ class InventarioController {
                         stock_minimo: 0,
                     },
                 });
+                // Emitir evento de actualización de stock
+                emitirActualizacionStock(item.producto_id, stockActualizado.stock_fisico, stockActualizado.stock_reservado);
                 // Registrar movimiento de entrada
                 await prisma.inv_movimientos_inventario.create({
                     data: {
@@ -701,6 +714,8 @@ class InventarioController {
                 where: { producto_id },
                 data: { stock_fisico: stockDespues },
             });
+            // Emitir evento de actualización de stock
+            emitirActualizacionStock(producto_id, stockActualizado.stock_fisico, stockActualizado.stock_reservado);
             // Registrar movimiento
             const movimiento = await prisma.inv_movimientos_inventario.create({
                 data: {

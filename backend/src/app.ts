@@ -76,6 +76,7 @@ app.use(helmet({
 
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:5174',
   'http://localhost:3000',
   'http://localhost:10000',
   'https://carrito-compras-react-f7qf.onrender.com',
@@ -172,6 +173,7 @@ import perfilRoutes from './routes/perfil.routes';
 import cuponRoutes from './routes/cupon.routes';
 import reporteRoutes from './routes/reporte.routes';
 import configuracionRoutes from './routes/configuracion.routes';
+import mercadopagoRoutes from './routes/mercadopago.routes';
 
 // ========== RUTAS API ==========
 
@@ -188,6 +190,7 @@ app.use(`${apiPrefix}/cupones`, limiterWrite, cuponRoutes);
 app.use(`${apiPrefix}/wishlist`, wishlistRoutes);
 app.use(`${apiPrefix}/resenas`, limiterWrite, resenaRoutes);
 app.use(`${apiPrefix}/ordenes`, limiterWrite, ordenRoutes);
+app.use(`${apiPrefix}/mercadopago`, mercadopagoRoutes);
 app.use(`${apiPrefix}/reportes`, reporteRoutes);
 app.use(`${apiPrefix}/configuracion`, configuracionRoutes);
 

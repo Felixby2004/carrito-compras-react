@@ -201,11 +201,7 @@ class DashboardController {
             const { limite = 20 } = req.query;
             const movimientos = await prisma.inv_movimientos_inventario.findMany({
                 include: {
-                    producto: {
-                        include: {
-                            producto: true,
-                        },
-                    },
+                    producto: true,
                 },
                 orderBy: { fecha_movimiento: 'desc' },
                 take: Number(limite),

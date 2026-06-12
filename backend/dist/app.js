@@ -157,6 +157,7 @@ const perfil_routes_1 = __importDefault(require("./routes/perfil.routes"));
 const cupon_routes_1 = __importDefault(require("./routes/cupon.routes"));
 const reporte_routes_1 = __importDefault(require("./routes/reporte.routes"));
 const configuracion_routes_1 = __importDefault(require("./routes/configuracion.routes"));
+const mercadopago_routes_1 = __importDefault(require("./routes/mercadopago.routes"));
 // ========== RUTAS API ==========
 const apiPrefix = '/api/v1';
 app.use(`${apiPrefix}/auth`, auth_routes_1.default);
@@ -171,6 +172,7 @@ app.use(`${apiPrefix}/cupones`, limiterWrite, cupon_routes_1.default);
 app.use(`${apiPrefix}/wishlist`, wishlist_routes_1.default);
 app.use(`${apiPrefix}/resenas`, limiterWrite, resena_routes_1.default);
 app.use(`${apiPrefix}/ordenes`, limiterWrite, orden_routes_1.default);
+app.use(`${apiPrefix}/mercadopago`, mercadopago_routes_1.default);
 app.use(`${apiPrefix}/reportes`, reporte_routes_1.default);
 app.use(`${apiPrefix}/configuracion`, configuracion_routes_1.default);
 // Health check

@@ -14,6 +14,7 @@ const config_1 = __importDefault(require("../config"));
 const pdfkit_1 = __importDefault(require("pdfkit"));
 const email_1 = require("../utils/email");
 const index_1 = require("../index");
+const mercadopago_service_1 = require("../services/mercadopago.service");
 const prisma = new client_1.PrismaClient();
 const crearOrdenSchema = zod_1.z.object({
     items: zod_1.z.array(zod_1.z.object({
@@ -31,8 +32,9 @@ const crearOrdenSchema = zod_1.z.object({
         nombre: zod_1.z.string(),
         apellido: zod_1.z.string(),
         direccion: zod_1.z.string(),
-        ciudad: zod_1.z.string(),
         departamento: zod_1.z.string().optional(),
+        provincia: zod_1.z.string().optional(),
+        distrito: zod_1.z.string().optional(),
         codigo_postal: zod_1.z.string().optional(),
         telefono: zod_1.z.string(),
     }),
@@ -72,6 +74,9 @@ const normalizarEstado = (estado) => {
     return estado;
 };
 class OrdenController {
+    constructor() {
+        this.mercadoPagoService = new mercadopago_service_1.MercadoPagoService();
+    }
     async crearOrden(req, res, next) {
         try {
             const data = crearOrdenSchema.parse(req.body);
@@ -87,7 +92,6 @@ class OrdenController {
             if (authReq.user?.id) {
                 usuarioId = authReq.user.id;
                 let cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: authReq.user.id } });
-                // Si no existe el cliente pero sí el usuario, lo creamos
                 if (!cliente && usuarioId) {
                     cliente = await prisma.cli_clientes.create({
                         data: {
@@ -101,7 +105,6 @@ class OrdenController {
                 if (cliente)
                     clienteId = cliente.id;
             }
-            // Si no hay usuario autenticado por token, buscar por identificación en el body
             if (!usuarioId) {
                 if (data.identificacion.tipo === 'autenticado') {
                     throw new errorHandler_1.AppError('Su sesión ha expirado o es inválida. Por favor, vuelva a iniciar sesión para continuar.', 401);
@@ -134,9 +137,8 @@ class OrdenController {
                             },
                         });
                     }
-                    if (cliente) {
+                    if (cliente)
                         clienteId = cliente.id;
-                    }
                 }
                 else if (data.identificacion.tipo === 'registro' && data.identificacion.email) {
                     const hashedPassword = await bcrypt_1.default.hash(data.identificacion.password || 'Temp123!', 12);
@@ -169,7 +171,6 @@ class OrdenController {
                         },
                     });
                     clienteId = nuevoCliente.id;
-                    // Generar tokens para el nuevo usuario
                     accessToken = jsonwebtoken_1.default.sign({ id: nuevoUsuario.id, email: nuevoUsuario.email }, config_1.default.jwtSecret, { expiresIn: '15m' });
                     refreshToken = crypto_1.default.randomBytes(40).toString('hex');
                     await prisma.seg_refresh_tokens.create({
@@ -205,7 +206,6 @@ class OrdenController {
             if (!clienteId) {
                 throw new errorHandler_1.AppError('No se pudo identificar al cliente', 400);
             }
-            // Paso 2: Crear la orden
             let cuponId;
             let descuentoCalculado = 0;
             if (data.cupon_codigo) {
@@ -235,6 +235,12 @@ class OrdenController {
             if (!metodoEnvioFinal) {
                 throw new errorHandler_1.AppError('No hay métodos de envío configurados', 500);
             }
+            const metodoPago = data.metodo_pago === 1
+                ? 'tarjeta'
+                : data.metodo_pago === 2
+                    ? 'mercadopago'
+                    : 'contra_entrega';
+            const initialStatus = metodoPago === 'mercadopago' ? 'pendiente_pago' : 'pagada';
             const orden = await prisma.ord_ordenes.create({
                 data: {
                     orden_numero: ordenNumero,
@@ -245,12 +251,11 @@ class OrdenController {
                     descuento: descuentoCalculado,
                     costo_envio: data.costo_envio,
                     total: data.total - descuentoCalculado,
-                    estado: 'pagada',
-                    metodo_pago: data.metodo_pago === 1 ? 'tarjeta' : data.metodo_pago === 2 ? 'transferencia' : 'contra_entrega',
+                    estado: initialStatus,
+                    metodo_pago: metodoPago,
                     metodo_envio_id: metodoEnvioFinal.id,
                 },
             });
-            // Paso 3: Crear items de la orden y actualizar stock
             for (const item of data.items) {
                 await prisma.ord_items_orden.create({
                     data: {
@@ -262,38 +267,39 @@ class OrdenController {
                         subtotal: item.subtotal,
                     },
                 });
-                const stockExistente = await prisma.inv_stock_producto.findUnique({
-                    where: { producto_id: item.producto_id },
-                });
-                if (stockExistente) {
-                    const stockDisponible = stockExistente.stock_fisico - stockExistente.stock_reservado;
-                    if (stockDisponible < item.cantidad) {
-                        throw new errorHandler_1.AppError(`Stock insuficiente para producto ${item.producto_id}`, 400);
-                    }
-                    await prisma.inv_stock_producto.update({
+                if (metodoPago !== 'mercadopago') {
+                    const stockExistente = await prisma.inv_stock_producto.findUnique({
                         where: { producto_id: item.producto_id },
-                        data: { stock_fisico: { decrement: item.cantidad } },
+                    });
+                    if (stockExistente) {
+                        const stockDisponible = stockExistente.stock_fisico - stockExistente.stock_reservado;
+                        if (stockDisponible < item.cantidad) {
+                            throw new errorHandler_1.AppError(`Stock insuficiente para producto ${item.producto_id}`, 400);
+                        }
+                        await prisma.inv_stock_producto.update({
+                            where: { producto_id: item.producto_id },
+                            data: { stock_fisico: { decrement: item.cantidad } },
+                        });
+                    }
+                    await prisma.cat_productos.update({
+                        where: { id: item.producto_id },
+                        data: { ventas_totales: { increment: item.cantidad } },
                     });
                 }
-                await prisma.cat_productos.update({
-                    where: { id: item.producto_id },
-                    data: { ventas_totales: { increment: item.cantidad } },
-                });
             }
-            // Paso 4: Crear dirección de envío
             await prisma.ord_direcciones_envio.create({
                 data: {
                     orden_id: orden.id,
                     cliente_id: clienteId,
                     direccion_completa: data.direccion.direccion,
-                    ciudad: data.direccion.ciudad,
                     departamento: data.direccion.departamento || '',
+                    provincia: data.direccion.provincia || '',
+                    distrito: data.direccion.distrito || '',
                     codigo_postal: data.direccion.codigo_postal || '',
                     telefono: data.direccion.telefono,
                     destinatario: `${data.direccion.nombre} ${data.direccion.apellido}`,
                 },
             });
-            // Guardar dirección como favorita para el cliente (si es login/registro, no invitado)
             if (usuarioId && data.identificacion.tipo !== 'invitado') {
                 await prisma.cli_clientes.update({
                     where: { id: clienteId },
@@ -315,7 +321,6 @@ class OrdenController {
                     where: {
                         cliente_id: clienteId,
                         direccion_completa: data.direccion.direccion,
-                        ciudad: data.direccion.ciudad,
                     },
                 });
                 if (!direccionExistente) {
@@ -324,8 +329,9 @@ class OrdenController {
                             cliente_id: clienteId,
                             alias: 'Mi dirección',
                             direccion_completa: data.direccion.direccion,
-                            ciudad: data.direccion.ciudad,
                             departamento: data.direccion.departamento || '',
+                            provincia: data.direccion.provincia || '',
+                            distrito: data.direccion.distrito || '',
                             codigo_postal: data.direccion.codigo_postal || '',
                             telefono: data.direccion.telefono,
                             es_principal: true,
@@ -333,71 +339,87 @@ class OrdenController {
                     });
                 }
             }
-            // Paso 5: Registrar pago
-            await prisma.ord_pagos.create({
-                data: {
-                    orden_id: orden.id,
-                    monto: data.total - descuentoCalculado,
-                    metodo: data.metodo_pago === 1 ? 'tarjeta' : data.metodo_pago === 2 ? 'transferencia' : 'contra_entrega',
-                    estado_pago: 'completado',
-                    fecha_pago: new Date(),
-                    transaccion_id: `TRX-${Date.now()}`,
-                },
-            });
-            // Paso 6: Registrar historial
+            if (metodoPago === 'mercadopago') {
+                await prisma.ord_pagos.create({
+                    data: {
+                        orden_id: orden.id,
+                        monto: data.total - descuentoCalculado,
+                        metodo: metodoPago,
+                        estado_pago: 'pendiente',
+                    },
+                });
+            }
+            else {
+                await prisma.ord_pagos.create({
+                    data: {
+                        orden_id: orden.id,
+                        monto: data.total - descuentoCalculado,
+                        metodo: metodoPago,
+                        estado_pago: 'completado',
+                        fecha_pago: new Date(),
+                        transaccion_id: `TRX-${Date.now()}`,
+                    },
+                });
+            }
             await prisma.ord_historial_estados.create({
                 data: {
                     orden_id: orden.id,
                     estado_anterior: 'pendiente_pago',
-                    estado_nuevo: 'pagada',
-                    comentario: 'Pago completado',
+                    estado_nuevo: initialStatus,
+                    comentario: metodoPago === 'mercadopago' ? 'Orden creada, esperando pago' : 'Pago completado',
                     usuario_id: usuarioId || undefined,
                 },
             });
-            // Paso 7: Respuesta exitosa
-            if (cuponId) {
+            if (cuponId && metodoPago !== 'mercadopago') {
                 await prisma.ord_cupones.update({
                     where: { id: cuponId },
                     data: { usos_actuales: { increment: 1 } },
                 });
             }
-            await prisma.cli_clientes.update({
-                where: { id: clienteId },
-                data: {
-                    total_gastado: { increment: data.total - descuentoCalculado },
-                    fecha_ultima_compra: new Date(),
-                },
-            });
-            // Convertir Decimal a número
+            if (metodoPago !== 'mercadopago') {
+                await prisma.cli_clientes.update({
+                    where: { id: clienteId },
+                    data: {
+                        total_gastado: { increment: data.total - descuentoCalculado },
+                        fecha_ultima_compra: new Date(),
+                    },
+                });
+            }
             const ordenConvertida = this.convertDecimalToNumber(JSON.parse(JSON.stringify(orden)));
-            // Emitir evento de socket para notificar a clientes conectados
             index_1.io.emit('nueva-orden', {
                 orden: ordenConvertida,
                 mensaje: `Nueva orden ${ordenNumero} creada`,
                 timestamp: new Date(),
             });
+            let paymentUrl;
+            if (metodoPago === 'mercadopago') {
+                const preference = await this.mercadoPagoService.createPaymentPreference(orden.id);
+                paymentUrl = preference.init_point;
+            }
+            const responseData = {
+                orden: ordenConvertida,
+                ordenNumero,
+            };
+            if (paymentUrl)
+                responseData.paymentUrl = paymentUrl;
             if (data.identificacion.tipo === 'registro' && accessToken && refreshToken) {
+                responseData.accessToken = accessToken;
+                responseData.refreshToken = refreshToken;
+                responseData.user = {
+                    id: nuevoUsuario.id,
+                    email: nuevoUsuario.email,
+                    roles: ['cliente'],
+                };
                 res.json({
                     success: true,
-                    data: {
-                        orden: ordenConvertida,
-                        ordenNumero,
-                        accessToken,
-                        refreshToken,
-                        user: {
-                            id: nuevoUsuario.id,
-                            email: nuevoUsuario.email,
-                            roles: ['cliente']
-                        }
-                    },
+                    data: responseData,
                     message: '¡Orden completada con éxito! Usuario registrado.',
                 });
             }
             else {
-                // Para login e invitado, solo devolver la orden
                 res.json({
                     success: true,
-                    data: { orden: ordenConvertida, ordenNumero },
+                    data: responseData,
                     message: '¡Orden completada con éxito!',
                 });
             }
@@ -445,7 +467,6 @@ class OrdenController {
                 },
                 orderBy: { created_at: 'desc' },
             });
-            // Convertir Decimal a número
             const ordenesConvertidas = ordenes.map(orden => this.convertDecimalToNumber(JSON.parse(JSON.stringify(orden))));
             res.json({ success: true, data: ordenesConvertidas });
         }
@@ -496,7 +517,6 @@ class OrdenController {
             if (!orden) {
                 throw new errorHandler_1.AppError('Orden no encontrada', 404);
             }
-            // Convertir Decimal a número
             const ordenConvertida = this.convertDecimalToNumber(JSON.parse(JSON.stringify(orden)));
             res.json({ success: true, data: ordenConvertida });
         }
@@ -504,7 +524,6 @@ class OrdenController {
             next(error);
         }
     }
-    // Convertir Decimal a número
     convertDecimalToNumber(obj) {
         if (obj === null || obj === undefined)
             return obj;
@@ -512,11 +531,9 @@ class OrdenController {
             if (Array.isArray(obj)) {
                 return obj.map(item => this.convertDecimalToNumber(item));
             }
-            // Convertir Decimal objects y strings numéricos
             for (const key in obj) {
                 if (obj.hasOwnProperty(key)) {
                     if (typeof obj[key] === 'object' && obj[key] !== null) {
-                        // Verifica si es un Decimal de Prisma
                         if (obj[key].constructor.name === 'Decimal' || obj[key]._isDecimal === true) {
                             obj[key] = parseFloat(obj[key].toString());
                         }
@@ -529,7 +546,6 @@ class OrdenController {
         }
         return obj;
     }
-    // Obtener todas las órdenes (admin)
     async getOrdenesAdmin(req, res, next) {
         try {
             const { estado, fecha, cliente, page = 1, limit = 20, monto_min, monto_max } = req.query;
@@ -565,11 +581,7 @@ class OrdenController {
                             },
                         },
                         items: true,
-                        direccion_envio: true,
                         pagos: true,
-                        historial_estados: {
-                            orderBy: { fecha_cambio: 'desc' },
-                        },
                     },
                     skip,
                     take: Number(limit),
@@ -577,7 +589,6 @@ class OrdenController {
                 }),
                 prisma.ord_ordenes.count({ where }),
             ]);
-            // Convertir Decimal a número
             const ordenesConvertidas = ordenes.map(orden => this.convertDecimalToNumber(JSON.parse(JSON.stringify(orden))));
             res.json({
                 success: true,
@@ -592,7 +603,6 @@ class OrdenController {
             next(error);
         }
     }
-    // Cambiar estado de una orden
     async cambiarEstado(req, res, next) {
         try {
             const id = parseInt(req.params.id);
@@ -619,12 +629,10 @@ class OrdenController {
             if (!permitido.includes(estadoDestino)) {
                 throw new errorHandler_1.AppError(`Transición no permitida: ${estadoAnterior} -> ${estadoDestino}`, 400);
             }
-            // Actualizar orden
             const ordenActualizada = await prisma.ord_ordenes.update({
                 where: { id },
                 data: { estado: estadoDestino, tracking_numero: tracking_numero || orden.tracking_numero },
             });
-            // Registrar historial
             await prisma.ord_historial_estados.create({
                 data: {
                     orden_id: id,
@@ -634,16 +642,13 @@ class OrdenController {
                     usuario_id: req.user?.id,
                 },
             });
-            // Si es devolución, actualizar inventario
             if (estadoDestino === 'devuelta') {
                 for (const item of orden.items) {
-                    // Obtener stock actual antes de la devolución
                     const stockActual = await prisma.inv_stock_producto.findUnique({
                         where: { producto_id: item.producto_id },
                     });
                     const stockAntes = stockActual ? stockActual.stock_fisico : 0;
                     const stockDespues = stockAntes + item.cantidad;
-                    // Actualizar stock
                     await prisma.inv_stock_producto.upsert({
                         where: { producto_id: item.producto_id },
                         update: { stock_fisico: { increment: item.cantidad } },
@@ -654,7 +659,6 @@ class OrdenController {
                             stock_minimo: 0,
                         },
                     });
-                    // Registrar movimiento de devolución con todos los campos requeridos
                     await prisma.inv_movimientos_inventario.create({
                         data: {
                             producto_id: item.producto_id,
@@ -667,7 +671,6 @@ class OrdenController {
                         },
                     });
                 }
-                // Registrar reembolso
                 if (reembolso && reembolso > 0) {
                     await prisma.ord_pagos.create({
                         data: {
@@ -689,10 +692,8 @@ class OrdenController {
                     await (0, email_1.sendOrderStatusEmail)(cliente.usuario.email, orden.orden_numero, estadoDestino, comentario);
                 }
                 catch {
-                    // best-effort: no bloquear el cambio de estado si falla SMTP
                 }
             }
-            // Emitir evento de socket para notificar cambio de estado
             index_1.io.emit('cambio-estado-orden', {
                 ordenId: id,
                 ordenNumero: orden.orden_numero,
@@ -769,7 +770,6 @@ class OrdenController {
                 }
             }
             catch {
-                // best-effort
             }
             res.json({ success: true, message: 'Orden cancelada correctamente' });
         }
@@ -840,7 +840,7 @@ class OrdenController {
             doc.font('Helvetica-Bold').text('Dirección de envío');
             doc.font('Helvetica')
                 .text(orden.direccion_envio.destinatario || '-')
-                .text(`${orden.direccion_envio.direccion_completa || '-'}, ${orden.direccion_envio.ciudad || '-'}`);
+                .text(`${orden.direccion_envio.direccion_completa || '-'}, ${orden.direccion_envio.departamento || '-'}`);
         }
         doc.moveDown();
         lineY();
@@ -878,7 +878,7 @@ class OrdenController {
         doc.text(writeMoney(orden.costo_envio), 485, y, { width: 70, align: 'right' });
         y += 20;
         doc.font('Helvetica-Bold').fontSize(12);
-        doc.text('TOTAL:', 410, y, { width: 70, align: 'right' });
+        doc.text('Total:', 410, y, { width: 70, align: 'right' });
         doc.text(writeMoney(orden.total), 485, y, { width: 70, align: 'right' });
         doc.moveDown(2);
         doc.font('Helvetica').fontSize(8).fillColor('#64748b')
@@ -924,7 +924,6 @@ class OrdenController {
             next(error);
         }
     }
-    // Obtener estadísticas de órdenes para dashboard
     async getEstadisticasOrdenes(req, res, next) {
         try {
             const [total, pendientes, pagadas, enviadas, entregadas, canceladas] = await Promise.all([
@@ -942,7 +941,6 @@ class OrdenController {
                 },
                 _sum: { total: true },
             });
-            // Convertir Decimal a número
             const ventasHoyNumero = ventasHoy._sum.total ? parseFloat(ventasHoy._sum.total.toString()) : 0;
             res.json({
                 success: true,

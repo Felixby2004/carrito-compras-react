@@ -87,7 +87,7 @@ class ReporteController {
                     take: 200
                 });
             case 'movimientos-periodo':
-                return prisma.inv_movimientos_inventario.findMany({ include: { producto: { include: { producto: true } } }, take: 200, orderBy: { fecha_movimiento: 'desc' } });
+                return prisma.inv_movimientos_inventario.findMany({ include: { producto: true }, take: 200, orderBy: { fecha_movimiento: 'desc' } });
             case 'stock-bajo':
                 return prisma.inv_stock_producto.findMany({ where: { stock_fisico: { lte: 10 } }, include: { producto: true } });
             case 'pagos-periodo':
@@ -143,7 +143,7 @@ class ReporteController {
                 case 'movimientos-periodo':
                     this.drawTable(doc, ['Fecha', 'Producto', 'Tipo', 'Cantidad', 'Motivo'], data.slice(0, 200).map((m) => [
                         new Date(m.fecha_movimiento).toLocaleDateString(),
-                        m.producto?.producto?.nombre || `#${m.producto_id}`,
+                        m.producto?.nombre || `#${m.producto_id}`,
                         m.tipo_movimiento || '-',
                         `${m.cantidad || 0}`,
                         (m.motivo || '').slice(0, 45),

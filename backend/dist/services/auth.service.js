@@ -109,6 +109,7 @@ class AuthService {
             user: {
                 id: result.usuario.id,
                 email: result.usuario.email,
+                roles: ['cliente'],
             },
             accessToken,
             refreshToken,

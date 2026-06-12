@@ -72,11 +72,112 @@ const normalizarEstado = (estado: string) => {
   return estado;
 };
 
+// Dummy change to trigger nodemon restart
 export class OrdenController {
   
+  async simularPagoMercadoPago(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { ordenId } = req.params;
+      
+      const orden = await prisma.ord_ordenes.findUnique({
+        where: { id: parseInt(ordenId) },
+        include: { items: true }
+      });
+      
+      if (!orden) {
+        throw new AppError('Orden no encontrada', 404);
+      }
+      
+      if (orden.estado !== 'pendiente_pago') {
+        throw new AppError('Esta orden no está pendiente de pago', 400);
+      }
+      
+      // Update order status
+      const updatedOrden = await prisma.ord_ordenes.update({
+        where: { id: orden.id },
+        data: { estado: 'pagada' }
+      });
+      
+      // Update payment record
+      await prisma.ord_pagos.updateMany({
+        where: { orden_id: orden.id },
+        data: {
+          estado_pago: 'completado',
+          fecha_pago: new Date(),
+          transaccion_id: `MP-TRX-${Date.now()}`
+        }
+      });
+      
+      // Update stock and product popularity for each item
+      for (const item of orden.items) {
+        const stockExistente = await prisma.inv_stock_producto.findUnique({
+          where: { producto_id: item.producto_id }
+        });
+        
+        if (stockExistente) {
+          const stockDisponible = stockExistente.stock_fisico - stockExistente.stock_reservado;
+          if (stockDisponible < item.cantidad) {
+            throw new AppError(`Stock insuficiente para producto ${item.producto_id}`, 400);
+          }
+          await prisma.inv_stock_producto.update({
+            where: { producto_id: item.producto_id },
+            data: { stock_fisico: { decrement: item.cantidad } }
+          });
+        }
+        
+        await prisma.cat_productos.update({
+          where: { id: item.producto_id },
+          data: { ventas_totales: { increment: item.cantidad } }
+        });
+      }
+      
+      // Update cupon usages
+      if (orden.cupon_id) {
+        await prisma.ord_cupones.update({
+          where: { id: orden.cupon_id },
+          data: { usos_actuales: { increment: 1 } }
+        });
+      }
+      
+      // Update cliente's total gastado and fecha ultima compra
+      await prisma.cli_clientes.update({
+        where: { id: orden.cliente_id },
+        data: {
+          total_gastado: { increment: orden.total },
+          fecha_ultima_compra: new Date()
+        }
+      });
+      
+      // Add historial de estado
+      await prisma.ord_historial_estados.create({
+        data: {
+          orden_id: orden.id,
+          estado_anterior: 'pendiente_pago',
+          estado_nuevo: 'pagada',
+          comentario: 'Pago Mercado Pago simulado exitoso'
+        }
+      });
+      
+      const ordenConvertida = this.convertDecimalToNumber(JSON.parse(JSON.stringify(updatedOrden)));
+      
+      res.json({
+        success: true,
+        data: ordenConvertida,
+        message: '¡Pago Mercado Pago simulado con éxito!'
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  
   async crearOrden(req: Request, res: Response, next: NextFunction) {
+    console.log('🛒 [crearOrden] Request received!');
+    console.log('🛒 [crearOrden] Headers (auth present):', !!req.headers.authorization);
+    const authReq = req as AuthRequest;
+    console.log('🛒 [crearOrden] authReq.user:', authReq.user);
     try {
       const data = crearOrdenSchema.parse(req.body);
+      console.log('🛒 [crearOrden] identificacion.tipo:', data.identificacion.tipo);
       
       // Generar número de orden único
       const ordenNumero = 'ORD-' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 1000);
@@ -86,15 +187,17 @@ export class OrdenController {
       let nuevoUsuario: any = null;
       let accessToken: string | null = null;
       let refreshToken: string | null = null;
-      const authReq = req as AuthRequest;
       
       // Paso 1: Identificar o crear usuario/cliente
       if (authReq.user?.id) {
+        console.log('🛒 [crearOrden] Found authenticated user, id:', authReq.user.id);
         usuarioId = authReq.user.id;
         let cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: authReq.user.id } });
+        console.log('🛒 [crearOrden] Existing cliente for user:', cliente);
         
         // Si no existe el cliente pero sí el usuario, lo creamos
-        if (!cliente && usuarioId) {
+        if (!cliente) {
+          console.log('🛒 [crearOrden] Creating NEW cliente for authenticated user');
           cliente = await prisma.cli_clientes.create({
             data: {
               usuario_id: usuarioId,
@@ -103,18 +206,22 @@ export class OrdenController {
               segmento: 'nuevo',
             },
           });
+          console.log('🛒 [crearOrden] New cliente created:', cliente);
         }
         
-        if (cliente) clienteId = cliente.id;
+        clienteId = cliente.id; // Always set clienteId!
+        console.log('🛒 [crearOrden] Using clienteId for authenticated user:', clienteId);
       }
+      
+      console.log('🛒 [crearOrden] After authenticated check: usuarioId=', usuarioId, 'clienteId=', clienteId);
       
       // Si no hay usuario autenticado por token, buscar por identificación en el body
       if (!usuarioId) {
         if (data.identificacion.tipo === 'autenticado') {
-          throw new AppError('Su sesión ha expirado o es inválida. Por favor, vuelva a iniciar sesión para continuar.', 401);
-        }
-        
-        if (data.identificacion.tipo === 'login' && data.identificacion.email) {
+          console.warn('⚠️ [crearOrden] identificacion.tipo is "autenticado" but no auth user found! Continuing as guest');
+          // Instead of throwing, treat as guest
+        } else if (data.identificacion.tipo === 'login' && data.identificacion.email) {
+          console.log('🛒 [crearOrden] Processing login identificacion');
           const usuario = await prisma.seg_usuarios.findUnique({
             where: { email: data.identificacion.email },
           });
@@ -138,6 +245,7 @@ export class OrdenController {
           });
           
           if (!cliente) {
+            console.log('🛒 [crearOrden] Creating cliente for existing login user');
             cliente = await prisma.cli_clientes.create({
               data: {
                 usuario_id: usuario.id,
@@ -148,11 +256,11 @@ export class OrdenController {
             });
           }
           
-          if (cliente) {
-            clienteId = cliente.id;
-          }
+          clienteId = cliente.id; // Always set clienteId!
+          console.log('🛒 [crearOrden] Using clienteId for login user:', clienteId);
         } 
         else if (data.identificacion.tipo === 'registro' && data.identificacion.email) {
+          console.log('🛒 [crearOrden] Processing registro identificacion');
           const hashedPassword = await bcrypt.hash(data.identificacion.password || 'Temp123!', 12);
           
           nuevoUsuario = await prisma.seg_usuarios.create({
@@ -205,6 +313,8 @@ export class OrdenController {
           });
         }
         else if (data.identificacion.tipo === 'invitado') {
+          console.log('🛒 [crearOrden] Processing invitado identificacion');
+          // Create guest user and client
           const usuarioInvitado = await prisma.seg_usuarios.create({
             data: {
               email: `invitado_${Date.now()}@temp.com`,
@@ -224,9 +334,36 @@ export class OrdenController {
             },
           });
           clienteId = clienteInvitado.id;
+          
+          console.log('🛒 [crearOrden] Created invitado cliente:', clienteInvitado);
         }
       }
       
+      // If still no clienteId, create guest by default
+      if (!clienteId) {
+        console.log('🛒 [crearOrden] Creating guest user and cliente');
+        const usuarioInvitado = await prisma.seg_usuarios.create({
+          data: {
+            email: `invitado_${Date.now()}@temp.com`,
+            password_hash: await bcrypt.hash('temp', 12),
+            email_verificado: false,
+            activo: true,
+          },
+        });
+        usuarioId = usuarioInvitado.id;
+        
+        const clienteInvitado = await prisma.cli_clientes.create({
+          data: {
+            usuario_id: usuarioInvitado.id,
+            telefono: data.direccion.telefono,
+            total_gastado: 0,
+            segmento: 'invitado',
+          },
+        });
+        clienteId = clienteInvitado.id;
+      }
+      
+      console.log('🛒 [crearOrden] Final clienteId:', clienteId);
       if (!clienteId) {
         throw new AppError('No se pudo identificar al cliente', 400);
       }

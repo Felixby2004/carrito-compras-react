@@ -14,8 +14,6 @@ class ProductoService {
                 marca: true,
                 unidad_medida: true,
                 imagenes: { orderBy: { orden: 'asc' } },
-                producto_atributos: { include: { atributo: true, valor: true } },
-                producto_etiquetas: { include: { etiqueta: true } },
                 stock: true,
             },
         });
@@ -269,9 +267,6 @@ class ProductoService {
             where: {
                 activo: true,
                 estado: 'activo',
-                producto_etiquetas: {
-                    some: { etiqueta: { nombre: 'destacado' } }
-                }
             },
             take: limit,
             include: {
@@ -447,6 +442,14 @@ class ProductoService {
     async getUnidadesMedida() {
         return prisma.cat_unidades_medida.findMany({
             select: { id: true, nombre: true, abreviatura: true },
+            orderBy: { nombre: 'asc' },
+        });
+    }
+    async getAtributos() {
+        return prisma.cat_atributos.findMany({
+            include: {
+                valores: true,
+            },
             orderBy: { nombre: 'asc' },
         });
     }

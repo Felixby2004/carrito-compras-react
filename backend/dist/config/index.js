@@ -35,6 +35,9 @@ exports.config = {
     // Stripe
     stripeSecretKey: process.env.STRIPE_SECRET_KEY,
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+    // Mercado Pago
+    mercadoPagoPublicKey: process.env.MERCADOPAGO_PUBLIC_KEY,
+    mercadoPagoToken: process.env.MERCADOPAGO_TOKEN,
     // Frontend
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
     // Backend

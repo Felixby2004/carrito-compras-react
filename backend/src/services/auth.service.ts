@@ -140,7 +140,7 @@ export class AuthService {
         },
       },
     });
-    
+
     if (!usuario) {
       throw new AppError('Credenciales inválidas', 401);
     }

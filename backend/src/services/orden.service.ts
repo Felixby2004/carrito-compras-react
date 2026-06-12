@@ -104,7 +104,6 @@ export class OrdenService {
           orden_id: nuevaOrden.id,
           cliente_id: clienteId,
           direccion_completa: direccionEnvio.direccion,
-          ciudad: direccionEnvio.ciudad,
           departamento: direccionEnvio.departamento,
           codigo_postal: direccionEnvio.codigoPostal,
           telefono: direccionEnvio.telefono,

@@ -8,6 +8,7 @@ const clienteController = new ClienteController();
 
 // Rutas para el propio cliente
 router.get('/mis-direcciones', authenticate, clienteController.getMisDirecciones.bind(clienteController));
+router.get('/direcciones', authenticate, clienteController.getMisDirecciones.bind(clienteController)); // Alias for backward compatibility
 router.post('/direcciones', authenticate, clienteController.crearDireccion.bind(clienteController));
 
 // Rutas admin - las más específicas primero

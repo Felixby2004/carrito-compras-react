@@ -67,45 +67,43 @@ export const optionalAuthenticate = async (
   _res: Response,
   next: NextFunction
 ) => {
+  console.log('🔐 [optionalAuthenticate] Starting for URL:', req.url);
   try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    
-    if (!token) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('🔐 [optionalAuthenticate] No Bearer token found, continue as guest');
       return next();
     }
     
-    const decoded = jwt.verify(token, config.jwtSecret) as {
-      id: number;
-      email: string;
-    };
+    const token = authHeader.replace('Bearer ', '');
+    console.log('🔐 [optionalAuthenticate] Token found, length:', token.length);
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, config.jwtSecret) as { id: number; email: string; };
+      console.log('🔐 [optionalAuthenticate] Token decoded:', decoded);
+    } catch (e) {
+      console.error('🔐 [optionalAuthenticate] Token verification failed, continue as guest. Error:', e);
+      return next();
+    }
     
     const usuario = await prisma.seg_usuarios.findUnique({
       where: { id: decoded.id, activo: true },
-      include: {
-        usuario_roles: {
-          include: {
-            rol: true,
-          },
-        },
-      },
+      include: { usuario_roles: { include: { rol: true } } },
     });
     
     if (usuario) {
+      console.log('🔐 [optionalAuthenticate] Usuario encontrado, setting req.user:', usuario.id, usuario.email);
       req.user = {
         id: usuario.id,
         email: usuario.email,
-        roles: usuario.usuario_roles.map((ur: any) => ur.rol.nombre),
+        roles: usuario.usuario_roles.map((ur: any) => ur.rol.nombre)
       };
+    } else {
+      console.log('🔐 [optionalAuthenticate] No usuario found with id:', decoded.id);
     }
-    
-    next();
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      return next(new AppError('Sesión expirada', 401));
-    }
-    if (error instanceof jwt.JsonWebTokenError) {
-      return next(new AppError('Token inválido', 401));
-    }
-    next();
+    console.error('🔐 [optionalAuthenticate] Unhandled error (ignored):', error);
   }
+  console.log('🔐 [optionalAuthenticate] Calling next(), req.user exists:', !!req.user);
+  next(); // Always continue no matter what!
 };

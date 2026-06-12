@@ -6,7 +6,10 @@ import { requirePermission } from '../middlewares/rbac.middleware';
 const router = Router();
 const ordenController = new OrdenController();
 
-// Ruta para crear orden (invitados también pueden, por eso optionalAuthenticate)
+// Ruta para simular pago Mercado Pago exitoso
+router.post('/:ordenId/simular-pago-mercadopago', optionalAuthenticate, ordenController.simularPagoMercadoPago.bind(ordenController));
+
+// Ruta para crear orden (invitados también pueden - NO TOKEN CHECK AT ALL)
 router.post('/', optionalAuthenticate, ordenController.crearOrden.bind(ordenController));
 
 // Rutas protegidas - las más específicas primero

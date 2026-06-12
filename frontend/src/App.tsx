@@ -28,6 +28,7 @@ import { CuponesAdminPage } from './pages/admin/CuponesAdminPage';
 import { ReportesAdminPage } from './pages/admin/ReportesAdminPage';
 import { ConfiguracionAdminPage } from './pages/admin/ConfiguracionAdminPage';
 import { notify } from './utils/notify';
+import ErrorBoundary from './components/ErrorBoundary';
 
 type TemaConfig = {
   colorPrimario: string;
@@ -260,7 +261,13 @@ function AppContent() {
         <Route path="/catalogo" element={<CatalogoPage onAddToCart={handleAddToCart} />} />
         <Route path="/producto/:id" element={<ProductoDetallePage />} />
         {/* Rutas de cliente solo - bloquear para admins */}
-        <Route path="/checkout" element={!isAdmin ? <CheckoutPage /> : <Navigate to="/admin" replace />} />
+        <Route path="/checkout" element={
+          !isAdmin ? (
+            <ErrorBoundary>
+              <CheckoutPage />
+            </ErrorBoundary>
+          ) : <Navigate to="/admin" replace />
+        } />
         <Route path="/mis-ordenes" element={!isAdmin ? <MisOrdenesPage /> : <Navigate to="/admin" replace />} />
         <Route path="/mis-ordenes/:id" element={!isAdmin ? <OrdenDetallePage /> : <Navigate to="/admin" replace />} />
         <Route path="/wishlist" element={!isAdmin ? <WishlistPage /> : <Navigate to="/admin" replace />} />

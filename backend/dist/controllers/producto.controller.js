@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.upload = exports.ProductoController = void 0;
+exports.uploadCloudinary = exports.upload = exports.ProductoController = void 0;
 const client_1 = require("@prisma/client");
 const producto_service_1 = require("../services/producto.service");
 const producto_schema_1 = require("../schemas/producto.schema");
@@ -13,6 +13,8 @@ const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const index_1 = require("../index");
 const fs_1 = __importDefault(require("fs"));
+const cloudinary_1 = require("../config/cloudinary");
+Object.defineProperty(exports, "uploadCloudinary", { enumerable: true, get: function () { return cloudinary_1.uploadCloudinary; } });
 const prisma = new client_1.PrismaClient();
 const productoService = new producto_service_1.ProductoService();
 // Configurar multer para subir imágenes
@@ -82,7 +84,7 @@ class ProductoController {
                 where: { id: productoId },
                 include: {
                     imagenes: true,
-                    stock: true // 👈 Asegurar que incluye stock
+                    stock: true // ← Asegurar que incluye stock
                 }
             });
             if (!producto) {
@@ -101,9 +103,9 @@ class ProductoController {
             const descuentoPorcentaje = tieneOferta && precioVenta > 0
                 ? Math.round(((precioVenta - precioOferta) / precioVenta) * 100)
                 : 0;
-            // 👈 Calcular stock disponible correctamente
-            const stockDisponible = producto.stock
-                ? Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0)
+            // ← Calcular stock disponible correctamente
+            const stockDisponible = producto.stock ?
+                Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0)
                 : 0;
             // Transformar URLs de imágenes
             const imagenesCorregidas = producto.imagenes?.map(img => ({
@@ -324,6 +326,15 @@ class ProductoController {
             next(error);
         }
     }
+    async getAtributos(_req, res, next) {
+        try {
+            const atributos = await productoService.getAtributos();
+            res.json({ success: true, data: atributos });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
     // Subir imágenes de producto
     async subirImagenes(req, res, next) {
         try {
@@ -341,14 +352,14 @@ class ProductoController {
             const imagenesExistentes = await prisma.cat_imagenes_producto.count({
                 where: { producto_id: productoId },
             });
-            // Usar la URL base configurada
-            const baseUrl = config_1.default.backendUrl;
             const imagenes = [];
             for (let i = 0; i < files.length; i++) {
+                // Si usamos Cloudinary, la URL viene en path. Si es local, la construimos.
+                const url = files[i].path || files[i].url || `${config_1.default.backendUrl}/uploads/${files[i].filename}`;
                 const imagen = await prisma.cat_imagenes_producto.create({
                     data: {
                         producto_id: productoId,
-                        url: `${baseUrl}/uploads/${files[i].filename}`,
+                        url: url,
                         orden: imagenesExistentes + i,
                         es_principal: imagenesExistentes === 0 && i === 0,
                     },
@@ -384,6 +395,13 @@ class ProductoController {
     async eliminarImagen(req, res, next) {
         try {
             const imagenId = parseInt(req.params.imagenId);
+            // Check if the image exists
+            const imagen = await prisma.cat_imagenes_producto.findUnique({
+                where: { id: imagenId },
+            });
+            if (!imagen) {
+                throw new errorHandler_1.AppError('Imagen no encontrada', 404);
+            }
             await prisma.cat_imagenes_producto.delete({
                 where: { id: imagenId },
             });
@@ -415,6 +433,44 @@ class ProductoController {
                 data: { es_principal: true },
             });
             res.json({ success: true, message: 'Imagen principal actualizada' });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    // Agregar imagen via URL
+    async agregarImagenUrl(req, res, next) {
+        try {
+            const productoId = parseInt(req.params.id);
+            const { url } = req.body;
+            if (!url) {
+                throw new errorHandler_1.AppError('URL de imagen es requerida', 400);
+            }
+            // Validar URL
+            try {
+                new URL(url);
+            }
+            catch {
+                throw new errorHandler_1.AppError('URL inválida', 400);
+            }
+            const producto = await prisma.cat_productos.findUnique({
+                where: { id: productoId },
+            });
+            if (!producto) {
+                throw new errorHandler_1.AppError('Producto no encontrado', 404);
+            }
+            const imagenesExistentes = await prisma.cat_imagenes_producto.count({
+                where: { producto_id: productoId },
+            });
+            const imagen = await prisma.cat_imagenes_producto.create({
+                data: {
+                    producto_id: productoId,
+                    url: url,
+                    orden: imagenesExistentes,
+                    es_principal: imagenesExistentes === 0,
+                },
+            });
+            res.json({ success: true, data: imagen, message: 'Imagen agregada correctamente' });
         }
         catch (error) {
             next(error);

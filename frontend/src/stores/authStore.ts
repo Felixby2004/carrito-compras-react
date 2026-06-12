@@ -14,6 +14,7 @@ interface AuthState {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   clearAuth: () => void;
+  setAuthData: (user: Usuario, accessToken: string, refreshToken: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -135,6 +136,7 @@ export const useAuthStore = create<AuthState>()(
           const { user, accessToken, refreshToken: newRefreshToken } = response.data;
           
           setAccessToken(accessToken);
+          localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('refreshToken', newRefreshToken);
           
           set({
@@ -152,6 +154,16 @@ export const useAuthStore = create<AuthState>()(
         set({
           user: null,
           isAuthenticated: false,
+        });
+      },
+      setAuthData: (user: Usuario, accessToken: string, refreshToken: string) => {
+        setAccessToken(accessToken);
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        set({
+          user,
+          isAuthenticated: true,
         });
       },
     }),
