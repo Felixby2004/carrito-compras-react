@@ -6,7 +6,9 @@ const auth_middleware_1 = require("../middlewares/auth.middleware");
 const rbac_middleware_1 = require("../middlewares/rbac.middleware");
 const router = (0, express_1.Router)();
 const ordenController = new orden_controller_1.OrdenController();
-// Ruta para crear orden (invitados también pueden, por eso optionalAuthenticate)
+// Ruta para simular pago Mercado Pago exitoso
+router.post('/:ordenId/simular-pago-mercadopago', auth_middleware_1.optionalAuthenticate, ordenController.simularPagoMercadoPago.bind(ordenController));
+// Ruta para crear orden (invitados también pueden - NO TOKEN CHECK AT ALL)
 router.post('/', auth_middleware_1.optionalAuthenticate, ordenController.crearOrden.bind(ordenController));
 // Rutas protegidas - las más específicas primero
 router.get('/mis-ordenes', auth_middleware_1.authenticate, ordenController.getMisOrdenes.bind(ordenController));

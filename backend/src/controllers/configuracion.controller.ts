@@ -20,14 +20,30 @@ const temaDefault = {
   colorSecundario: '#0f172a',
   colorAcento: '#f59e0b',
   logoUrl: null,
-  nombreTienda: 'E-Commerce',
+  nombreTienda: 'eMarket Perú',
+};
+
+const normalizeNombreTienda = (nombreTienda?: string | null) => {
+  if (!nombreTienda) return undefined;
+  return nombreTienda === 'E-Commerce' ? 'eMarket Perú' : nombreTienda;
+};
+
+const normalizeTema = (tema: any) => {
+  if (!tema) return tema;
+  return {
+    ...tema,
+    nombreTienda: normalizeNombreTienda(tema.nombreTienda) ?? tema.nombreTienda,
+  };
 };
 
 export class ConfiguracionController {
   async getTemaPublico(_req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const config = await prisma.configuracion_sistema.findUnique({ where: { clave: CLAVE_TEMA } });
-      const tema = config ? { ...temaDefault, ...JSON.parse(config.valor) } : temaDefault;
+      const config = await prisma.configuracion_sistema.findUnique({
+        where: { clave: CLAVE_TEMA },
+        select: { valor: true },
+      });
+      const tema = config ? normalizeTema({ ...temaDefault, ...JSON.parse(config.valor) }) : temaDefault;
       res.json({ success: true, data: tema });
     } catch (error) {
       next(error);
@@ -37,8 +53,11 @@ export class ConfiguracionController {
   async getTemaAdmin(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       if (!req.user) throw new AppError('No autenticado', 401);
-      const config = await prisma.configuracion_sistema.findUnique({ where: { clave: CLAVE_TEMA } });
-      const tema = config ? { ...temaDefault, ...JSON.parse(config.valor) } : temaDefault;
+      const config = await prisma.configuracion_sistema.findUnique({
+        where: { clave: CLAVE_TEMA },
+        select: { valor: true },
+      });
+      const tema = config ? normalizeTema({ ...temaDefault, ...JSON.parse(config.valor) }) : temaDefault;
       res.json({ success: true, data: tema });
     } catch (error) {
       next(error);
@@ -49,12 +68,16 @@ export class ConfiguracionController {
     try {
       if (!req.user) throw new AppError('No autenticado', 401);
       const data = temaSchema.parse(req.body);
+      const normalizedData = {
+        ...data,
+        nombreTienda: normalizeNombreTienda(data.nombreTienda) ?? data.nombreTienda,
+      };
       const saved = await prisma.configuracion_sistema.upsert({
         where: { clave: CLAVE_TEMA },
-        update: { valor: JSON.stringify(data), descripcion: 'Colores y configuración del tema del sistema' },
+        update: { valor: JSON.stringify(normalizedData), descripcion: 'Colores y configuración del tema del sistema' },
         create: {
           clave: CLAVE_TEMA,
-          valor: JSON.stringify(data),
+          valor: JSON.stringify(normalizedData),
           descripcion: 'Colores y configuración del tema del sistema',
         },
       });

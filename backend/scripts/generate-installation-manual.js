@@ -116,7 +116,7 @@ async function main() {
           new Paragraph({
             children: [
               new TextRun({
-                text: "Manual de Instalación - Sistema de E-Commerce con Carrito de Compras",
+                text: "Manual de Instalación - eMarket Perú con Carrito de Compras",
                 bold: true,
                 size: 32,
               }),

@@ -245,42 +245,54 @@ class ClienteController {
             }
             const cliente = await prisma.cli_clientes.findUnique({
                 where: { usuario_id: req.user.id },
-                include: { direcciones: true },
+                select: { id: true },
             });
             if (!cliente) {
                 throw new errorHandler_1.AppError('Cliente no encontrado', 404);
             }
-            res.json({ success: true, data: cliente.direcciones });
+            const direcciones = await prisma.cli_direcciones.findMany({
+                where: { cliente_id: cliente.id },
+                select: {
+                    id: true,
+                    alias: true,
+                    direccion_completa: true,
+                    departamento: true,
+                    codigo_postal: true,
+                    telefono: true,
+                    es_principal: true,
+                },
+                orderBy: [{ es_principal: 'desc' }, { id: 'desc' }],
+            });
+            res.json({ success: true, data: direcciones });
         }
         catch (error) {
             next(error);
         }
     }
-    // Crear nueva dirección
     async crearDireccion(req, res, next) {
         try {
             if (!req.user) {
                 throw new errorHandler_1.AppError('No autenticado', 401);
             }
-            const { alias, direccion_completa, departamento, provincia, distrito, codigo_postal, telefono, es_principal } = req.body;
+            const { alias, direccion_completa, departamento, codigo_postal, telefono, es_principal } = req.body;
             const cliente = await prisma.cli_clientes.findUnique({
                 where: { usuario_id: req.user.id },
             });
             if (!cliente) {
                 throw new errorHandler_1.AppError('Cliente no encontrado', 404);
             }
+            const direccionData = {
+                cliente_id: cliente.id,
+                alias,
+                direccion_completa,
+                departamento,
+                telefono,
+                es_principal: es_principal || false,
+            };
+            if (codigo_postal)
+                direccionData.codigo_postal = codigo_postal;
             const direccion = await prisma.cli_direcciones.create({
-                data: {
-                    cliente_id: cliente.id,
-                    alias,
-                    direccion_completa,
-                    departamento,
-                    provincia,
-                    distrito,
-                    codigo_postal,
-                    telefono,
-                    es_principal: es_principal || false,
-                },
+                data: direccionData,
             });
             res.status(201).json({ success: true, data: direccion });
         }

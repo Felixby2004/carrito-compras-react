@@ -92,7 +92,7 @@ async function main() {
           new Paragraph({
             children: [
               new TextRun({
-                text: "Manual de Usuario - Sistema de E-Commerce",
+                text: "Manual de Usuario - eMarket Perú",
                 bold: true,
                 size: 32,
               }),
@@ -126,7 +126,7 @@ async function main() {
 
           h("1. Introducción", HeadingLevel.HEADING_2),
           p(
-            "El sistema de E-Commerce permite a los clientes navegar un catálogo de productos, agregarlos al carrito, realizar compras y dar seguimiento a sus pedidos. Los administradores pueden gestionar productos, inventario, órdenes, clientes y generar reportes operacionales y de gestión."
+            "El sistema de eMarket Perú permite a los clientes navegar un catálogo de productos, agregarlos al carrito, realizar compras y dar seguimiento a sus pedidos. Los administradores pueden gestionar productos, inventario, órdenes, clientes y generar reportes operacionales y de gestión."
           ),
           p("Este manual explica paso a paso cómo utilizar todas las funcionalidades del sistema."),
 

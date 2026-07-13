@@ -1,8 +1,11 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
+const baseURL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api/v1';
+console.log('📡 API Client baseURL:', baseURL);
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // en prod será tu Render
+  baseURL,
   withCredentials: true, // opcional (solo si usas cookies)
 });
 
@@ -59,7 +62,7 @@ apiClient.interceptors.response.use(
       if (refreshToken) {
         try {
           console.log('🔄 API Client: Calling refresh token endpoint...');
-          const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh-token`, {
+          const response = await apiClient.post('/auth/refresh-token', {
             refreshToken
           });
           console.log('🔄 API Client: Refresh token response received!');

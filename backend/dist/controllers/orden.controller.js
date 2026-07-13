@@ -820,7 +820,7 @@ class OrdenController {
         const clienteEmail = orden.cliente?.usuario?.email || 'N/A';
         const lineY = () => doc.moveTo(40, doc.y).lineTo(555, doc.y).strokeColor('#e2e8f0').stroke();
         const writeMoney = (v) => `S/ ${Number(v || 0).toFixed(2)}`;
-        doc.font('Helvetica-Bold').fontSize(20).fillColor('#1d4ed8').text('E-Commerce', 40, 40);
+        doc.font('Helvetica-Bold').fontSize(20).fillColor('#1d4ed8').text('eMarket Perú', 40, 40);
         doc.font('Helvetica').fontSize(10).fillColor('#475569').text('Documento electrónico', 40, 64);
         doc.font('Helvetica-Bold').fontSize(16).fillColor('#0f172a').text(titulo.toUpperCase(), 390, 40, { width: 165, align: 'right' });
         doc.font('Helvetica').fontSize(10).fillColor('#334155').text(`Nro: ${orden.orden_numero}`, 390, 62, { width: 165, align: 'right' });

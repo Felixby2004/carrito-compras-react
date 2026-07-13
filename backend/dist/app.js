@@ -26,9 +26,9 @@ const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'E-Commerce API',
+            title: 'eMarket Perú API',
             version: '1.0.0',
-            description: 'API para sistema de e-commerce con carrito de compras',
+            description: 'API para eMarket Perú con carrito de compras',
         },
         servers: [
             {
@@ -73,6 +73,7 @@ app.use((0, helmet_1.default)({
 }));
 const allowedOrigins = [
     'http://localhost:5173',
+    'http://localhost:5174',
     'http://localhost:3000',
     'http://localhost:10000',
     'https://carrito-compras-react-f7qf.onrender.com',

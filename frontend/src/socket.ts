@@ -8,27 +8,20 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 
 // Obtener la URL del WebSocket desde variable de entorno
 const getWebSocketUrl = (): string => {
-  // Si tenemos VITE_WS_URL, usarla
   if (import.meta.env.VITE_WS_URL) {
     console.log('📡 Usando VITE_WS_URL:', import.meta.env.VITE_WS_URL);
     return import.meta.env.VITE_WS_URL;
   }
-  
-  // Si no, derivar de VITE_API_URL
-  if (import.meta.env.VITE_API_URL) {
-    const apiUrl = import.meta.env.VITE_API_URL;
-    // Convertir https://... a wss://... y eliminar /api/v1
-    const wsUrl = apiUrl
-      .replace('https://', 'wss://')
-      .replace('http://', 'ws://')
-      .replace('/api/v1', '');
-    console.log('📡 Derivando WebSocket URL de API:', wsUrl);
-    return wsUrl;
-  }
-  
-  // Fallback para desarrollo local
-  console.log('📡 Usando fallback localhost:3000');
-  return 'http://localhost:3000';
+
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api/v1';
+  const normalizedApiUrl = apiUrl.replace(/\/+$/, '');
+  const wsUrl = normalizedApiUrl
+    .replace(/^https:\/\//i, 'wss://')
+    .replace(/^http:\/\//i, 'ws://')
+    .replace(/\/api\/v1$/, '');
+
+  console.log('📡 Derivando WebSocket URL de API:', wsUrl);
+  return wsUrl;
 };
 
 export const connectSocket = () => {

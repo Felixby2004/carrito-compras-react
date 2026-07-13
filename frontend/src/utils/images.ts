@@ -12,8 +12,8 @@ export function fixImageUrl(url: string | null | undefined): string {
   }
   
   // Obtener la URL base del backend desde las variables de entorno
-  // VITE_API_URL suele ser algo como http://localhost:3000/api/v1
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+  // VITE_API_URL suele ser algo como http://127.0.0.1:3000/api/v1
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api/v1';
   
   // Extraer el origen (protocolo + host)
   try {

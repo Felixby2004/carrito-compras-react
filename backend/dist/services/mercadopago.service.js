@@ -42,16 +42,22 @@ const config_1 = __importDefault(require("../config"));
 const client_1 = require("@prisma/client");
 const errorHandler_1 = require("../middlewares/errorHandler");
 const prisma = new client_1.PrismaClient();
-const client = new mercadopago_1.MercadoPagoConfig({ accessToken: config_1.default.mercadoPagoToken });
+console.log('Mercado Pago Token loaded:', config_1.default.mercadoPagoToken ? 'Yes' : 'No'); // Log if token is loaded
+const client = config_1.default.mercadoPagoToken ? new mercadopago_1.MercadoPagoConfig({ accessToken: config_1.default.mercadoPagoToken }) : null;
 class MercadoPagoService {
     async createPaymentPreference(orderId) {
+        console.log('createPaymentPreference called for order ID:', orderId);
+        if (!client) {
+            throw new errorHandler_1.AppError('Mercado Pago no está configurado', 500);
+        }
         const order = await prisma.ord_ordenes.findUnique({
             where: { id: orderId },
             include: { items: true },
         });
         if (!order) {
-            throw new errorHandler_1.AppError('Order not found', 404);
+            throw new errorHandler_1.AppError('Pedido no encontrado', 404);
         }
+        console.log('Order found:', { orderId: order.id, total: order.total, itemsCount: order.items.length });
         const items = order.items.map((item) => ({
             id: item.producto_id.toString(),
             title: item.nombre_producto,
@@ -59,26 +65,28 @@ class MercadoPagoService {
             unit_price: Number(item.precio_unitario),
             currency_id: 'PEN',
         }));
+        console.log('Mercado Pago items:', items);
         const preference = new mercadopago_1.Preference(client);
-        const result = await preference.create({
-            body: {
-                items,
-                external_reference: order.id.toString(),
-                back_urls: {
-                    success: `${config_1.default.frontendUrl}/checkout/success?orderId=${order.id}`,
-                    failure: `${config_1.default.frontendUrl}/checkout/failure?orderId=${order.id}`,
-                    pending: `${config_1.default.frontendUrl}/checkout/pending?orderId=${order.id}`,
+        try {
+            const result = await preference.create({
+                body: {
+                    items,
+                    external_reference: order.id.toString(),
+                    back_urls: {
+                        success: `${config_1.default.frontendUrl}/checkout/success?orderId=${order.id}`,
+                        failure: `${config_1.default.frontendUrl}/checkout/failure?orderId=${order.id}`,
+                        pending: `${config_1.default.frontendUrl}/checkout/pending?orderId=${order.id}`,
+                    },
+                    auto_return: 'approved',
                 },
-                auto_return: 'approved',
-                payment_methods: {
-                    excluded_payment_types: [
-                        { id: 'credit_card' },
-                        { id: 'debit_card' },
-                    ],
-                },
-            },
-        });
-        return result;
+            });
+            console.log('Mercado Pago preference created successfully:', { id: result.id, init_point: result.init_point });
+            return result;
+        }
+        catch (error) {
+            console.error('Error creating Mercado Pago preference:', error.response ? error.response.data : error.message);
+            throw new errorHandler_1.AppError('Error al crear la preferencia de pago de Mercado Pago: ' + (error.response?.data?.message || error.message), 500);
+        }
     }
     async handleWebhook(data) {
         const { type, data: webhookData } = data;

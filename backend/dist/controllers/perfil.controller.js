@@ -50,14 +50,29 @@ class PerfilController {
                     email_verificado: true,
                     activo: true,
                     fecha_ultimo_login: true,
-                    created_at: true,
                     cliente: {
-                        include: {
-                            direcciones: true,
+                        select: {
+                            id: true,
+                            telefono: true,
+                            fecha_nacimiento: true,
+                            total_gastado: true,
+                            segmento: true,
+                            direcciones: {
+                                select: {
+                                    id: true,
+                                    alias: true,
+                                    direccion_completa: true,
+                                    departamento: true,
+                                    codigo_postal: true,
+                                    telefono: true,
+                                    es_principal: true,
+                                },
+                                orderBy: [{ es_principal: 'desc' }, { id: 'desc' }],
+                            },
                             lista_deseos: {
-                                include: {
+                                select: {
                                     items: {
-                                        include: {
+                                        select: {
                                             producto: {
                                                 select: {
                                                     id: true,
@@ -78,6 +93,7 @@ class PerfilController {
             }
             const perfilBase = await prisma.configuracion_sistema.findUnique({
                 where: { clave: `perfil_usuario_${req.user.id}` },
+                select: { valor: true },
             });
             const perfil = perfilBase ? JSON.parse(perfilBase.valor) : {};
             res.json({
@@ -237,18 +253,18 @@ class PerfilController {
                     data: { es_principal: false },
                 });
             }
+            const direccionData = {
+                cliente_id: cliente.id,
+                alias: datos.alias,
+                direccion_completa: datos.direccion_completa,
+                departamento: datos.departamento || '',
+                telefono: datos.telefono,
+                es_principal: datos.es_principal ?? false,
+            };
+            if (datos.codigo_postal)
+                direccionData.codigo_postal = datos.codigo_postal;
             const direccion = await prisma.cli_direcciones.create({
-                data: {
-                    cliente_id: cliente.id,
-                    alias: datos.alias,
-                    direccion_completa: datos.direccion_completa,
-                    departamento: datos.departamento || '',
-                    provincia: datos.provincia,
-                    distrito: datos.distrito,
-                    codigo_postal: datos.codigo_postal || '',
-                    telefono: datos.telefono,
-                    es_principal: datos.es_principal ?? false,
-                },
+                data: direccionData,
             });
             res.status(201).json({
                 success: true,
@@ -312,18 +328,18 @@ class PerfilController {
                     data: { es_principal: false },
                 });
             }
+            const direccionUpdateData = {
+                alias: datos.alias,
+                direccion_completa: datos.direccion_completa,
+                departamento: datos.departamento,
+                telefono: datos.telefono,
+                es_principal: datos.es_principal,
+            };
+            if (datos.codigo_postal)
+                direccionUpdateData.codigo_postal = datos.codigo_postal;
             const actualizada = await prisma.cli_direcciones.update({
                 where: { id: direccionId },
-                data: {
-                    alias: datos.alias,
-                    direccion_completa: datos.direccion_completa,
-                    departamento: datos.departamento,
-                    provincia: datos.provincia,
-                    distrito: datos.distrito,
-                    codigo_postal: datos.codigo_postal,
-                    telefono: datos.telefono,
-                    es_principal: datos.es_principal,
-                },
+                data: direccionUpdateData,
             });
             res.json({
                 success: true,
@@ -601,6 +617,7 @@ class PerfilController {
                     valor: JSON.stringify(data),
                     descripcion: 'Preferencias de notificacion de usuario',
                 },
+                select: { valor: true },
             });
             res.json({ success: true, message: 'Preferencias actualizadas', data: JSON.parse(upsert.valor) });
         }

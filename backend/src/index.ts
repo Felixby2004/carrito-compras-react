@@ -13,7 +13,7 @@ const io = new Server(server, {
     origin: (origin, callback) => {
       const allowedOrigins = [
         'http://localhost:5173',
-        'https://carrito-compras-react-peach.vercel.app',
+    'http://127.0.0.1:5173',
         config.frontendUrl,
       ].filter(Boolean);
       

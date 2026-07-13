@@ -8,6 +8,7 @@ const router = (0, express_1.Router)();
 const clienteController = new cliente_controller_1.ClienteController();
 // Rutas para el propio cliente
 router.get('/mis-direcciones', auth_middleware_1.authenticate, clienteController.getMisDirecciones.bind(clienteController));
+router.get('/direcciones', auth_middleware_1.authenticate, clienteController.getMisDirecciones.bind(clienteController)); // Alias for backward compatibility
 router.post('/direcciones', auth_middleware_1.authenticate, clienteController.crearDireccion.bind(clienteController));
 // Rutas admin - las más específicas primero
 router.get('/admin/estadisticas', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('clientes', 'leer'), clienteController.getEstadisticas.bind(clienteController));

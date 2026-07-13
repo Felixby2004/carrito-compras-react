@@ -2,23 +2,23 @@ import apiClient from './client';
 import type { LoginRequest, RegisterRequest, AuthResponse } from '../types';
 
 export const authApi = {
-  login: async (data: LoginRequest): Promise<AuthResponse> => {
+  login: async (data: LoginRequest): Promise<AuthResponse['data']> => {
     const response = await apiClient.post('/auth/login', data);
-    return response.data;
+    return response.data.data;
   },
   
-  register: async (data: RegisterRequest): Promise<AuthResponse> => {
+  register: async (data: RegisterRequest): Promise<AuthResponse['data']> => {
     const response = await apiClient.post('/auth/register', data);
-    return response.data;
+    return response.data.data;
   },
   
   logout: async (refreshToken: string): Promise<void> => {
     await apiClient.post('/auth/logout', { refreshToken });
   },
   
-  refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
+  refreshToken: async (refreshToken: string): Promise<AuthResponse['data']> => {
     const response = await apiClient.post('/auth/refresh-token', { refreshToken });
-    return response.data;
+    return response.data.data;
   },
 
   forgotPassword: async (email: string) => {

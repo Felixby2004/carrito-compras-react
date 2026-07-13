@@ -54,14 +54,29 @@ export class PerfilController {
           email_verificado: true,
           activo: true,
           fecha_ultimo_login: true,
-          created_at: true,
           cliente: {
-            include: {
-              direcciones: true,
+            select: {
+              id: true,
+              telefono: true,
+              fecha_nacimiento: true,
+              total_gastado: true,
+              segmento: true,
+              direcciones: {
+                select: {
+                  id: true,
+                  alias: true,
+                  direccion_completa: true,
+                  departamento: true,
+                  codigo_postal: true,
+                  telefono: true,
+                  es_principal: true,
+                },
+                orderBy: [{ es_principal: 'desc' }, { id: 'desc' }],
+              },
               lista_deseos: {
-                include: {
+                select: {
                   items: {
-                    include: {
+                    select: {
                       producto: {
                         select: {
                           id: true,
@@ -83,6 +98,7 @@ export class PerfilController {
       }
       const perfilBase = await prisma.configuracion_sistema.findUnique({
         where: { clave: `perfil_usuario_${req.user.id}` },
+        select: { valor: true },
       });
       const perfil = perfilBase ? JSON.parse(perfilBase.valor) : {};
       
@@ -265,18 +281,18 @@ export class PerfilController {
         });
       }
       
+      const direccionData: any = {
+        cliente_id: cliente.id,
+        alias: (datos as any).alias,
+        direccion_completa: (datos as any).direccion_completa,
+        departamento: (datos as any).departamento || '',
+        telefono: (datos as any).telefono,
+        es_principal: (datos as any).es_principal ?? false,
+      };
+      if ((datos as any).codigo_postal) direccionData.codigo_postal = (datos as any).codigo_postal;
+
       const direccion = await prisma.cli_direcciones.create({
-        data: {
-          cliente_id: cliente.id,
-          alias: (datos as any).alias,
-          direccion_completa: (datos as any).direccion_completa,
-          departamento: (datos as any).departamento || '',
-          provincia: (datos as any).provincia,
-          distrito: (datos as any).distrito,
-          codigo_postal: (datos as any).codigo_postal || '',
-          telefono: (datos as any).telefono,
-          es_principal: (datos as any).es_principal ?? false,
-        } as any,
+        data: direccionData,
       });
       
       res.status(201).json({
@@ -352,18 +368,18 @@ export class PerfilController {
         });
       }
       
+      const direccionUpdateData: any = {
+        alias: (datos as any).alias,
+        direccion_completa: (datos as any).direccion_completa,
+        departamento: (datos as any).departamento,
+        telefono: (datos as any).telefono,
+        es_principal: (datos as any).es_principal,
+      };
+      if ((datos as any).codigo_postal) direccionUpdateData.codigo_postal = (datos as any).codigo_postal;
+
       const actualizada = await prisma.cli_direcciones.update({
         where: { id: direccionId },
-        data: {
-          alias: (datos as any).alias,
-          direccion_completa: (datos as any).direccion_completa,
-          departamento: (datos as any).departamento,
-          provincia: (datos as any).provincia,
-          distrito: (datos as any).distrito,
-          codigo_postal: (datos as any).codigo_postal,
-          telefono: (datos as any).telefono,
-          es_principal: (datos as any).es_principal,
-        } as any,
+        data: direccionUpdateData,
       });
       
       res.json({
@@ -678,6 +694,7 @@ export class PerfilController {
           valor: JSON.stringify(data),
           descripcion: 'Preferencias de notificacion de usuario',
         },
+        select: { valor: true },
       });
 
       res.json({ success: true, message: 'Preferencias actualizadas', data: JSON.parse(upsert.valor) });

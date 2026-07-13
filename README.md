@@ -1,6 +1,6 @@
-# 🛒 Sistema de E-Commerce con Carrito de Compras
+# 🛒 eMarket Perú
 
-Sistema fullstack de e-commerce con frontend en React/Vite y backend en Node.js + PostgreSQL + Prisma. Permite a los clientes navegar un catálogo, gestionar su carrito, realizar compras y hacer seguimiento de pedidos. Los administradores disponen de un panel completo con KPIs, gestión de productos, inventario, órdenes y reportes PDF.
+Sistema fullstack de eMarket Perú con frontend en React/Vite y backend en Node.js + PostgreSQL + Prisma. Permite a los clientes navegar un catálogo, gestionar su carrito, realizar compras y hacer seguimiento de pedidos. Los administradores disponen de un panel completo con KPIs, gestión de productos, inventario, órdenes y reportes PDF.
 
 ---
 

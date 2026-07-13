@@ -1,6 +1,29 @@
+import path from 'path';
+import fs from 'fs';
 import dotenv from 'dotenv';
 
-dotenv.config();
+const envPath = path.resolve(__dirname, '../../.env');
+const envExists = fs.existsSync(envPath);
+
+console.log('📄 Cargando variables de entorno desde:', envPath, envExists ? '' : '(no existe)');
+if (process.env.NODE_ENV !== 'production') {
+  // En desarrollo, usamos `.env` local y sobreescribimos variables del sistema.
+  dotenv.config({ path: envPath, override: true });
+} else {
+  // En producción no sobreescribimos las variables del entorno con un `.env` local.
+  dotenv.config({ path: envPath, override: false });
+}
+
+if (!process.env.DATABASE_URL) {
+  console.warn('⚠️ DATABASE_URL no está configurada. Revisa tu archivo .env o la variable de entorno.');
+} else if (process.env.NODE_ENV !== 'production') {
+  try {
+    const url = new URL(process.env.DATABASE_URL);
+    console.log(`🔗 Conectando a la base de datos en: ${url.hostname}`);
+  } catch {
+    console.log('🔗 DATABASE_URL establecida, pero no se pudo parsear el host.');
+  }
+}
 
 // Validación de variables críticas en producción
 if (process.env.NODE_ENV === 'production') {

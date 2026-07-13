@@ -323,8 +323,6 @@ export function CheckoutPage() {
           apellido: direccionFinal.apellido || (direccionFinal as Direccion).destinatario?.split(' ')[1] || '',
           direccion: (direccionFinal as Direccion).direccion_completa || direccionFinal.direccion,
           departamento: direccionFinal.departamento || '',
-          provincia: direccionFinal.provincia || '',
-          distrito: direccionFinal.distrito || '',
           codigo_postal: direccionFinal.codigo_postal || '',
           telefono: direccionFinal.telefono,
         },

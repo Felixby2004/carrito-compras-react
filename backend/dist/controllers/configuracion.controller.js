@@ -18,12 +18,15 @@ const temaDefault = {
     colorSecundario: '#0f172a',
     colorAcento: '#f59e0b',
     logoUrl: null,
-    nombreTienda: 'E-Commerce',
+    nombreTienda: 'eMarket Perú',
 };
 class ConfiguracionController {
     async getTemaPublico(_req, res, next) {
         try {
-            const config = await prisma.configuracion_sistema.findUnique({ where: { clave: CLAVE_TEMA } });
+            const config = await prisma.configuracion_sistema.findUnique({
+                where: { clave: CLAVE_TEMA },
+                select: { valor: true },
+            });
             const tema = config ? { ...temaDefault, ...JSON.parse(config.valor) } : temaDefault;
             res.json({ success: true, data: tema });
         }
@@ -35,7 +38,10 @@ class ConfiguracionController {
         try {
             if (!req.user)
                 throw new errorHandler_1.AppError('No autenticado', 401);
-            const config = await prisma.configuracion_sistema.findUnique({ where: { clave: CLAVE_TEMA } });
+            const config = await prisma.configuracion_sistema.findUnique({
+                where: { clave: CLAVE_TEMA },
+                select: { valor: true },
+            });
             const tema = config ? { ...temaDefault, ...JSON.parse(config.valor) } : temaDefault;
             res.json({ success: true, data: tema });
         }

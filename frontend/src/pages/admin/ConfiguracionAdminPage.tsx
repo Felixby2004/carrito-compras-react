@@ -16,7 +16,7 @@ const defaultTema: TemaConfig = {
   colorSecundario: '#0f172a',
   colorAcento: '#f59e0b',
   logoUrl: null,
-  nombreTienda: 'E-Commerce',
+  nombreTienda: 'eMarket Perú',
 };
 
 export function ConfiguracionAdminPage() {
@@ -196,10 +196,10 @@ export function ConfiguracionAdminPage() {
                   <img src={tema.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
                 ) : (
                   <div className="h-12 w-12 rounded-lg flex items-center justify-center text-white font-bold text-xl" style={{ backgroundColor: tema.colorPrimario }}>
-                    {tema.nombreTienda?.charAt(0) || 'E'}
+                    {tema.nombreTienda?.charAt(0) || 'e'}
                   </div>
                 )}
-                <span className="font-bold text-2xl" style={{ color: tema.colorPrimario }}>{tema.nombreTienda || 'E-Commerce'}</span>
+                <span className="font-bold text-2xl" style={{ color: tema.colorPrimario }}>{tema.nombreTienda || 'eMarket Perú'}</span>
               </div>
               <div className="flex gap-3">
                 <span className="px-6 py-3 rounded-xl text-white font-semibold shadow-md" style={{ backgroundColor: tema.colorPrimario }}>Primario</span>

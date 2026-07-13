@@ -259,61 +259,74 @@ export class ClienteController {
   }
 
   // Obtener direcciones del cliente autenticado
-    async getMisDirecciones(req: AuthRequest, res: Response, next: NextFunction) {
+  async getMisDirecciones(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-        if (!req.user) {
+      if (!req.user) {
         throw new AppError('No autenticado', 401);
-        }
-        
-        const cliente = await prisma.cli_clientes.findUnique({
-        where: { usuario_id: req.user.id },
-        include: { direcciones: true },
-        });
-        
-        if (!cliente) {
-        throw new AppError('Cliente no encontrado', 404);
-        }
-        
-        res.json({ success: true, data: cliente.direcciones });
-    } catch (error) {
-        next(error);
-    }
-    }
+      }
 
-    // Crear nueva dirección
-    async crearDireccion(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-        if (!req.user) {
-        throw new AppError('No autenticado', 401);
-        }
-        
-        const { alias, direccion_completa, departamento, provincia, distrito, codigo_postal, telefono, es_principal } = req.body;
-        
-        const cliente = await prisma.cli_clientes.findUnique({
+      const cliente = await prisma.cli_clientes.findUnique({
         where: { usuario_id: req.user.id },
-        });
-        
-        if (!cliente) {
+        select: { id: true },
+      });
+
+      if (!cliente) {
         throw new AppError('Cliente no encontrado', 404);
-        }
-        
-        const direccion = await prisma.cli_direcciones.create({
-        data: {
-            cliente_id: cliente.id,
-            alias,
-            direccion_completa,
-            departamento,
-            provincia,
-            distrito,
-            codigo_postal,
-            telefono,
-            es_principal: es_principal || false,
+      }
+
+      const direcciones = await prisma.cli_direcciones.findMany({
+        where: { cliente_id: cliente.id },
+        select: {
+          id: true,
+          alias: true,
+          direccion_completa: true,
+          departamento: true,
+          codigo_postal: true,
+          telefono: true,
+          es_principal: true,
         },
-        });
-        
-        res.status(201).json({ success: true, data: direccion });
+        orderBy: [{ es_principal: 'desc' }, { id: 'desc' }],
+      });
+
+      res.json({ success: true, data: direcciones });
     } catch (error) {
-        next(error);
+      next(error);
     }
+  }
+
+  async crearDireccion(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw new AppError('No autenticado', 401);
+      }
+
+      const { alias, direccion_completa, departamento, codigo_postal, telefono, es_principal } = req.body;
+
+      const cliente = await prisma.cli_clientes.findUnique({
+        where: { usuario_id: req.user.id },
+      });
+
+      if (!cliente) {
+        throw new AppError('Cliente no encontrado', 404);
+      }
+
+      const direccionData: any = {
+        cliente_id: cliente.id,
+        alias,
+        direccion_completa,
+        departamento,
+        telefono,
+        es_principal: es_principal || false,
+      };
+      if (codigo_postal) direccionData.codigo_postal = codigo_postal;
+
+      const direccion = await prisma.cli_direcciones.create({
+        data: direccionData,
+      });
+
+      res.status(201).json({ success: true, data: direccion });
+    } catch (error) {
+      next(error);
     }
+  }
 }

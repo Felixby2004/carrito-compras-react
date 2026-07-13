@@ -1,7 +1,7 @@
 {
   "name": "ecommerce-backend",
   "version": "1.0.0",
-  "description": "Backend API para sistema de e-commerce con carrito de compras",
+  "description": "Backend API para eMarket Perú",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",

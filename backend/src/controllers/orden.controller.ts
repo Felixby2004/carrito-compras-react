@@ -453,18 +453,18 @@ export class OrdenController {
       }
       
       // Paso 4: Crear dirección de envío
+      const direccionEnvioData: any = {
+        orden_id: orden.id,
+        cliente_id: clienteId,
+        direccion_completa: data.direccion.direccion,
+        departamento: data.direccion.departamento || '',
+        telefono: data.direccion.telefono,
+        destinatario: `${data.direccion.nombre} ${data.direccion.apellido}`,
+      };
+      if (data.direccion.codigo_postal) direccionEnvioData.codigo_postal = data.direccion.codigo_postal;
+
       await prisma.ord_direcciones_envio.create({
-        data: {
-          orden_id: orden.id,
-          cliente_id: clienteId,
-          direccion_completa: data.direccion.direccion,
-          departamento: data.direccion.departamento || '',
-          provincia: data.direccion.provincia || '',
-          distrito: data.direccion.distrito || '',
-          codigo_postal: data.direccion.codigo_postal || '',
-          telefono: data.direccion.telefono,
-          destinatario: `${data.direccion.nombre} ${data.direccion.apellido}`,
-        },
+        data: direccionEnvioData,
       });
 
       // Guardar dirección como favorita para el cliente (si es login/registro, no invitado)
@@ -494,18 +494,18 @@ export class OrdenController {
         });
         
         if (!direccionExistente) {
+          const direccionFavoritaData: any = {
+            cliente_id: clienteId,
+            alias: 'Mi dirección',
+            direccion_completa: data.direccion.direccion,
+            departamento: data.direccion.departamento || '',
+            telefono: data.direccion.telefono,
+            es_principal: true,
+          };
+          if (data.direccion.codigo_postal) direccionFavoritaData.codigo_postal = data.direccion.codigo_postal;
+
           await prisma.cli_direcciones.create({
-            data: {
-              cliente_id: clienteId,
-              alias: 'Mi dirección',
-              direccion_completa: data.direccion.direccion,
-              departamento: data.direccion.departamento || '',
-              provincia: data.direccion.provincia || '',
-              distrito: data.direccion.distrito || '',
-              codigo_postal: data.direccion.codigo_postal || '',
-              telefono: data.direccion.telefono,
-              es_principal: true,
-            },
+            data: direccionFavoritaData,
           });
         }
       }
@@ -1036,7 +1036,7 @@ export class OrdenController {
     const lineY = () => doc.moveTo(40, doc.y).lineTo(555, doc.y).strokeColor('#e2e8f0').stroke();
     const writeMoney = (v: unknown) => `S/ ${Number(v || 0).toFixed(2)}`;
 
-    doc.font('Helvetica-Bold').fontSize(20).fillColor('#1d4ed8').text('E-Commerce', 40, 40);
+    doc.font('Helvetica-Bold').fontSize(20).fillColor('#1d4ed8').text('eMarket Perú', 40, 40);
     doc.font('Helvetica').fontSize(10).fillColor('#475569').text('Documento electrónico', 40, 64);
     doc.font('Helvetica-Bold').fontSize(16).fillColor('#0f172a').text(titulo.toUpperCase(), 390, 40, { width: 165, align: 'right' });
     doc.font('Helvetica').fontSize(10).fillColor('#334155').text(`Nro: ${orden.orden_numero}`, 390, 62, { width: 165, align: 'right' });

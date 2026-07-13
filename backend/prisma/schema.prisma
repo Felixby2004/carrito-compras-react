@@ -128,8 +128,6 @@ model cli_direcciones {
   alias              String   @db.VarChar(50)
   direccion_completa String   @db.Text
   departamento       String   @db.VarChar(100)
-  provincia          String?  @db.VarChar(100)
-  distrito           String?  @db.VarChar(100)
   codigo_postal      String?  @db.VarChar(20)
   telefono           String   @db.VarChar(20)
   es_principal       Boolean  @default(false)
@@ -613,8 +611,6 @@ model ord_direcciones_envio {
   cliente_id         Int
   direccion_completa String   @db.Text
   departamento       String   @db.VarChar(100)
-  provincia          String?  @db.VarChar(100)
-  distrito           String?  @db.VarChar(100)
   codigo_postal      String?  @db.VarChar(20)
   telefono           String   @db.VarChar(20)
   destinatario       String   @db.VarChar(200)

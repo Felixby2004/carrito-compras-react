@@ -53,7 +53,7 @@ function AppContent() {
     colorSecundario: '#0f172a',
     colorAcento: '#f59e0b',
     logoUrl: null,
-    nombreTienda: 'E-Commerce',
+    nombreTienda: 'eMarket Perú',
   });
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -113,9 +113,12 @@ function AppContent() {
           colorSecundario: '#0f172a',
           colorAcento: '#f59e0b',
           logoUrl: null,
-          nombreTienda: 'E-Commerce',
+          nombreTienda: 'eMarket Perú',
           ...data.data
         };
+        if (loadedTema.nombreTienda === 'E-Commerce') {
+          loadedTema.nombreTienda = 'eMarket Perú';
+        }
         setTema(loadedTema);
         document.documentElement.style.setProperty('--color-primary', loadedTema.colorPrimario);
         document.documentElement.style.setProperty('--color-secondary', loadedTema.colorSecundario);
@@ -161,10 +164,10 @@ function AppContent() {
                   <img src={tema.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
                 ) : (
                   <div className="h-12 w-12 rounded-2xl bg-gradient-primary shadow-glow flex items-center justify-center text-white font-black text-xl">
-                    {tema.nombreTienda?.charAt(0) || 'E'}
+                    {tema.nombreTienda?.charAt(0) || 'e'}
                   </div>
                 )}
-                <span className="text-slate-800">{tema.nombreTienda || 'E-Commerce'}</span>
+                <span className="text-slate-800">{tema.nombreTienda || 'eMarket Perú'}</span>
               </Link>
             </div>
 
@@ -313,6 +316,32 @@ function AppContent() {
           </div>
         ))}
       </div>
+
+      {/* Footer */}
+      <footer className="mt-12 bg-slate-900 text-slate-200 py-10">
+        <div className="container mx-auto px-4 grid gap-6 md:grid-cols-3">
+          <div>
+            <h2 className="text-xl font-bold text-white">eMarket Perú</h2>
+            <p className="mt-2 text-sm text-slate-400 max-w-sm">
+              Tu marketplace local con envíos rápidos, ofertas exclusivas y atención dedicada para clientes en todo el Perú.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white">Enlaces</h3>
+            <ul className="mt-3 space-y-2 text-sm text-slate-400">
+              <li><Link to="/" className="hover:text-white">Inicio</Link></li>
+              <li><Link to="/catalogo" className="hover:text-white">Catálogo</Link></li>
+              <li><Link to="/mis-ordenes" className="hover:text-white">Mis Pedidos</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white">Contacto</h3>
+            <p className="mt-3 text-sm text-slate-400">soporte@emarketperu.com</p>
+            <p className="mt-1 text-sm text-slate-400">Lima, Perú</p>
+            <p className="mt-3 text-xs text-slate-500">© {new Date().getFullYear()} eMarket Perú. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
