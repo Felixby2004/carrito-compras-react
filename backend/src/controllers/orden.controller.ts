@@ -458,6 +458,7 @@ export class OrdenController {
         cliente_id: clienteId,
         direccion_completa: data.direccion.direccion,
         departamento: data.direccion.departamento || '',
+        ciudad: data.direccion.distrito || data.direccion.provincia || data.direccion.departamento || '',
         telefono: data.direccion.telefono,
         destinatario: `${data.direccion.nombre} ${data.direccion.apellido}`,
       };
@@ -473,18 +474,18 @@ export class OrdenController {
           where: { id: clienteId },
           data: { telefono: data.direccion.telefono },
         });
-        await prisma.configuracion_sistema.upsert({
-          where: { clave: `perfil_usuario_${usuarioId}` },
-          update: {
-            valor: JSON.stringify({ nombre: data.direccion.nombre, apellido: data.direccion.apellido }),
-            descripcion: 'Perfil basico de usuario',
-          },
-          create: {
-            clave: `perfil_usuario_${usuarioId}`,
-            valor: JSON.stringify({ nombre: data.direccion.nombre, apellido: data.direccion.apellido }),
-            descripcion: 'Perfil basico de usuario',
-          },
-        });
+        // await prisma.configuracion_sistema.upsert({
+        //   where: { clave: `perfil_usuario_${usuarioId}` },
+        //   update: {
+        //     valor: JSON.stringify({ nombre: data.direccion.nombre, apellido: data.direccion.apellido }),
+        //     descripcion: 'Perfil basico de usuario',
+        //   },
+        //   create: {
+        //     clave: `perfil_usuario_${usuarioId}`,
+        //     valor: JSON.stringify({ nombre: data.direccion.nombre, apellido: data.direccion.apellido }),
+        //     descripcion: 'Perfil basico de usuario',
+        //   },
+        // });
 
         const direccionExistente = await prisma.cli_direcciones.findFirst({
           where: {
@@ -499,6 +500,7 @@ export class OrdenController {
             alias: 'Mi dirección',
             direccion_completa: data.direccion.direccion,
             departamento: data.direccion.departamento || '',
+            ciudad: data.direccion.distrito || data.direccion.provincia || data.direccion.departamento || '',
             telefono: data.direccion.telefono,
             es_principal: true,
           };

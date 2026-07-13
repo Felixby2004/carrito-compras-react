@@ -148,7 +148,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="flex flex-col min-h-screen">
       {/* Navbar - solo visible si NO es ruta de admin */}
       {!isAdminRoute && (
         <nav className="bg-white/80 backdrop-blur-soft shadow-soft sticky top-0 z-40 border-b border-white/50">
@@ -258,67 +258,70 @@ function AppContent() {
         </nav>
       )}
 
-      <Routes>
-        {/* Rutas públicas */}
-        <Route path="/" element={<HomePage onAddToCart={handleAddToCart} isAuthenticated={isAuthenticated} />} />
-        <Route path="/catalogo" element={<CatalogoPage onAddToCart={handleAddToCart} />} />
-        <Route path="/producto/:id" element={<ProductoDetallePage />} />
-        {/* Rutas de cliente solo - bloquear para admins */}
-        <Route path="/checkout" element={
-          !isAdmin ? (
-            <ErrorBoundary>
-              <CheckoutPage />
-            </ErrorBoundary>
-          ) : <Navigate to="/admin" replace />
-        } />
-        <Route path="/mis-ordenes" element={!isAdmin ? <MisOrdenesPage /> : <Navigate to="/admin" replace />} />
-        <Route path="/mis-ordenes/:id" element={!isAdmin ? <OrdenDetallePage /> : <Navigate to="/admin" replace />} />
-        <Route path="/wishlist" element={!isAdmin ? <WishlistPage /> : <Navigate to="/admin" replace />} />
-        
-        {/* Rutas de administrador - anidadas */}
-        <Route path="/admin" element={
-          <AdminRoute>
-            <AdminLayout />
-          </AdminRoute>
-        }>
-          <Route index element={<DashboardPage />} />
-          <Route path="productos" element={<ProductosAdminPage />} />
-          <Route path="ordenes" element={<OrdenesAdminPage />} />
-          <Route path="clientes" element={<ClientesAdminPage />} />
-          <Route path="inventario" element={<InventarioAdminPage />} />
-          <Route path="cupones" element={<CuponesAdminPage />} />
-          <Route path="reportes" element={<ReportesAdminPage />} />
-          <Route path="configuracion" element={<ConfiguracionAdminPage />} />
-        </Route>
-        
-        {/* Redirección para rutas no encontradas */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      {/* Main Content */}
+      <main className="flex-grow">
+        <Routes>
+          {/* Rutas públicas */}
+          <Route path="/" element={<HomePage onAddToCart={handleAddToCart} isAuthenticated={isAuthenticated} />} />
+          <Route path="/catalogo" element={<CatalogoPage onAddToCart={handleAddToCart} />} />
+          <Route path="/producto/:id" element={<ProductoDetallePage />} />
+          {/* Rutas de cliente solo - bloquear para admins */}
+          <Route path="/checkout" element={
+            !isAdmin ? (
+              <ErrorBoundary>
+                <CheckoutPage />
+              </ErrorBoundary>
+            ) : <Navigate to="/admin" replace />
+          } />
+          <Route path="/mis-ordenes" element={!isAdmin ? <MisOrdenesPage /> : <Navigate to="/admin" replace />} />
+          <Route path="/mis-ordenes/:id" element={!isAdmin ? <OrdenDetallePage /> : <Navigate to="/admin" replace />} />
+          <Route path="/wishlist" element={!isAdmin ? <WishlistPage /> : <Navigate to="/admin" replace />} />
+          
+          {/* Rutas de administrador - anidadas */}
+          <Route path="/admin" element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }>
+            <Route index element={<DashboardPage />} />
+            <Route path="productos" element={<ProductosAdminPage />} />
+            <Route path="ordenes" element={<OrdenesAdminPage />} />
+            <Route path="clientes" element={<ClientesAdminPage />} />
+            <Route path="inventario" element={<InventarioAdminPage />} />
+            <Route path="cupones" element={<CuponesAdminPage />} />
+            <Route path="reportes" element={<ReportesAdminPage />} />
+            <Route path="configuracion" element={<ConfiguracionAdminPage />} />
+          </Route>
+          
+          {/* Redirección para rutas no encontradas */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
 
-      {/* Drawers y Modales - solo visibles fuera de admin */}
-      {!isAdminRoute && (
-        <>
-          <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-          <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-        </>
-      )}
-      
-      {/* Toasts */}
-      <div className="fixed bottom-4 right-4 z-[100] space-y-2">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`px-5 py-3 rounded-xl shadow-lg text-sm text-white font-medium transition-all ${
-              toast.type === 'success' ? 'bg-emerald-600' : toast.type === 'error' ? 'bg-red-600' : 'bg-slate-700'
-            }`}
-          >
-            {toast.message}
-          </div>
-        ))}
-      </div>
+        {/* Drawers y Modales - solo visibles fuera de admin */}
+        {!isAdminRoute && (
+          <>
+            <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+            <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+          </>
+        )}
+        
+        {/* Toasts */}
+        <div className="fixed bottom-4 right-4 z-[100] space-y-2">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              className={`px-5 py-3 rounded-xl shadow-lg text-sm text-white font-medium transition-all ${
+                toast.type === 'success' ? 'bg-emerald-600' : toast.type === 'error' ? 'bg-red-600' : 'bg-slate-700'
+              }`}
+            >
+              {toast.message}
+            </div>
+          ))}
+        </div>
+      </main>
 
       {/* Footer */}
-      <footer className="mt-12 bg-slate-900 text-slate-200 py-10">
+      <footer className="bg-slate-900 text-slate-200 py-10">
         <div className="container mx-auto px-4 grid gap-6 md:grid-cols-3">
           <div>
             <h2 className="text-xl font-bold text-white">eMarket Perú</h2>

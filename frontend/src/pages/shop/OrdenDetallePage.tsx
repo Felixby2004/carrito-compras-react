@@ -4,14 +4,30 @@ import { notify } from '../../utils/notify';
 
 type Orden = any;
 
+const estadoLabels: Record<string, string> = {
+  'pendiente_pago': 'Pendiente pago',
+  'pagada': 'Pagada',
+  'en_proceso': 'En proceso',
+  'enviada': 'Enviada',
+  'entregada': 'Entregada',
+  'cancelada': 'Cancelada',
+  'devuelta': 'Devuelta',
+};
+
+const estadoColors: Record<string, string> = {
+  'pendiente_pago': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  'pagada': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  'en_proceso': 'bg-blue-100 text-blue-800 border-blue-200',
+  'enviada': 'bg-indigo-100 text-indigo-800 border-indigo-200',
+  'entregada': 'bg-green-100 text-green-800 border-green-200',
+  'cancelada': 'bg-red-100 text-red-800 border-red-200',
+  'devuelta': 'bg-orange-100 text-orange-800 border-orange-200',
+};
+
 function badge(estado: string) {
-  const base = 'px-2 py-1 rounded-full text-xs font-medium';
-  if (estado === 'entregada') return `${base} bg-emerald-100 text-emerald-700`;
-  if (estado === 'cancelada' || estado === 'devuelta') return `${base} bg-rose-100 text-rose-700`;
-  if (estado === 'enviada') return `${base} bg-indigo-100 text-indigo-700`;
-  if (estado === 'en_proceso') return `${base} bg-amber-100 text-amber-800`;
-  if (estado === 'pagada') return `${base} bg-blue-100 text-blue-700`;
-  return `${base} bg-slate-100 text-slate-700`;
+  const base = 'px-2 py-1 rounded-full text-xs font-medium border';
+  const color = estadoColors[estado] || 'bg-slate-100 text-slate-700 border-slate-200';
+  return `${base} ${color}`;
 }
 
 export function OrdenDetallePage() {
@@ -55,7 +71,8 @@ export function OrdenDetallePage() {
         notify('Inicia sesión para cancelar', 'info');
         return;
       }
-      const res = await fetch(`/api/v1/ordenes/mis-ordenes/${id}/cancelar`, {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API_URL}/ordenes/mis-ordenes/${id}/cancelar`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ comentario: 'Cancelada por cliente' }),
@@ -76,7 +93,8 @@ export function OrdenDetallePage() {
 
   const cargarTracking = async () => {
     if (!id || !token) return null;
-    const res = await fetch(`/api/v1/ordenes/mis-ordenes/${id}/tracking`, {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const res = await fetch(`${API_URL}/ordenes/mis-ordenes/${id}/tracking`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -115,7 +133,7 @@ export function OrdenDetallePage() {
             <h1 className="text-2xl font-bold">{orden.orden_numero}</h1>
             <p className="text-sm text-slate-600">Fecha: {new Date(orden.created_at || orden.fecha_orden).toLocaleString()}</p>
             <p className="text-sm text-slate-600">
-              Estado actual: <span className={badge(orden.estado)}>{orden.estado}</span>
+              Estado actual: <span className={badge(orden.estado)}>{estadoLabels[orden.estado] || orden.estado}</span>
             </p>
             <p className="text-sm text-slate-600">Método de pago: <span className="font-medium">{orden.metodo_pago || 'N/A'}</span></p>
           </div>
