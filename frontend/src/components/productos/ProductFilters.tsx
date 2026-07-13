@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { catalogoApi } from '../../api/catalogo.api';
-import type { Categoria, Marca, Subcategoria, Atributo } from '../../api/catalogo.api';
+import type { Categoria, Marca, Subcategoria } from '../../api/catalogo.api';
 
 interface ProductFiltersProps {
   onFilterChange: (filters: any) => void;
@@ -11,14 +11,12 @@ export function ProductFilters({ onFilterChange, initialFilters = {} }: ProductF
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [marcas, setMarcas] = useState<Marca[]>([]);
   const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([]);
-  const [atributos, setAtributos] = useState<Atributo[]>([]);
   const [categoriaId, setCategoriaId] = useState(initialFilters.categoria_id || '');
   const [subcategoriaId, setSubcategoriaId] = useState(initialFilters.subcategoria_id || '');
   const [marcaId, setMarcaId] = useState(initialFilters.marca_id || '');
   const [precioMin, setPrecioMin] = useState(initialFilters.min_precio || '');
   const [precioMax, setPrecioMax] = useState(initialFilters.max_precio || '');
   const [search, setSearch] = useState(initialFilters.search || '');
-  const [atributosSeleccionados, setAtributosSeleccionados] = useState<Record<string, string>>({});
 
   // Función para aplicar filtros manualmente
   const applyFilters = () => {
@@ -27,18 +25,19 @@ export function ProductFilters({ onFilterChange, initialFilters = {} }: ProductF
     if (categoriaId) filters.categoria_id = Number(categoriaId);
     if (subcategoriaId) filters.subcategoria_id = Number(subcategoriaId);
     if (marcaId) filters.marca_id = Number(marcaId);
-    if (precioMin) filters.min_precio = Number(precioMin);
-    if (precioMax) filters.max_precio = Number(precioMax);
-    if (Object.keys(atributosSeleccionados).length > 0) {
-      filters.atributos = atributosSeleccionados;
-    }
+    if (precioMin !== '') filters.min_precio = Number(precioMin);
+    if (precioMax !== '') filters.max_precio = Number(precioMax);
+    console.log("🟡 ProductFilters.tsx applyFilters - Enviando filtros:", {
+      precioMin,
+      precioMax,
+      filters
+    });
     onFilterChange(filters);
   };
 
   useEffect(() => {
     catalogoApi.getCategorias().then(setCategorias);
     catalogoApi.getMarcas().then(setMarcas);
-    catalogoApi.getAtributos().then(setAtributos);
   }, []);
 
   useEffect(() => {
@@ -57,7 +56,6 @@ export function ProductFilters({ onFilterChange, initialFilters = {} }: ProductF
     setMarcaId('');
     setPrecioMin('');
     setPrecioMax('');
-    setAtributosSeleccionados({});
     onFilterChange({});
   };
 
@@ -158,33 +156,6 @@ export function ProductFilters({ onFilterChange, initialFilters = {} }: ProductF
             Incluye descuentos automáticamente
           </p>
         </div>
-
-        {/* Atributos (talla, color, etc.) */}
-        {atributos.map((atributo) => (
-          <div key={atributo.id}>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              🎨 {atributo.nombre}
-            </label>
-            <select
-              value={atributosSeleccionados[atributo.id] || ''}
-              onChange={(e) => {
-                const nuevos = { ...atributosSeleccionados };
-                if (e.target.value) {
-                  nuevos[atributo.id] = e.target.value;
-                } else {
-                  delete nuevos[atributo.id];
-                }
-                setAtributosSeleccionados(nuevos);
-              }}
-              className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all outline-none bg-white"
-            >
-              <option value="">Todos</option>
-              {atributo.valores.map((valor) => (
-                <option key={valor.id} value={valor.id}>{valor.valor}</option>
-              ))}
-            </select>
-          </div>
-        ))}
       </div>
 
       {/* Botón de aplicar filtros */}

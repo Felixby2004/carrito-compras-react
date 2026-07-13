@@ -18,7 +18,7 @@ const io = new socket_io_1.Server(server, {
         origin: (origin, callback) => {
             const allowedOrigins = [
                 'http://localhost:5173',
-                'https://carrito-compras-react-peach.vercel.app',
+                'http://127.0.0.1:5173',
                 config_1.default.frontendUrl,
             ].filter(Boolean);
             if (!origin || allowedOrigins.includes(origin) || origin.includes('vercel.app')) {

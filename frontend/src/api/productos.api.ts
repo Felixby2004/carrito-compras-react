@@ -22,6 +22,7 @@ export interface ProductosResponse {
 
 export const productosApi = {
   getProductos: async (filters?: ProductosFilters): Promise<ProductosResponse> => {
+    console.log("🟠 productos.api.ts getProductos - Recibiendo filtros:", filters);
     const params = new URLSearchParams();
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
@@ -30,6 +31,7 @@ export const productosApi = {
         }
       });
     }
+    console.log("🟠 productos.api.ts getProductos - Parámetros de URL:", params.toString());
     const response = await apiClient.get(`/productos?${params.toString()}`);
     return response.data;
   },

@@ -57,7 +57,9 @@ export class ProductoController {
 
   async getProductos(req: Request, res: Response, next: NextFunction) {
     try {
+      console.log("🟣 producto.controller.ts getProductos - req.query:", req.query);
       const filters = productoFilterSchema.parse(req.query);
+      console.log("🟣 producto.controller.ts getProductos - filters parseados:", filters);
       const result = await productoService.getProductos(filters);
       
       // Transformar URLs de imágenes en los productos

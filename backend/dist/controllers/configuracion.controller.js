@@ -20,6 +20,19 @@ const temaDefault = {
     logoUrl: null,
     nombreTienda: 'eMarket Perú',
 };
+const normalizeNombreTienda = (nombreTienda) => {
+    if (!nombreTienda)
+        return undefined;
+    return nombreTienda === 'E-Commerce' ? 'eMarket Perú' : nombreTienda;
+};
+const normalizeTema = (tema) => {
+    if (!tema)
+        return tema;
+    return {
+        ...tema,
+        nombreTienda: normalizeNombreTienda(tema.nombreTienda) ?? tema.nombreTienda,
+    };
+};
 class ConfiguracionController {
     async getTemaPublico(_req, res, next) {
         try {
@@ -27,7 +40,7 @@ class ConfiguracionController {
                 where: { clave: CLAVE_TEMA },
                 select: { valor: true },
             });
-            const tema = config ? { ...temaDefault, ...JSON.parse(config.valor) } : temaDefault;
+            const tema = config ? normalizeTema({ ...temaDefault, ...JSON.parse(config.valor) }) : temaDefault;
             res.json({ success: true, data: tema });
         }
         catch (error) {
@@ -42,7 +55,7 @@ class ConfiguracionController {
                 where: { clave: CLAVE_TEMA },
                 select: { valor: true },
             });
-            const tema = config ? { ...temaDefault, ...JSON.parse(config.valor) } : temaDefault;
+            const tema = config ? normalizeTema({ ...temaDefault, ...JSON.parse(config.valor) }) : temaDefault;
             res.json({ success: true, data: tema });
         }
         catch (error) {
@@ -54,12 +67,16 @@ class ConfiguracionController {
             if (!req.user)
                 throw new errorHandler_1.AppError('No autenticado', 401);
             const data = temaSchema.parse(req.body);
+            const normalizedData = {
+                ...data,
+                nombreTienda: normalizeNombreTienda(data.nombreTienda) ?? data.nombreTienda,
+            };
             const saved = await prisma.configuracion_sistema.upsert({
                 where: { clave: CLAVE_TEMA },
-                update: { valor: JSON.stringify(data), descripcion: 'Colores y configuración del tema del sistema' },
+                update: { valor: JSON.stringify(normalizedData), descripcion: 'Colores y configuración del tema del sistema' },
                 create: {
                     clave: CLAVE_TEMA,
-                    valor: JSON.stringify(data),
+                    valor: JSON.stringify(normalizedData),
                     descripcion: 'Colores y configuración del tema del sistema',
                 },
             });

@@ -63,8 +63,7 @@ export class ProductoService {
       ordenar,
       estado
     } = filters;
-    
-    const skip = (page - 1) * limit;
+    console.log("🔵 Filtros recibidos en getProductos:", { min_precio, max_precio });
     
     const where: any = {
       activo: true,
@@ -90,37 +89,21 @@ export class ProductoService {
     if (subcategoria_id) where.subcategoria_id = subcategoria_id;
     if (marca_id) where.marca_id = marca_id;
     
-    let orderBy: any = {};
-    switch (ordenar) {
-      case 'nombre_asc': orderBy = { nombre: 'asc' }; break;
-      case 'nombre_desc': orderBy = { nombre: 'desc' }; break;
-      case 'precio_asc': orderBy = { precio_venta: 'asc' }; break;
-      case 'precio_desc': orderBy = { precio_venta: 'desc' }; break;
-      case 'fecha_asc': orderBy = { created_at: 'asc' }; break;
-      case 'popularidad': orderBy = { ventas_totales: 'desc' }; break;
-      default: orderBy = { created_at: 'desc' };
-    }
-    
-    const [data, total] = await Promise.all([
-      prisma.cat_productos.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy,
-        include: {
-          categoria: true,
-          subcategoria: true,
-          marca: true,
-          unidad_medida: true,
-          imagenes: true,
-          stock: true,
-        },
-      }),
-      prisma.cat_productos.count({ where }),
-    ]);
+    // First get all matching products (without price filtering or pagination yet)
+    const data = await prisma.cat_productos.findMany({
+      where,
+      include: {
+        categoria: true,
+        subcategoria: true,
+        marca: true,
+        unidad_medida: true,
+        imagenes: true,
+        stock: true,
+      },
+    });
     
     const ahora = new Date();
-    const productosConDescuento = data.map((producto: any) => {
+    let productosFiltrados = data.map((producto: any) => {
       const precioVenta = Number(producto.precio_venta);
       const precioOferta = producto.precio_oferta ? Number(producto.precio_oferta) : null;
       const tieneOferta = precioOferta !== null &&
@@ -135,7 +118,8 @@ export class ProductoService {
         : 0;
       
       const stockDisponible = (producto as any).stock ?
-        Number((producto as any).stock.stock_fisico) - (Number((producto as any).stock.stock_reservado) || 0) : 0;
+        Number((producto as any).stock.stock_fisico) - (Number((producto as any).stock.stock_reservado) || 0)
+        : 0;
       
       return {
         ...producto,
@@ -146,9 +130,52 @@ export class ProductoService {
         stock_disponible: stockDisponible,
       };
     });
-    
+
+    console.log("🟢 Productos después de calcular precio_actual:", productosFiltrados.map(p => ({
+      id: p.id,
+      nombre: p.nombre,
+      precio_venta: p.precio_venta,
+      precio_oferta: p.precio_oferta,
+      precio_actual: p.precio_actual
+    })));
+
+    // Apply price range filters
+    if (min_precio !== undefined) {
+      productosFiltrados = productosFiltrados.filter(p => {
+        console.log(`  - Evaluando ${p.nombre} (precio_actual: ${p.precio_actual}) >= ${min_precio} → ${p.precio_actual >= min_precio}`);
+        return p.precio_actual >= min_precio;
+      });
+    }
+    if (max_precio !== undefined) {
+      productosFiltrados = productosFiltrados.filter(p => {
+        console.log(`  - Evaluando ${p.nombre} (precio_actual: ${p.precio_actual}) <= ${max_precio} → ${p.precio_actual <= max_precio}`);
+        return p.precio_actual <= max_precio;
+      });
+    }
+    console.log("🟢 Productos después de filtro de precio:", productosFiltrados.map(p => ({
+      id: p.id,
+      nombre: p.nombre,
+      precio_actual: p.precio_actual
+    })));
+
+    // Apply sorting
+    switch (ordenar) {
+      case 'nombre_asc': productosFiltrados.sort((a, b) => a.nombre.localeCompare(b.nombre)); break;
+      case 'nombre_desc': productosFiltrados.sort((a, b) => b.nombre.localeCompare(a.nombre)); break;
+      case 'precio_asc': productosFiltrados.sort((a, b) => a.precio_actual - b.precio_actual); break;
+      case 'precio_desc': productosFiltrados.sort((a, b) => b.precio_actual - a.precio_actual); break;
+      case 'fecha_asc': productosFiltrados.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); break;
+      case 'popularidad': productosFiltrados.sort((a, b) => (b.ventas_totales || 0) - (a.ventas_totales || 0)); break;
+      default: productosFiltrados.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
+
+    // Apply pagination
+    const skip = (page - 1) * limit;
+    const total = productosFiltrados.length;
+    const dataPagina = productosFiltrados.slice(skip, skip + limit);
+
     return {
-      data: productosConDescuento,
+      data: dataPagina,
       total,
       page,
       limit,

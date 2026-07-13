@@ -45,7 +45,6 @@ class ProductoService {
     }
     async getProductos(filters) {
         const { page, limit, search, categoria_id, subcategoria_id, marca_id, min_precio, max_precio, ordenar, estado } = filters;
-        const skip = (page - 1) * limit;
         const where = {
             activo: true,
         };
@@ -71,47 +70,20 @@ class ProductoService {
             where.subcategoria_id = subcategoria_id;
         if (marca_id)
             where.marca_id = marca_id;
-        let orderBy = {};
-        switch (ordenar) {
-            case 'nombre_asc':
-                orderBy = { nombre: 'asc' };
-                break;
-            case 'nombre_desc':
-                orderBy = { nombre: 'desc' };
-                break;
-            case 'precio_asc':
-                orderBy = { precio_venta: 'asc' };
-                break;
-            case 'precio_desc':
-                orderBy = { precio_venta: 'desc' };
-                break;
-            case 'fecha_asc':
-                orderBy = { created_at: 'asc' };
-                break;
-            case 'popularidad':
-                orderBy = { ventas_totales: 'desc' };
-                break;
-            default: orderBy = { created_at: 'desc' };
-        }
-        const [data, total] = await Promise.all([
-            prisma.cat_productos.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy,
-                include: {
-                    categoria: true,
-                    subcategoria: true,
-                    marca: true,
-                    unidad_medida: true,
-                    imagenes: true,
-                    stock: true,
-                },
-            }),
-            prisma.cat_productos.count({ where }),
-        ]);
+        // First get all matching products (without price filtering or pagination yet)
+        const data = await prisma.cat_productos.findMany({
+            where,
+            include: {
+                categoria: true,
+                subcategoria: true,
+                marca: true,
+                unidad_medida: true,
+                imagenes: true,
+                stock: true,
+            },
+        });
         const ahora = new Date();
-        const productosConDescuento = data.map((producto) => {
+        let productosFiltrados = data.map((producto) => {
             const precioVenta = Number(producto.precio_venta);
             const precioOferta = producto.precio_oferta ? Number(producto.precio_oferta) : null;
             const tieneOferta = precioOferta !== null &&
@@ -134,8 +106,41 @@ class ProductoService {
                 stock_disponible: stockDisponible,
             };
         });
+        // Apply price range filters
+        if (min_precio !== undefined) {
+            productosFiltrados = productosFiltrados.filter(p => p.precio_actual >= min_precio);
+        }
+        if (max_precio !== undefined) {
+            productosFiltrados = productosFiltrados.filter(p => p.precio_actual <= max_precio);
+        }
+        // Apply sorting
+        switch (ordenar) {
+            case 'nombre_asc':
+                productosFiltrados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                break;
+            case 'nombre_desc':
+                productosFiltrados.sort((a, b) => b.nombre.localeCompare(a.nombre));
+                break;
+            case 'precio_asc':
+                productosFiltrados.sort((a, b) => a.precio_actual - b.precio_actual);
+                break;
+            case 'precio_desc':
+                productosFiltrados.sort((a, b) => b.precio_actual - a.precio_actual);
+                break;
+            case 'fecha_asc':
+                productosFiltrados.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+                break;
+            case 'popularidad':
+                productosFiltrados.sort((a, b) => (b.ventas_totales || 0) - (a.ventas_totales || 0));
+                break;
+            default: productosFiltrados.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        }
+        // Apply pagination
+        const skip = (page - 1) * limit;
+        const total = productosFiltrados.length;
+        const dataPagina = productosFiltrados.slice(skip, skip + limit);
         return {
-            data: productosConDescuento,
+            data: dataPagina,
             total,
             page,
             limit,
