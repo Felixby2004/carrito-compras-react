@@ -45,6 +45,7 @@ class ProductoService {
     }
     async getProductos(filters) {
         const { page, limit, search, categoria_id, subcategoria_id, marca_id, min_precio, max_precio, ordenar, estado } = filters;
+        console.log("🔵 Filtros recibidos en getProductos:", { min_precio, max_precio });
         const where = {
             activo: true,
         };
@@ -96,7 +97,8 @@ class ProductoService {
                 ? Math.round(((precioVenta - precioOferta) / precioVenta) * 100)
                 : 0;
             const stockDisponible = producto.stock ?
-                Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0) : 0;
+                Number(producto.stock.stock_fisico) - (Number(producto.stock.stock_reservado) || 0)
+                : 0;
             return {
                 ...producto,
                 precio_venta: precioVenta,
@@ -106,13 +108,31 @@ class ProductoService {
                 stock_disponible: stockDisponible,
             };
         });
+        console.log("🟢 Productos después de calcular precio_actual:", productosFiltrados.map(p => ({
+            id: p.id,
+            nombre: p.nombre,
+            precio_venta: p.precio_venta,
+            precio_oferta: p.precio_oferta,
+            precio_actual: p.precio_actual
+        })));
         // Apply price range filters
         if (min_precio !== undefined) {
-            productosFiltrados = productosFiltrados.filter(p => p.precio_actual >= min_precio);
+            productosFiltrados = productosFiltrados.filter(p => {
+                console.log(`  - Evaluando ${p.nombre} (precio_actual: ${p.precio_actual}) >= ${min_precio} → ${p.precio_actual >= min_precio}`);
+                return p.precio_actual >= min_precio;
+            });
         }
         if (max_precio !== undefined) {
-            productosFiltrados = productosFiltrados.filter(p => p.precio_actual <= max_precio);
+            productosFiltrados = productosFiltrados.filter(p => {
+                console.log(`  - Evaluando ${p.nombre} (precio_actual: ${p.precio_actual}) <= ${max_precio} → ${p.precio_actual <= max_precio}`);
+                return p.precio_actual <= max_precio;
+            });
         }
+        console.log("🟢 Productos después de filtro de precio:", productosFiltrados.map(p => ({
+            id: p.id,
+            nombre: p.nombre,
+            precio_actual: p.precio_actual
+        })));
         // Apply sorting
         switch (ordenar) {
             case 'nombre_asc':

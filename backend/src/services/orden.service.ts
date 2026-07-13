@@ -105,6 +105,7 @@ export class OrdenService {
           cliente_id: clienteId,
           direccion_completa: direccionEnvio.direccion,
           departamento: direccionEnvio.departamento,
+          ciudad: direccionEnvio.ciudad || 'Sin especificar',
           codigo_postal: direccionEnvio.codigoPostal,
           telefono: direccionEnvio.telefono,
           destinatario: direccionEnvio.destinatario,
