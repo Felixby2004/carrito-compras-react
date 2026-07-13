@@ -124,86 +124,86 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="animate-slide-up">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-10 gap-6">
-        <h1 className="text-4xl font-black text-slate-900">Dashboard Admin</h1>
+    <div className="animate-slide-up p-4 md:p-0">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-6">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900">Dashboard Admin</h1>
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-soft p-3 rounded-2xl shadow-soft border border-white/70">
+          <div className="flex flex-wrap items-center gap-3 bg-white/80 backdrop-blur-soft p-3 rounded-2xl shadow-soft border border-white/70">
             <input 
               type="date" 
               value={fechaDesde} 
               onChange={(e) => setFechaDesde(e.target.value)} 
-              className="border border-slate-200 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white font-medium" 
+              className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white font-medium" 
             />
-            <span className="text-slate-500 font-semibold">a</span>
+            <span className="text-slate-500 font-semibold text-sm md:text-base">a</span>
             <input 
               type="date" 
               value={fechaHasta} 
               onChange={(e) => setFechaHasta(e.target.value)} 
-              className="border border-slate-200 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white font-medium" 
+              className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white font-medium" 
             />
           </div>
           <button 
             onClick={cargarStats} 
-            className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-primary text-white font-bold shadow-glow hover:scale-105 transition-all"
+            className="inline-flex items-center gap-2 md:gap-3 px-4 md:px-6 py-3 md:py-4 rounded-2xl bg-gradient-primary text-white font-bold shadow-glow hover:scale-105 transition-all text-sm md:text-base"
           >
-            <RefreshCw className="w-5 h-5" /> Actualizar
+            <RefreshCw className="w-4 h-4 md:w-5 md:h-5" /> Actualizar
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
         {cards.map((card, index) => (
-          <div key={card.title} className="bg-white/85 backdrop-blur-soft rounded-3xl shadow-soft border border-white/70 p-8 hover:shadow-glow hover:scale-102 transition-all" style={{ animationDelay: `${index * 0.1}s` }}>
+          <div key={card.title} className="bg-white/85 backdrop-blur-soft rounded-2xl md:rounded-3xl shadow-soft border border-white/70 p-5 md:p-8 hover:shadow-glow hover:scale-102 transition-all" style={{ animationDelay: `${index * 0.1}s` }}>
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-slate-500 text-base font-semibold mb-2">{card.title}</p>
-                <p className="text-4xl font-black text-slate-900 mb-2">{card.value}</p>
-                <p className="text-base text-slate-500 font-medium">{card.sub}</p>
+                <p className="text-slate-500 text-sm md:text-base font-semibold mb-2">{card.title}</p>
+                <p className="text-2xl md:text-4xl font-black text-slate-900 mb-2">{card.value}</p>
+                <p className="text-xs md:text-base text-slate-500 font-medium">{card.sub}</p>
               </div>
-              <div className={`bg-gradient-to-br ${card.bgGradient} p-6 rounded-3xl shadow-soft`}>
-                <card.icon className={`w-10 h-10 bg-gradient-to-br ${card.gradient} bg-clip-text text-transparent`} />
+              <div className={`bg-gradient-to-br ${card.bgGradient} p-3 md:p-6 rounded-2xl md:rounded-3xl shadow-soft`}>
+                <card.icon className={`w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br ${card.gradient} bg-clip-text text-transparent`} />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div className="bg-white/85 backdrop-blur-soft rounded-3xl shadow-soft border border-white/70 p-8 hover:shadow-glow transition-all">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-black text-slate-900">Evolución de ventas y pronóstico</h3>
-            <TrendingUp className="w-7 h-7 text-slate-400" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="bg-white/85 backdrop-blur-soft rounded-2xl md:rounded-3xl shadow-soft border border-white/70 p-5 md:p-8 hover:shadow-glow transition-all">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <h3 className="text-lg md:text-2xl font-black text-slate-900">Evolución de ventas y pronóstico</h3>
+            <TrendingUp className="w-5 h-5 md:w-7 md:h-7 text-slate-400" />
           </div>
-          <div className="h-80">
+          <div className="h-64 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={[...(stats?.estadisticas_descriptivas?.ventas_mensuales || [])].sort((a, b) => parseMesKey(a.mes) - parseMesKey(b.mes))}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 14 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 14 }} />
+                <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend />
-                <Area type="monotone" dataKey="ingresos" stroke="#0ea5e9" fill="#bae6fd" strokeWidth={4} />
-                <Line type="monotone" dataKey="promedio_movil_3m" stroke="#f97316" dot={false} strokeWidth={3} strokeDasharray="5 5" />
-                <Line type="monotone" dataKey="regresion" stroke="#10b981" dot={false} strokeWidth={3} strokeDasharray="5 5" />
+                <Area type="monotone" dataKey="ingresos" stroke="#0ea5e9" fill="#bae6fd" strokeWidth={3} />
+                <Line type="monotone" dataKey="promedio_movil_3m" stroke="#f97316" dot={false} strokeWidth={2} strokeDasharray="5 5" />
+                <Line type="monotone" dataKey="regresion" stroke="#10b981" dot={false} strokeWidth={2} strokeDasharray="5 5" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur-soft rounded-3xl shadow-soft border border-white/70 p-8 hover:shadow-glow transition-all">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-black text-slate-900">Ventas por categoría (Top 5)</h3>
-            <Package className="w-7 h-7 text-slate-400" />
+        <div className="bg-white/85 backdrop-blur-soft rounded-2xl md:rounded-3xl shadow-soft border border-white/70 p-5 md:p-8 hover:shadow-glow transition-all">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <h3 className="text-lg md:text-2xl font-black text-slate-900">Ventas por categoría (Top 5)</h3>
+            <Package className="w-5 h-5 md:w-7 md:h-7 text-slate-400" />
           </div>
-          <div className="h-80">
+          <div className="h-64 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats?.ingresos_por_categoria || []}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="categoria" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 14 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 14 }} />
+                <XAxis dataKey="categoria" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
@@ -219,15 +219,15 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur-soft rounded-3xl shadow-soft border border-white/70 p-8 hover:shadow-glow transition-all">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-black text-slate-900">Distribución de órdenes por estado</h3>
-            <ShoppingBag className="w-7 h-7 text-slate-400" />
+        <div className="bg-white/85 backdrop-blur-soft rounded-2xl md:rounded-3xl shadow-soft border border-white/70 p-5 md:p-8 hover:shadow-glow transition-all">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <h3 className="text-lg md:text-2xl font-black text-slate-900">Distribución de órdenes por estado</h3>
+            <ShoppingBag className="w-5 h-5 md:w-7 md:h-7 text-slate-400" />
           </div>
-          <div className="h-80">
+          <div className="h-64 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={stats?.ordenes_por_estado || []} dataKey="cantidad" nameKey="estado" outerRadius={110} label>
+                <Pie data={stats?.ordenes_por_estado || []} dataKey="cantidad" nameKey="estado" outerRadius={80} label>
                   {(stats?.ordenes_por_estado || []).map((_entry: any, index: number) => (
                     <Cell key={`estado-${index}`} fill={['#22c55e', '#f59e0b', '#3b82f6', '#ef4444', '#a855f7', '#6b7280'][index % 6]} />
                   ))}
@@ -240,17 +240,17 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur-soft rounded-3xl shadow-soft border border-white/70 p-8 hover:shadow-glow transition-all">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-black text-slate-900">Ingresos vs costos mensuales</h3>
-            <DollarSign className="w-7 h-7 text-slate-400" />
+        <div className="bg-white/85 backdrop-blur-soft rounded-2xl md:rounded-3xl shadow-soft border border-white/70 p-5 md:p-8 hover:shadow-glow transition-all">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <h3 className="text-lg md:text-2xl font-black text-slate-900">Ingresos vs costos mensuales</h3>
+            <DollarSign className="w-5 h-5 md:w-7 md:h-7 text-slate-400" />
           </div>
-          <div className="h-80">
+          <div className="h-64 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={[...(stats?.ingresos_vs_costos_mensual || [])].sort((a, b) => parseMesKey(a.mes) - parseMesKey(b.mes))}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 14 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 14 }} />
+                <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
@@ -262,37 +262,37 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur-soft rounded-3xl shadow-soft border border-white/70 p-8 hover:shadow-glow transition-all">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-black text-slate-900">Tasa de abandono de carrito</h3>
-            <ArrowDownRight className="w-7 h-7 text-slate-400" />
+        <div className="bg-white/85 backdrop-blur-soft rounded-2xl md:rounded-3xl shadow-soft border border-white/70 p-5 md:p-8 hover:shadow-glow transition-all">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <h3 className="text-lg md:text-2xl font-black text-slate-900">Tasa de abandono de carrito</h3>
+            <ArrowDownRight className="w-5 h-5 md:w-7 md:h-7 text-slate-400" />
           </div>
-          <div className="h-80">
+          <div className="h-64 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={[...(stats?.tendencia_abandono || [])].sort((a, b) => a.fecha.localeCompare(b.fecha))}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="fecha" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 14 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 14 }} />
+                <XAxis dataKey="fecha" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
-                <Line type="monotone" dataKey="abandono" stroke="#ef4444" strokeWidth={4} dot={{ r: 6 }} />
+                <Line type="monotone" dataKey="abandono" stroke="#ef4444" strokeWidth={3} dot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur-soft rounded-3xl shadow-soft border border-white/70 p-8 hover:shadow-glow transition-all">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-black text-slate-900">Top 10 productos vendidos</h3>
-            <ArrowUpRight className="w-7 h-7 text-slate-400" />
+        <div className="bg-white/85 backdrop-blur-soft rounded-2xl md:rounded-3xl shadow-soft border border-white/70 p-5 md:p-8 hover:shadow-glow transition-all">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <h3 className="text-lg md:text-2xl font-black text-slate-900">Top 10 productos vendidos</h3>
+            <ArrowUpRight className="w-5 h-5 md:w-7 md:h-7 text-slate-400" />
           </div>
-          <div className="h-80">
+          <div className="h-64 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats?.top_productos || []} layout="vertical" margin={{ left: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 14 }} />
-                <YAxis type="category" dataKey="nombre" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 14 }} width={200} />
+                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                <YAxis type="category" dataKey="nombre" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} width={150} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
@@ -308,12 +308,12 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white/85 backdrop-blur-soft rounded-3xl shadow-soft border border-white/70 p-8 xl:col-span-2 hover:shadow-glow transition-all">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-black text-slate-900">Embudo de conversión</h3>
-            <TrendingUp className="w-7 h-7 text-slate-400" />
+        <div className="bg-white/85 backdrop-blur-soft rounded-2xl md:rounded-3xl shadow-soft border border-white/70 p-5 md:p-8 lg:col-span-2 hover:shadow-glow transition-all">
+          <div className="flex items-center justify-between mb-6 md:mb-8">
+            <h3 className="text-lg md:text-2xl font-black text-slate-900">Embudo de conversión</h3>
+            <TrendingUp className="w-5 h-5 md:w-7 md:h-7 text-slate-400" />
           </div>
-          <div className="h-80">
+          <div className="h-64 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <FunnelChart>
                 <Tooltip 

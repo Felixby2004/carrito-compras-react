@@ -11,7 +11,7 @@ router.get('/', productoController.getProductos.bind(productoController));
 router.get('/destacados', productoController.getDestacados.bind(productoController));
 router.get('/ofertas', productoController.getOfertas.bind(productoController));
 router.get('/nuevos', productoController.getNuevos.bind(productoController));
-// router.get('/todos', productoController.getTodosProductos.bind(productoController));
+router.get('/todos', authenticate, requirePermission('productos', 'leer'), productoController.getTodosProductos.bind(productoController));
 router.get('/categorias', productoController.getCategorias.bind(productoController));
 router.get('/subcategorias', productoController.getSubcategorias.bind(productoController));
 router.get('/marcas', productoController.getMarcas.bind(productoController));
@@ -49,12 +49,12 @@ router.post(
   productoController.subirImagenes.bind(productoController)
 );
 
-// router.post(
-//   '/:id/imagenes/url',
-//   authenticate,
-//   requirePermission('productos', 'editar'),
-//   productoController.agregarImagenUrl.bind(productoController)
-// );
+router.post(
+  '/:id/imagenes/url',
+  authenticate,
+  requirePermission('productos', 'editar'),
+  productoController.agregarImagenUrl.bind(productoController)
+);
 
 router.put(
   '/imagenes/:imagenId/principal',

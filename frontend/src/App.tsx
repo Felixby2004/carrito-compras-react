@@ -321,7 +321,7 @@ function AppContent() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-200 py-10">
+      <footer className={`bg-slate-900 text-slate-200 py-10 ${isAdminRoute ? 'lg:pl-72' : ''}`}>
         <div className="container mx-auto px-4 grid gap-6 md:grid-cols-3">
           <div>
             <h2 className="text-xl font-bold text-white">eMarket Perú</h2>

@@ -32,11 +32,11 @@ model seg_usuarios {
 }
 
 model seg_roles {
-  id              Int              @id @default(autoincrement())
-  nombre          String           @unique @db.VarChar(50)
-  descripcion     String?          @db.Text
-  created_at      DateTime         @default(now())
-  updated_at      DateTime         @updatedAt
+  id          Int              @id @default(autoincrement())
+  nombre      String           @unique @db.VarChar(50)
+  descripcion String?          @db.Text
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
 
   // Relaciones
   usuario_roles   seg_usuario_rol[]
@@ -46,9 +46,9 @@ model seg_roles {
 }
 
 model seg_permisos {
-  id         Int       @id @default(autoincrement())
-  modulo     String    @db.VarChar(50)
-  accion     String    @db.VarChar(50)
+  id         Int      @id @default(autoincrement())
+  modulo     String   @db.VarChar(50)
+  accion     String   @db.VarChar(50)
 
   // Relaciones
   rol_permisos seg_rol_permiso[]
@@ -69,30 +69,30 @@ model seg_rol_permiso {
 }
 
 model seg_usuario_rol {
-  usuario_id   Int
-  rol_id       Int
-  created_at   DateTime @default(now())
+  usuario_id Int
+  rol_id     Int
+  created_at DateTime @default(now())
 
   // Relaciones
-  usuario      seg_usuarios @relation(fields: [usuario_id], references: [id])
-  rol          seg_roles    @relation(fields: [rol_id], references: [id])
+  usuario    seg_usuarios @relation(fields: [usuario_id], references: [id])
+  rol        seg_roles    @relation(fields: [rol_id], references: [id])
 
   @@id([usuario_id, rol_id])
   @@map("seg_usuario_rol")
 }
 
 model seg_refresh_tokens {
-  id           Int      @id @default(autoincrement())
-  usuario_id   Int
-  token        String   @db.Text
-  expira_en    DateTime
-  revocado     Boolean  @default(false)
-  ip           String?  @db.VarChar(45)
-  user_agent   String?  @db.Text
-  created_at   DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  usuario_id Int
+  token      String   @db.Text
+  expira_en  DateTime
+  revocado   Boolean  @default(false)
+  ip         String?  @db.VarChar(45)
+  user_agent String?  @db.Text
+  created_at DateTime @default(now())
 
   // Relaciones
-  usuario      seg_usuarios @relation(fields: [usuario_id], references: [id])
+  usuario    seg_usuarios @relation(fields: [usuario_id], references: [id])
 
   @@map("seg_refresh_tokens")
 }
@@ -100,15 +100,15 @@ model seg_refresh_tokens {
 // ==================== MÓDULO DE CLIENTES ====================
 
 model cli_clientes {
-  id                  Int                  @id @default(autoincrement())
-  usuario_id          Int                  @unique
-  telefono            String?              @db.VarChar(20)
+  id                  Int                @id @default(autoincrement())
+  usuario_id          Int                @unique
+  telefono            String?            @db.VarChar(20)
   fecha_nacimiento    DateTime?
-  total_gastado       Decimal              @default(0) @db.Decimal(10, 2)
+  total_gastado       Decimal            @default(0) @db.Decimal(10, 2)
   fecha_ultima_compra DateTime?
-  segmento            String               @default("nuevo") @db.VarChar(20)
-  created_at          DateTime             @default(now())
-  updated_at          DateTime             @updatedAt
+  segmento            String             @default("nuevo") @db.VarChar(20)
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
 
   // Relaciones
   usuario              seg_usuarios                 @relation(fields: [usuario_id], references: [id])
@@ -142,28 +142,28 @@ model cli_direcciones {
 }
 
 model cli_lista_deseos {
-  id          Int      @id @default(autoincrement())
-  cliente_id  Int
-  nombre_lista String  @default("Mi lista") @db.VarChar(100)
+  id             Int      @id @default(autoincrement())
+  cliente_id     Int
+  nombre_lista   String   @default("Mi lista") @db.VarChar(100)
   fecha_creacion DateTime @default(now())
 
   // Relaciones
-  cliente      cli_clientes               @relation(fields: [cliente_id], references: [id])
-  items        cli_items_lista_deseos[]
+  cliente        cli_clientes               @relation(fields: [cliente_id], references: [id])
+  items          cli_items_lista_deseos[]
 
   @@map("cli_lista_deseos")
 }
 
 model cli_items_lista_deseos {
-  id           Int      @id @default(autoincrement())
-  lista_id     Int
-  producto_id  Int
-  variante_id  Int?
+  id             Int      @id @default(autoincrement())
+  lista_id       Int
+  producto_id    Int
+  variante_id    Int?
   fecha_agregado DateTime @default(now())
 
   // Relaciones
-  lista        cli_lista_deseos @relation(fields: [lista_id], references: [id])
-  producto     cat_productos     @relation(fields: [producto_id], references: [id])
+  lista          cli_lista_deseos @relation(fields: [lista_id], references: [id])
+  producto       cat_productos     @relation(fields: [producto_id], references: [id])
 
   @@map("cli_items_lista_deseos")
 }
@@ -186,16 +186,16 @@ model cli_resenas_producto {
 }
 
 model cli_historial_navegacion {
-  id           Int      @id @default(autoincrement())
-  cliente_id   Int?
-  session_id   String?  @db.VarChar(255)
-  producto_id  Int
-  fecha_visita DateTime @default(now())
+  id                     Int      @id @default(autoincrement())
+  cliente_id             Int?
+  session_id             String?  @db.VarChar(255)
+  producto_id            Int
+  fecha_visita           DateTime @default(now())
   tiempo_permanencia_seg Int?
 
   // Relaciones
-  cliente      cli_clientes? @relation(fields: [cliente_id], references: [id])
-  producto     cat_productos  @relation(fields: [producto_id], references: [id])
+  cliente                cli_clientes? @relation(fields: [cliente_id], references: [id])
+  producto               cat_productos  @relation(fields: [producto_id], references: [id])
 
   @@map("cli_historial_navegacion")
 }
@@ -203,17 +203,17 @@ model cli_historial_navegacion {
 // ==================== MÓDULO DE CATÁLOGO ====================
 
 model cat_categorias {
-  id                Int                @id @default(autoincrement())
-  nombre            String             @db.VarChar(100)
-  slug              String             @unique @db.VarChar(100)
-  descripcion       String?            @db.Text
-  imagen_url        String?            @db.Text
+  id                 Int                @id @default(autoincrement())
+  nombre             String             @db.VarChar(100)
+  slug               String             @unique @db.VarChar(100)
+  descripcion        String?            @db.Text
+  imagen_url         String?            @db.Text
   categoria_padre_id Int?
-  activo            Boolean            @default(true)
-  created_at        DateTime           @default(now())
-  updated_at        DateTime           @updatedAt
-  created_by        Int?
-  updated_by        Int?
+  activo             Boolean            @default(true)
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
+  created_by         Int?
+  updated_by         Int?
 
   // Relaciones
   categoria_padre   cat_categorias?    @relation("categoria_subcategoria", fields: [categoria_padre_id], references: [id])
@@ -225,29 +225,29 @@ model cat_categorias {
 }
 
 model cat_subcategorias {
-  id            Int      @id @default(autoincrement())
-  categoria_id  Int
-  nombre        String   @db.VarChar(100)
-  slug          String   @unique @db.VarChar(100)
-  activo        Boolean  @default(true)
-  created_at    DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  categoria_id Int
+  nombre       String   @db.VarChar(100)
+  slug         String   @unique @db.VarChar(100)
+  activo       Boolean  @default(true)
+  created_at   DateTime @default(now())
 
   // Relaciones
-  categoria     cat_categorias @relation(fields: [categoria_id], references: [id])
-  productos     cat_productos[]
+  categoria    cat_categorias @relation(fields: [categoria_id], references: [id])
+  productos    cat_productos[]
 
   @@map("cat_subcategorias")
 }
 
 model cat_marcas {
-  id          Int      @id @default(autoincrement())
-  nombre      String   @unique @db.VarChar(100)
-  logo_url    String?  @db.Text
-  activo      Boolean  @default(true)
-  created_at  DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  nombre     String   @unique @db.VarChar(100)
+  logo_url   String?  @db.Text
+  activo     Boolean  @default(true)
+  created_at DateTime @default(now())
 
   // Relaciones
-  productos   cat_productos[]
+  productos  cat_productos[]
 
   @@map("cat_marcas")
 }
@@ -265,31 +265,31 @@ model cat_unidades_medida {
 }
 
 model cat_productos {
-  id                 Int                     @id @default(autoincrement())
-  sku                String                  @unique @db.VarChar(50)
-  nombre             String                  @db.VarChar(255)
-  descripcion_corta  String?                 @db.Text
-  descripcion_larga  String?                 @db.Text
-  categoria_id       Int
-  subcategoria_id    Int?
-  marca_id           Int?
-  unidad_medida_id   Int
-  precio_costo       Decimal                 @default(0) @db.Decimal(10, 2)
-  precio_venta       Decimal                 @default(0) @db.Decimal(10, 2)
-  precio_oferta      Decimal?                @db.Decimal(10, 2)
+  id                  Int                @id @default(autoincrement())
+  sku                 String             @unique @db.VarChar(50)
+  nombre              String             @db.VarChar(255)
+  descripcion_corta   String?            @db.Text
+  descripcion_larga   String?            @db.Text
+  categoria_id        Int
+  subcategoria_id     Int?
+  marca_id            Int?
+  unidad_medida_id    Int
+  precio_costo        Decimal            @default(0) @db.Decimal(10, 2)
+  precio_venta        Decimal            @default(0) @db.Decimal(10, 2)
+  precio_oferta       Decimal?           @db.Decimal(10, 2)
   fecha_inicio_oferta DateTime?
-  fecha_fin_oferta   DateTime?
-  peso               Decimal?                @db.Decimal(8, 2)
-  ancho              Decimal?                @db.Decimal(8, 2)
-  alto               Decimal?                @db.Decimal(8, 2)
-  profundidad        Decimal?                @db.Decimal(8, 2)
-  ventas_totales     Int                     @default(0)
-  estado             String                  @default("activo") @db.VarChar(20)
-  activo             Boolean                 @default(true)
-  created_at         DateTime                @default(now())
-  updated_at         DateTime                @updatedAt
-  created_by         Int?
-  updated_by         Int?
+  fecha_fin_oferta    DateTime?
+  peso                Decimal?           @db.Decimal(8, 2)
+  ancho               Decimal?           @db.Decimal(8, 2)
+  alto                Decimal?           @db.Decimal(8, 2)
+  profundidad         Decimal?           @db.Decimal(8, 2)
+  ventas_totales      Int                @default(0)
+  estado              String             @default("activo") @db.VarChar(20)
+  activo              Boolean            @default(true)
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+  created_by          Int?
+  updated_by          Int?
 
   // Relaciones
   categoria          cat_categorias          @relation(fields: [categoria_id], references: [id])
@@ -313,23 +313,23 @@ model cat_productos {
 }
 
 model cat_imagenes_producto {
-  id          Int      @id @default(autoincrement())
-  producto_id Int
-  url         String   @db.Text
-  orden       Int      @default(0)
-  es_principal Boolean @default(false)
-  created_at  DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  producto_id  Int
+  url          String   @db.Text
+  orden        Int      @default(0)
+  es_principal Boolean  @default(false)
+  created_at   DateTime @default(now())
 
   // Relaciones
-  producto    cat_productos @relation(fields: [producto_id], references: [id])
+  producto     cat_productos @relation(fields: [producto_id], references: [id])
 
   @@map("cat_imagenes_producto")
 }
 
 model cat_etiquetas {
-  id     Int      @id @default(autoincrement())
-  nombre String   @db.VarChar(100)
-  color  String?  @db.VarChar(20)
+  id         Int      @id @default(autoincrement())
+  nombre     String   @db.VarChar(100)
+  color      String?  @db.VarChar(20)
 
   // Relaciones
 
@@ -337,12 +337,12 @@ model cat_etiquetas {
 }
 
 model cat_atributos {
-  id     Int      @id @default(autoincrement())
-  nombre String   @db.VarChar(100)
-  tipo   String   @db.VarChar(50)
+  id         Int      @id @default(autoincrement())
+  nombre     String   @db.VarChar(100)
+  tipo       String   @db.VarChar(50)
 
   // Relaciones
-  valores cat_valores_atributo[]
+  valores    cat_valores_atributo[]
 
   @@map("cat_atributos")
 }
@@ -361,31 +361,31 @@ model cat_valores_atributo {
 // ==================== MÓDULO DE INVENTARIO ====================
 
 model inv_stock_producto {
-  id               Int      @id @default(autoincrement())
-  producto_id      Int      @unique
-  variante_id      Int?
-  stock_fisico     Int      @default(0)
-  stock_reservado  Int      @default(0)
-  stock_minimo     Int      @default(0)
-  ubicacion_almacen String? @db.VarChar(100)
-  updated_at       DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  producto_id       Int      @unique
+  variante_id       Int?
+  stock_fisico      Int      @default(0)
+  stock_reservado   Int      @default(0)
+  stock_minimo      Int      @default(0)
+  ubicacion_almacen String?  @db.VarChar(100)
+  updated_at        DateTime @updatedAt
 
   // Relaciones
-  producto         cat_productos           @relation(fields: [producto_id], references: [id])
+  producto          cat_productos           @relation(fields: [producto_id], references: [id])
 
   @@map("inv_stock_producto")
 }
 
 model inv_proveedores {
-  id             Int      @id @default(autoincrement())
-  razon_social   String   @db.VarChar(200)
-  ruc            String   @unique @db.VarChar(20)
-  email          String?  @db.VarChar(255)
-  telefono       String?  @db.VarChar(20)
-  direccion      String?  @db.Text
-  activo         Boolean  @default(true)
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  razon_social String   @db.VarChar(200)
+  ruc          String   @unique @db.VarChar(20)
+  email        String?  @db.VarChar(255)
+  telefono     String?  @db.VarChar(20)
+  direccion    String?  @db.Text
+  activo       Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
   // Relaciones
   ordenes_compra inv_ordenes_compra[]
@@ -394,50 +394,50 @@ model inv_proveedores {
 }
 
 model inv_ordenes_compra {
-  id                 Int                       @id @default(autoincrement())
-  proveedor_id       Int
-  numero_oc          String                    @unique @db.VarChar(50)
-  fecha_emision      DateTime                  @default(now())
+  id                     Int                @id @default(autoincrement())
+  proveedor_id           Int
+  numero_oc              String             @unique @db.VarChar(50)
+  fecha_emision          DateTime           @default(now())
   fecha_entrega_estimada DateTime?
-  estado             String                    @default("pendiente") @db.VarChar(20)
-  total              Decimal                   @default(0) @db.Decimal(10, 2)
-  usuario_id         Int?
-  created_at         DateTime                  @default(now())
-  updated_at         DateTime                  @updatedAt
+  estado                 String             @default("pendiente") @db.VarChar(20)
+  total                  Decimal            @default(0) @db.Decimal(10, 2)
+  usuario_id             Int?
+  created_at             DateTime           @default(now())
+  updated_at             DateTime           @updatedAt
 
   // Relaciones
-  proveedor          inv_proveedores           @relation(fields: [proveedor_id], references: [id])
-  detalles           inv_detalle_orden_compra[]
-  recepcion          inv_recepciones?
+  proveedor              inv_proveedores           @relation(fields: [proveedor_id], references: [id])
+  detalles               inv_detalle_orden_compra[]
+  recepcion              inv_recepciones?
 
   @@map("inv_ordenes_compra")
 }
 
 model inv_detalle_orden_compra {
-  id               Int      @id @default(autoincrement())
-  orden_compra_id  Int
-  producto_id      Int
-  cantidad         Int
-  costo_unitario   Decimal  @db.Decimal(10, 2)
-  subtotal         Decimal  @db.Decimal(10, 2)
+  id              Int     @id @default(autoincrement())
+  orden_compra_id Int
+  producto_id     Int
+  cantidad        Int
+  costo_unitario  Decimal @db.Decimal(10, 2)
+  subtotal        Decimal @db.Decimal(10, 2)
 
   // Relaciones
-  orden_compra     inv_ordenes_compra @relation(fields: [orden_compra_id], references: [id])
-  producto         cat_productos       @relation(fields: [producto_id], references: [id])
+  orden_compra    inv_ordenes_compra @relation(fields: [orden_compra_id], references: [id])
+  producto        cat_productos     @relation(fields: [producto_id], references: [id])
 
   @@map("inv_detalle_orden_compra")
 }
 
 model inv_recepciones {
-  id               Int      @id @default(autoincrement())
-  orden_compra_id  Int      @unique
-  fecha_recepcion  DateTime @default(now())
-  recibido_por     Int?
-  observaciones    String?  @db.Text
-  estado           String   @default("completada") @db.VarChar(20)
+  id              Int      @id @default(autoincrement())
+  orden_compra_id Int      @unique
+  fecha_recepcion DateTime @default(now())
+  recibido_por    Int?
+  observaciones   String?  @db.Text
+  estado          String   @default("completada") @db.VarChar(20)
 
   // Relaciones
-  orden_compra     inv_ordenes_compra @relation(fields: [orden_compra_id], references: [id])
+  orden_compra    inv_ordenes_compra @relation(fields: [orden_compra_id], references: [id])
 
   @@map("inv_recepciones")
 }
@@ -445,6 +445,7 @@ model inv_recepciones {
 model inv_movimientos_inventario {
   id               Int      @id @default(autoincrement())
   producto_id      Int
+  variante_id      Int?
   tipo_movimiento  String   @db.VarChar(20)
   cantidad         Int
   stock_antes      Int
@@ -463,65 +464,65 @@ model inv_movimientos_inventario {
 // ==================== MÓDULO DE ÓRDENES ====================
 
 model ord_carritos {
-  id           Int               @id @default(autoincrement())
-  usuario_id   Int?
-  session_id   String?           @unique @db.VarChar(255)
-  created_at   DateTime          @default(now())
-  updated_at   DateTime          @updatedAt
+  id         Int              @id @default(autoincrement())
+  usuario_id Int?
+  session_id String?          @unique @db.VarChar(255)
+  created_at DateTime         @default(now())
+  updated_at DateTime         @updatedAt
 
   // Relaciones
-  usuario      seg_usuarios?     @relation(fields: [usuario_id], references: [id])
-  items        ord_items_carrito[]
+  usuario    seg_usuarios?    @relation(fields: [usuario_id], references: [id])
+  items      ord_items_carrito[]
 
   @@map("ord_carritos")
 }
 
 model ord_items_carrito {
-  id             Int      @id @default(autoincrement())
-  carrito_id     Int
-  producto_id    Int
-  variante_id    Int?
-  cantidad       Int
+  id              Int      @id @default(autoincrement())
+  carrito_id      Int
+  producto_id     Int
+  variante_id     Int?
+  cantidad        Int
   precio_unitario Decimal  @db.Decimal(10, 2)
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Relaciones
-  carrito        ord_carritos    @relation(fields: [carrito_id], references: [id])
-  producto       cat_productos    @relation(fields: [producto_id], references: [id])
+  carrito         ord_carritos    @relation(fields: [carrito_id], references: [id])
+  producto        cat_productos    @relation(fields: [producto_id], references: [id])
 
   @@map("ord_items_carrito")
 }
 
 model ord_cupones {
-  id             Int      @id @default(autoincrement())
-  codigo         String   @unique @db.VarChar(50)
-  tipo           String   @db.VarChar(20)
-  valor          Decimal  @db.Decimal(10, 2)
-  fecha_inicio   DateTime
-  fecha_fin      DateTime
-  monto_minimo   Decimal? @db.Decimal(10, 2)
-  usos_maximos   Int?
-  usos_actuales  Int      @default(0)
-  activo         Boolean  @default(true)
-  created_at     DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  codigo        String   @unique @db.VarChar(50)
+  tipo          String   @db.VarChar(20)
+  valor         Decimal  @db.Decimal(10, 2)
+  fecha_inicio  DateTime
+  fecha_fin     DateTime
+  monto_minimo  Decimal? @db.Decimal(10, 2)
+  usos_maximos  Int?
+  usos_actuales Int      @default(0)
+  activo        Boolean  @default(true)
+  created_at    DateTime @default(now())
 
   // Relaciones
-  ordenes        ord_ordenes[]
+  ordenes       ord_ordenes[]
 
   @@map("ord_cupones")
 }
 
 model ord_metodos_envio {
-  id             Int      @id @default(autoincrement())
-  nombre         String   @db.VarChar(100)
-  costo          Decimal  @db.Decimal(10, 2)
-  tiempo_estimado String  @db.VarChar(50)
-  activo         Boolean  @default(true)
-  created_at     DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  nombre          String   @db.VarChar(100)
+  costo           Decimal  @db.Decimal(10, 2)
+  tiempo_estimado String   @db.VarChar(50)
+  activo          Boolean  @default(true)
+  created_at      DateTime @default(now())
 
   // Relaciones
-  ordenes        ord_ordenes[]
+  ordenes         ord_ordenes[]
 
   @@map("ord_metodos_envio")
 }
@@ -535,43 +536,43 @@ model ord_estados_orden {
 }
 
 model monedas {
-  id                    Int      @id @default(autoincrement())
-  codigo                String   @unique @db.VarChar(10)
-  simbolo               String   @db.VarChar(10)
-  tasa_cambio_default   Decimal  @db.Decimal(10, 4)
+  id                  Int      @id @default(autoincrement())
+  codigo              String   @unique @db.VarChar(10)
+  simbolo             String   @db.VarChar(10)
+  tasa_cambio_default Decimal  @db.Decimal(10, 4)
 
   @@map("monedas")
 }
 
 model tipo_cambio {
-  id               Int       @id @default(autoincrement())
-  moneda_origen    String    @db.VarChar(10)
-  moneda_destino   String    @db.VarChar(10)
-  tasa             Decimal   @db.Decimal(10, 4)
+  id             Int      @id @default(autoincrement())
+  moneda_origen  String   @db.VarChar(10)
+  moneda_destino String   @db.VarChar(10)
+  tasa           Decimal  @db.Decimal(10, 4)
 
   @@map("tipo_cambio")
 }
 
 model ord_ordenes {
-  id               Int                  @id @default(autoincrement())
-  cliente_id       Int
-  cupon_id         Int?
-  metodo_envio_id  Int?
-  orden_numero     String               @unique @db.VarChar(20)
-  fecha_orden      DateTime             @default(now())
-  subtotal         Decimal              @db.Decimal(10, 2)
-  impuesto         Decimal              @db.Decimal(10, 2)
-  descuento        Decimal              @default(0) @db.Decimal(10, 2)
-  costo_envio      Decimal              @default(0) @db.Decimal(10, 2)
-  total            Decimal              @db.Decimal(10, 2)
-  estado           String               @default("pendiente_pago") @db.VarChar(20)
-  metodo_pago      String?              @db.VarChar(50)
-  tracking_numero  String?              @db.VarChar(100)
-  fecha_entrega    DateTime?
-  created_at       DateTime             @default(now())
-  updated_at       DateTime             @updatedAt
-  created_by       Int?
-  updated_by       Int?
+  id              Int                @id @default(autoincrement())
+  cliente_id      Int
+  cupon_id        Int?
+  metodo_envio_id Int?
+  orden_numero    String             @unique @db.VarChar(20)
+  fecha_orden     DateTime           @default(now())
+  subtotal        Decimal            @db.Decimal(10, 2)
+  impuesto        Decimal            @db.Decimal(10, 2)
+  descuento       Decimal            @default(0) @db.Decimal(10, 2)
+  costo_envio     Decimal            @default(0) @db.Decimal(10, 2)
+  total           Decimal            @db.Decimal(10, 2)
+  estado          String             @default("pendiente_pago") @db.VarChar(20)
+  metodo_pago     String?            @db.VarChar(50)
+  tracking_numero String?            @db.VarChar(100)
+  fecha_entrega   DateTime?
+  created_at      DateTime           @default(now())
+  updated_at      DateTime           @updatedAt
+  created_by      Int?
+  updated_by      Int?
 
   // Relaciones
   cliente          cli_clientes         @relation(fields: [cliente_id], references: [id])
@@ -590,18 +591,18 @@ model ord_ordenes {
 }
 
 model ord_items_orden {
-  id               Int      @id @default(autoincrement())
-  orden_id         Int
-  producto_id      Int
-  nombre_producto  String   @db.VarChar(255)
-  cantidad         Int
-  precio_unitario  Decimal  @db.Decimal(10, 2)
-  subtotal         Decimal  @db.Decimal(10, 2)
-  created_at       DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  orden_id        Int
+  producto_id     Int
+  nombre_producto String   @db.VarChar(255)
+  cantidad        Int
+  precio_unitario Decimal  @db.Decimal(10, 2)
+  subtotal        Decimal  @db.Decimal(10, 2)
+  created_at      DateTime @default(now())
 
   // Relaciones
-  orden            ord_ordenes    @relation(fields: [orden_id], references: [id])
-  producto         cat_productos  @relation(fields: [producto_id], references: [id])
+  orden           ord_ordenes    @relation(fields: [orden_id], references: [id])
+  producto        cat_productos  @relation(fields: [producto_id], references: [id])
 
   @@map("ord_items_orden")
 }
@@ -625,32 +626,32 @@ model ord_direcciones_envio {
 }
 
 model ord_pagos {
-  id               Int      @id @default(autoincrement())
-  orden_id         Int
-  monto            Decimal  @db.Decimal(10, 2)
-  metodo           String   @db.VarChar(50)
-  estado_pago      String   @default("pendiente") @db.VarChar(20)
-  fecha_pago       DateTime?
-  transaccion_id   String?  @db.VarChar(255)
-  created_at       DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  orden_id       Int
+  monto          Decimal  @db.Decimal(10, 2)
+  metodo         String   @db.VarChar(50)
+  estado_pago    String   @default("pendiente") @db.VarChar(20)
+  fecha_pago     DateTime?
+  transaccion_id String?  @db.VarChar(255)
+  created_at     DateTime @default(now())
 
   // Relaciones
-  orden            ord_ordenes @relation(fields: [orden_id], references: [id])
+  orden          ord_ordenes @relation(fields: [orden_id], references: [id])
 
   @@map("ord_pagos")
 }
 
 model ord_historial_estados {
-  id               Int      @id @default(autoincrement())
-  orden_id         Int
-  estado_anterior  String?  @db.VarChar(20)
-  estado_nuevo     String   @db.VarChar(20)
-  comentario       String?  @db.Text
-  usuario_id       Int?
-  fecha_cambio     DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  orden_id        Int
+  estado_anterior String?  @db.VarChar(20)
+  estado_nuevo    String   @db.VarChar(20)
+  comentario      String?  @db.Text
+  usuario_id      Int?
+  fecha_cambio    DateTime @default(now())
 
   // Relaciones
-  orden            ord_ordenes        @relation(fields: [orden_id], references: [id])
+  orden           ord_ordenes        @relation(fields: [orden_id], references: [id])
 
   @@map("ord_historial_estados")
 }
@@ -658,10 +659,10 @@ model ord_historial_estados {
 // ==================== TABLAS TRANSVERSALES ====================
 
 model configuracion_sistema {
-  id                 Int      @id @default(autoincrement())
-  clave              String   @unique @db.VarChar(100)
-  valor              String   @db.Text
-  descripcion        String?  @db.Text
+  id          Int      @id @default(autoincrement())
+  clave       String   @unique @db.VarChar(100)
+  valor       String   @db.Text
+  descripcion String?  @db.Text
 
   @@map("configuracion_sistema")
 }
