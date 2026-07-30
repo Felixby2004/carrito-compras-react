@@ -6,12 +6,24 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import path from 'path';
+import fs from 'fs';
 import config from '../config';
 import PDFDocument from 'pdfkit';
 import { sendOrderStatusEmail } from '../utils/email';
 import { io } from '../index';
 
 const prisma = new PrismaClient();
+
+const ESTADOS_PERMITIDOS = new Set([
+  'pendiente_pago',
+  'pagada',
+  'en_proceso',
+  'enviada',
+  'entregada',
+  'cancelada',
+  'devuelta',
+]);
 
 const crearOrdenSchema = z.object({
   items: z.array(z.object({
@@ -598,17 +610,29 @@ export class OrdenController {
         throw new AppError('No autenticado', 401);
       }
       
-      const cliente = await prisma.cli_clientes.findUnique({
+      let cliente = await prisma.cli_clientes.findUnique({
         where: { usuario_id: req.user.id },
       });
       
       if (!cliente) {
-        throw new AppError('Cliente no encontrado', 404);
+        cliente = await prisma.cli_clientes.create({
+          data: {
+            usuario_id: req.user.id,
+            telefono: '',
+            total_gastado: 0,
+            segmento: 'nuevo',
+          },
+        }).catch(() => null);
       }
       
       const { estado, fecha_desde, fecha_hasta } = req.query;
-      const where: any = { cliente_id: cliente.id };
-      if (estado && estadosPermitidos.has(String(estado))) {
+      const conditions: any[] = [{ created_by: req.user.id }];
+      if (cliente) {
+        conditions.push({ cliente_id: cliente.id });
+      }
+
+      const where: any = { OR: conditions };
+      if (estado && ESTADOS_PERMITIDOS.has(String(estado))) {
         where.estado = String(estado);
       }
       if (fecha_desde || fecha_hasta) {
@@ -650,11 +674,18 @@ export class OrdenController {
       if (!req.user) throw new AppError('No autenticado', 401);
       const id = parseInt(req.params.id);
 
-      const cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: req.user.id } });
-      if (!cliente) throw new AppError('Cliente no encontrado', 404);
+      let cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: req.user.id } });
+      if (!cliente) {
+        cliente = await prisma.cli_clientes.create({
+          data: { usuario_id: req.user.id, telefono: '', total_gastado: 0, segmento: 'nuevo' }
+        }).catch(() => null);
+      }
+
+      const userConditions: any[] = [{ created_by: req.user.id }];
+      if (cliente) userConditions.push({ cliente_id: cliente.id });
 
       const orden = await prisma.ord_ordenes.findFirst({
-        where: { id, cliente_id: cliente.id },
+        where: { id, OR: userConditions },
         include: {
           items: true,
           direccion_envio: true,
@@ -931,11 +962,18 @@ export class OrdenController {
       const ventanaMinutos = Number(req.query.ventana_minutos || 60);
       const { comentario } = req.body || {};
 
-      const cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: req.user.id } });
-      if (!cliente) throw new AppError('Cliente no encontrado', 404);
+      let cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: req.user.id } });
+      if (!cliente) {
+        cliente = await prisma.cli_clientes.create({
+          data: { usuario_id: req.user.id, telefono: '', total_gastado: 0, segmento: 'nuevo' }
+        }).catch(() => null);
+      }
+
+      const userConditions: any[] = [{ created_by: req.user.id }];
+      if (cliente) userConditions.push({ cliente_id: cliente.id });
 
       const orden = await prisma.ord_ordenes.findFirst({
-        where: { id, cliente_id: cliente.id },
+        where: { id, OR: userConditions },
         include: { items: true },
       });
 
@@ -998,11 +1036,18 @@ export class OrdenController {
     try {
       if (!req.user) throw new AppError('No autenticado', 401);
       const id = parseInt(req.params.id);
-      const cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: req.user.id } });
-      if (!cliente) throw new AppError('Cliente no encontrado', 404);
+      let cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: req.user.id } });
+      if (!cliente) {
+        cliente = await prisma.cli_clientes.create({
+          data: { usuario_id: req.user.id, telefono: '', total_gastado: 0, segmento: 'nuevo' }
+        }).catch(() => null);
+      }
+
+      const userConditions: any[] = [{ created_by: req.user.id }];
+      if (cliente) userConditions.push({ cliente_id: cliente.id });
 
       const orden = await prisma.ord_ordenes.findFirst({
-        where: { id, cliente_id: cliente.id },
+        where: { id, OR: userConditions },
         include: {
           historial_estados: { orderBy: { fecha_cambio: 'asc' } },
           direccion_envio: true,
@@ -1038,13 +1083,33 @@ export class OrdenController {
     const lineY = () => doc.moveTo(40, doc.y).lineTo(555, doc.y).strokeColor('#e2e8f0').stroke();
     const writeMoney = (v: unknown) => `S/ ${Number(v || 0).toFixed(2)}`;
 
-    doc.font('Helvetica-Bold').fontSize(20).fillColor('#1d4ed8').text('eMarket Perú', 40, 40);
-    doc.font('Helvetica').fontSize(10).fillColor('#475569').text('Documento electrónico', 40, 64);
-    doc.font('Helvetica-Bold').fontSize(16).fillColor('#0f172a').text(titulo.toUpperCase(), 390, 40, { width: 165, align: 'right' });
-    doc.font('Helvetica').fontSize(10).fillColor('#334155').text(`Nro: ${orden.orden_numero}`, 390, 62, { width: 165, align: 'right' });
-    doc.moveDown(2);
+    // Renderizar logotipo si existe
+    const candidatePaths = [
+      path.join(process.cwd(), 'public/logo.png'),
+      path.join(process.cwd(), '../frontend/public/logo.png'),
+    ];
+    let hasLogo = false;
+    for (const p of candidatePaths) {
+      if (fs.existsSync(p)) {
+        try {
+          doc.image(p, 40, 32, { fit: [42, 42] });
+          hasLogo = true;
+          break;
+        } catch {
+          // ignore error if invalid image
+        }
+      }
+    }
+
+    const textX = hasLogo ? 92 : 40;
+    doc.font('Helvetica-Bold').fontSize(20).fillColor('#2563eb').text('NexTouch LLC', textX, 38);
+    doc.font('Helvetica').fontSize(10).fillColor('#64748b').text('Comprobante electrónico oficial', textX, 62);
+
+    doc.font('Helvetica-Bold').fontSize(16).fillColor('#0f172a').text(titulo.toUpperCase(), 370, 38, { width: 185, align: 'right' });
+    doc.font('Helvetica').fontSize(10).fillColor('#475569').text(`Nro: ${orden.orden_numero}`, 370, 60, { width: 185, align: 'right' });
+    doc.y = 88;
     lineY();
-    doc.moveDown();
+    doc.moveDown(0.8);
 
     doc.font('Helvetica-Bold').fontSize(11).fillColor('#0f172a').text('Datos del pedido');
     doc.font('Helvetica').fontSize(10).fillColor('#334155');
@@ -1115,10 +1180,18 @@ export class OrdenController {
     try {
       if (!req.user) throw new AppError('No autenticado', 401);
       const id = parseInt(req.params.id);
-      const cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: req.user.id } });
-      if (!cliente) throw new AppError('Cliente no encontrado', 404);
+      let cliente = await prisma.cli_clientes.findUnique({ where: { usuario_id: req.user.id } });
+      if (!cliente) {
+        cliente = await prisma.cli_clientes.create({
+          data: { usuario_id: req.user.id, telefono: '', total_gastado: 0, segmento: 'nuevo' }
+        }).catch(() => null);
+      }
+
+      const userConditions: any[] = [{ created_by: req.user.id }];
+      if (cliente) userConditions.push({ cliente_id: cliente.id });
+
       const orden = await prisma.ord_ordenes.findFirst({
-        where: { id, cliente_id: cliente.id },
+        where: { id, OR: userConditions },
         include: { items: true, direccion_envio: true, cliente: { include: { usuario: true } } },
       });
       if (!orden) throw new AppError('Orden no encontrada', 404);

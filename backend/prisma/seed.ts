@@ -105,32 +105,38 @@ async function createRoles() {
 }
 
 async function createAdminUser() {
-  console.log('📝 Creando usuario administrador...');
+  console.log('📝 Creando usuarios administradores...');
   
   const hashedPassword = await bcrypt.hash('Admin123!', 12);
   
-  const adminUser = await prisma.seg_usuarios.create({
-    data: {
-      email: 'admin@ecommerce.com',
-      password_hash: hashedPassword,
-      email_verificado: true,
-      activo: true,
-    },
-  });
+  const adminEmails = ['admin@nextouch.com', 'admin@ecommerce.com'];
+  let firstAdmin = null;
+
+  for (const email of adminEmails) {
+    const adminUser = await prisma.seg_usuarios.create({
+      data: {
+        email,
+        password_hash: hashedPassword,
+        email_verificado: true,
+        activo: true,
+      },
+    });
+    
+    console.log(`  - Usuario admin creado: ${email} / Admin123!`);
+    
+    await prisma.cli_clientes.create({
+      data: {
+        usuario_id: adminUser.id,
+        telefono: '999999999',
+        total_gastado: 0,
+        segmento: 'vip',
+      },
+    });
+    
+    if (!firstAdmin) firstAdmin = adminUser;
+  }
   
-  console.log(`  - Usuario admin creado: admin@ecommerce.com / Admin123!`);
-  
-  // Crear cliente asociado
-  await prisma.cli_clientes.create({
-    data: {
-      usuario_id: adminUser.id,
-      telefono: '999999999',
-      total_gastado: 0,
-      segmento: 'vip',
-    },
-  });
-  
-  return adminUser;
+  return firstAdmin!;
 }
 
 async function assignRoleToUser(usuarioId: number, rolId: number) {
@@ -144,6 +150,10 @@ async function createDemoUsers(roles: any) {
   console.log('📝 Creando usuarios demo por rol...');
 
   const demo = [
+    { email: 'ventas@nextouch.com', password: 'Ventas123!', rol: 'gerente_ventas', segmento: 'vip' },
+    { email: 'inventario@nextouch.com', password: 'Inventario123!', rol: 'gerente_inventario', segmento: 'nuevo' },
+    { email: 'vendedor@nextouch.com', password: 'Vendedor123!', rol: 'vendedor', segmento: 'recurrente' },
+    { email: 'cliente1@nextouch.com', password: 'Cliente123!', rol: 'cliente', segmento: 'nuevo' },
     { email: 'ventas@ecommerce.com', password: 'Ventas123!', rol: 'gerente_ventas', segmento: 'vip' },
     { email: 'inventario@ecommerce.com', password: 'Inventario123!', rol: 'gerente_inventario', segmento: 'nuevo' },
     { email: 'vendedor@ecommerce.com', password: 'Vendedor123!', rol: 'vendedor', segmento: 'recurrente' },
@@ -329,6 +339,7 @@ async function createProductos(categorias: any, marcas: any, unidades: any) {
       peso: 0.168,
       stock: 50,
       stock_minimo: 10,
+      imagen_url: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=600&q=80',
     },
     {
       sku: 'APL-IP14-002',
@@ -342,6 +353,7 @@ async function createProductos(categorias: any, marcas: any, unidades: any) {
       peso: 0.172,
       stock: 30,
       stock_minimo: 8,
+      imagen_url: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=600&q=80',
     },
     {
       sku: 'NKE-AIR-003',
@@ -358,6 +370,7 @@ async function createProductos(categorias: any, marcas: any, unidades: any) {
       peso: 0.8,
       stock: 100,
       stock_minimo: 20,
+      imagen_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
     },
     {
       sku: 'ADDS-RUN-004',
@@ -371,6 +384,7 @@ async function createProductos(categorias: any, marcas: any, unidades: any) {
       peso: 0.75,
       stock: 80,
       stock_minimo: 15,
+      imagen_url: 'https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=600&q=80',
     },
     {
       sku: 'SON-HD-005',
@@ -387,6 +401,7 @@ async function createProductos(categorias: any, marcas: any, unidades: any) {
       peso: 0.25,
       stock: 45,
       stock_minimo: 10,
+      imagen_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80',
     },
   ];
   
@@ -425,6 +440,15 @@ async function createProductos(categorias: any, marcas: any, unidades: any) {
             stock_minimo: prodData.stock_minimo,
           },
         },
+        imagenes: prodData.imagen_url ? {
+          create: [
+            {
+              url: prodData.imagen_url,
+              es_principal: true,
+              orden: 0,
+            },
+          ],
+        } : undefined,
       },
     });
     

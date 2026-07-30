@@ -389,8 +389,12 @@ export class ProductoController {
       
       const imagenes = [];
       for (let i = 0; i < files.length; i++) {
-        // Si usamos Cloudinary, la URL viene en path. Si es local, la construimos.
-        const url = files[i].path || files[i].url || `${config.backendUrl}/uploads/${files[i].filename}`;
+        // Si usamos Cloudinary, la URL viene en path/secure_url y empieza con http(s). Si es local, guardamos la ruta /uploads/
+        const rawPath = files[i].path || files[i].secure_url || files[i].url || '';
+        const isCloudinary = typeof rawPath === 'string' && rawPath.startsWith('http');
+        const url = isCloudinary 
+          ? rawPath 
+          : (files[i].filename ? `/uploads/${files[i].filename}` : rawPath);
         
         const imagen = await prisma.cat_imagenes_producto.create({
           data: {
@@ -400,7 +404,10 @@ export class ProductoController {
             es_principal: imagenesExistentes === 0 && i === 0,
           },
         });
-        imagenes.push(imagen);
+        imagenes.push({
+          ...imagen,
+          url: this.fixImageUrl(imagen.url)
+        });
       }
       
       res.json({ success: true, data: imagenes });

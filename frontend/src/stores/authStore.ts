@@ -125,18 +125,26 @@ export const useAuthStore = create<AuthState>()(
       },
       
       checkAuth: async () => {
+        const accessToken = localStorage.getItem('accessToken');
         const refreshToken = localStorage.getItem('refreshToken');
+        
+        if (accessToken) {
+          setAccessToken(accessToken);
+        }
+
         if (!refreshToken) {
-          get().clearAuth();
+          if (!accessToken && !get().user) {
+            get().clearAuth();
+          }
           return;
         }
         
         try {
           const response = await authApi.refreshToken(refreshToken);
-          const { user, accessToken, refreshToken: newRefreshToken } = response;
+          const { user, accessToken: newAccessToken, refreshToken: newRefreshToken } = response;
           
-          setAccessToken(accessToken);
-          localStorage.setItem('accessToken', accessToken);
+          setAccessToken(newAccessToken);
+          localStorage.setItem('accessToken', newAccessToken);
           localStorage.setItem('refreshToken', newRefreshToken);
           
           set({
@@ -144,7 +152,10 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
           });
         } catch (error) {
-          get().clearAuth();
+          console.warn('⚠️ Token refresh failed during checkAuth:', error);
+          if (!accessToken && !get().user) {
+            get().clearAuth();
+          }
         }
       },
       

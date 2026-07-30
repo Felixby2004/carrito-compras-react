@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { notify } from '../../utils/notify';
 
 type Orden = any;
+
+const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 const estadoLabels: Record<string, string> = {
   'pendiente_pago': 'Pendiente pago',
@@ -31,6 +33,7 @@ function badge(estado: string) {
 }
 
 export function OrdenDetallePage() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [orden, setOrden] = useState<Orden | null>(null);
@@ -46,7 +49,6 @@ export function OrdenDetallePage() {
         notify('Inicia sesión para ver tu orden', 'info');
         return;
       }
-      const API_URL = import.meta.env.VITE_API_URL;
       const res = await fetch(`${API_URL}/ordenes/mis-ordenes/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -71,7 +73,6 @@ export function OrdenDetallePage() {
         notify('Inicia sesión para cancelar', 'info');
         return;
       }
-      const API_URL = import.meta.env.VITE_API_URL;
       const res = await fetch(`${API_URL}/ordenes/mis-ordenes/${id}/cancelar`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -93,7 +94,6 @@ export function OrdenDetallePage() {
 
   const cargarTracking = async () => {
     if (!id || !token) return null;
-    const API_URL = import.meta.env.VITE_API_URL;
     const res = await fetch(`${API_URL}/ordenes/mis-ordenes/${id}/tracking`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -122,9 +122,9 @@ export function OrdenDetallePage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="mb-4">
-        <Link to="/mis-ordenes" className="text-blue-600 hover:underline">
+        <button onClick={() => navigate('/mis-ordenes')} className="text-blue-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
           ← Volver a mis órdenes
-        </Link>
+        </button>
       </div>
 
       <div className="bg-white rounded-lg shadow p-6 mb-6">

@@ -15,8 +15,8 @@ const defaultTema: TemaConfig = {
   colorPrimario: '#2563eb',
   colorSecundario: '#0f172a',
   colorAcento: '#f59e0b',
-  logoUrl: null,
-  nombreTienda: 'eMarket Perú',
+  logoUrl: '/logo.png',
+  nombreTienda: 'NexTouch LLC',
 };
 
 export function ConfiguracionAdminPage() {
@@ -196,10 +196,10 @@ export function ConfiguracionAdminPage() {
                   <img src={tema.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
                 ) : (
                   <div className="h-12 w-12 rounded-lg flex items-center justify-center text-white font-bold text-xl" style={{ backgroundColor: tema.colorPrimario }}>
-                    {tema.nombreTienda?.charAt(0) || 'e'}
+                    {tema.nombreTienda?.charAt(0) || 'N'}
                   </div>
                 )}
-                <span className="font-bold text-2xl" style={{ color: tema.colorPrimario }}>{tema.nombreTienda || 'eMarket Perú'}</span>
+                <span className="font-bold text-2xl" style={{ color: tema.colorPrimario }}>{tema.nombreTienda || 'NexTouch LLC'}</span>
               </div>
               <div className="flex gap-3">
                 <span className="px-6 py-3 rounded-xl text-white font-semibold shadow-md" style={{ backgroundColor: tema.colorPrimario }}>Primario</span>

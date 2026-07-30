@@ -1,73 +1,118 @@
-# 🛒 eMarket Perú
+<div align="center">
 
-Sistema fullstack de eMarket Perú con frontend en React/Vite y backend en Node.js + PostgreSQL + Prisma. Permite a los clientes navegar un catálogo, gestionar su carrito, realizar compras y hacer seguimiento de pedidos. Los administradores disponen de un panel completo con KPIs, gestión de productos, inventario, órdenes y reportes PDF.
+# 🛒 NexTouch LLC — Enterprise E-Commerce Platform
 
----
+[![Node.js](https://img.shields.io/badge/Node.js-v20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-v18.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-v5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-v15.x-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-v5.x-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-## 📋 Tabla de contenidos
+Plataforma Web Fullstack de comercio electrónico desarrollada para **NexTouch LLC**. Incluye experiencia de compra omnicanal para clientes con cálculo dinámico de Ubigeo Perú, gestión de carrito y checkout, emisión de comprobantes en PDF con branding oficial y un panel administrativo avanzado con KPIs comerciales, inventarios y analítica.
 
-- [Características](#-características)
-- [Tecnologías](#-tecnologías)
-- [Requisitos previos](#-requisitos-previos)
-- [Instalación local](#-instalación-local)
-- [Variables de entorno](#-variables-de-entorno)
-- [Credenciales de prueba](#-credenciales-de-prueba)
-- [Despliegue en servidor](#-despliegue-en-servidor)
-- [Estructura del proyecto](#-estructura-del-proyecto)
-- [API Reference](#-api-reference)
-- [Solución de problemas](#-solución-de-problemas)
+[Explorar API Swagger](http://localhost:3001/api/docs) · [Reportar un error](https://github.com/Felixby2004/carrito-compras-react/issues)
+
+</div>
 
 ---
 
-## ✨ Características
+## 📋 Tabla de Contenidos
 
-### Para clientes
-- Registro, inicio de sesión y gestión de perfil
-- Catálogo con filtros por categoría y rango de precio
-- Búsqueda de productos en tiempo real
-- Carrito de compras con cupones de descuento
-- Checkout multi-paso (dirección → envío → pago → confirmación)
-- Seguimiento de órdenes y descarga de comprobantes PDF
-- Lista de deseos y sistema de reseñas
-
-### Para administradores
-- Dashboard con KPIs: ventas totales, ticket promedio, productos más vendidos
-- Gestión completa de productos, categorías e imágenes
-- Control de inventario con alertas de stock bajo
-- Procesamiento de órdenes y gestión de envíos
-- Historial y datos de clientes
-- Reportes PDF de ventas, inventario y movimientos
-- Estadísticas avanzadas y segmentación de clientes
+- [🏛️ Arquitectura del Sistema](#️-arquitectura-del-sistema)
+- [✨ Funcionalidades Clave](#-funcionalidades-clave)
+- [🛠️ Stack Tecnológico](#️-stack-tecnológico)
+- [⚡ Inicio Rápido con Docker](#-inicio-rápido-con-docker-recomendado)
+- [💻 Instalación y Desarrollo Local](#-instalación-y-desarrollo-local)
+- [👤 Credenciales de Acceso y Roles](#-credenciales-de-acceso-y-roles)
+- [📡 Especificación de la API (Endpoints)](#-especificación-de-la-api-endpoints)
+- [📄 Generación de Comprobantes PDF](#-generación-de-comprobantes-pdf)
+- [☁️ Despliegue en Producción](#️-despliegue-en-producción)
+- [🔧 Solución de Problemas y Diagnóstico](#-solución-de-problemas-y-diagnóstico)
+- [📄 Licencia y Contacto](#-licencia-y-contacto)
 
 ---
 
-## 🛠 Tecnologías
+## 🏛️ Arquitectura del Sistema
 
-| Capa | Tecnología |
-|------|-----------|
-| Frontend | React + Vite |
-| Backend | Node.js + Express |
-| Base de datos | PostgreSQL |
-| ORM | Prisma |
-| Autenticación | JWT (access + refresh token) |
-| Documentación API | Swagger UI |
-| Reportes | PDF export |
-
----
-
-## 📦 Requisitos previos
-
-| Componente | Versión mínima | Recomendada |
-|-----------|---------------|-------------|
-| Node.js | 18+ | 20 LTS |
-| PostgreSQL | 14+ | 16+ |
-| npm | 9+ | 10+ |
-| Git (opcional) | 2.40+ | Cualquiera |
-| Docker (opcional) | 24+ | 26+ |
+```
+                         ┌────────────────────────────────────────┐
+                         │       Navegador Web / Cliente          │
+                         │   (React + Vite + Tailwind CSS)        │
+                         └──────────────────┬─────────────────────┘
+                                            │ HTTP / REST / WebSocket
+                                            ▼
+                         ┌────────────────────────────────────────┐
+                         │       Servidor Backend (API)           │
+                         │   (Node.js + Express + TypeScript)     │
+                         └───────┬────────────────────────┬───────┘
+                                 │                        │
+             ┌───────────────────┴────────┐      ┌────────┴────────────────────┐
+             │ Base de Datos PostgreSQL   │      │ Documentos PDF & Media      │
+             │ (Prisma ORM - 15+ Tablas)  │      │ (PDFKit + Public Static)    │
+             └────────────────────────────┘      └─────────────────────────────┘
+```
 
 ---
 
-## 🚀 Instalación local
+## ✨ Funcionalidades Clave
+
+### 🛍️ Portal del Cliente (eShop)
+* **Catálogo Dinámico:** Filtrado avanzado por categorías, marcas, rangos de precio y búsqueda en tiempo real.
+* **Carrito y Cupones:** Sincronización local y persistente con aplicación de cupones promocionales con descuento.
+* **Checkout Inteligente (Ubigeo Perú):** Formulario dinámico con departamentos, provincias y distritos cargados para los 25 departamentos de Perú.
+* **Gestión de Órdenes:** Historial de compras (`/mis-ordenes`), seguimiento de estado (*tracking*), cancelación en ventana de tiempo y descarga de comprobantes en PDF.
+* **Lista de Deseos y Reseñas:** Guardado de productos favoritos y valoraciones con estrellas.
+
+### 🛡️ Panel de Administración (Backoffice)
+* **Dashboard Analítico:** Indicadores KPI en tiempo real (ventas totales, órdenes pagadas, ticket promedio, ventas diarias).
+* **Gestión de Catálogo:** Creación, edición y control de productos, subcategorías e imágenes.
+* **Control de Inventario:** Monitor de stock con alertas de productos en nivel crítico y registro de movimientos.
+* **Gestión de Pedidos:** Cambio de estado de órdenes, asignación de números de seguimiento e impresión de facturas/guías.
+* **Configuración Comercial:** Personalización de temas visuales, impuestos e identidad corporativa de NexTouch LLC.
+
+---
+
+## 🛠️ Stack Tecnológico
+
+| Capa | Tecnología | Descripción |
+| :--- | :--- | :--- |
+| **Frontend** | React 18, Vite, TypeScript | SPA de alto rendimiento con renderizado modular. |
+| **Styling** | TailwindCSS, Lucide Icons | Sistema de diseño moderno, responsivo y adaptativo. |
+| **Estado Global** | Zustand | Gestión ligera y persistente de estado (auth, cart, wishlist). |
+| **Backend** | Node.js, Express, TypeScript | API RESTful escalable con arquitectura por capas. |
+| **ORM & DB** | Prisma ORM, PostgreSQL 15 | Modelado de datos relacional con migraciones tipo-seguras. |
+| **Autenticación** | JWT (JSON Web Tokens), Bcrypt | Esquema de seguridad con Access Token (15m) + Refresh Token (7d). |
+| **Documentación**| Swagger UI (`swagger-jsdoc`) | Especificación interactiva OpenAPI 3.0. |
+| **Contenedores** | Docker, Docker Compose | Infraestructura reproducible para desarrollo y producción. |
+
+---
+
+## ⚡ Inicio Rápido con Docker (Recomendado)
+
+Con un solo comando puedes desplegar toda la infraestructura en contenedores (Base de datos + Backend + Frontend):
+
+```bash
+docker compose up --build -d
+```
+
+### Puertos y Accesos del Entorno:
+
+| Servicio | URL / Host | Descripción |
+| :--- | :--- | :--- |
+| 🌐 **Frontend Web App** | `http://localhost:5173` | Aplicación React principal |
+| ⚙️ **Backend API** | `http://localhost:3001/api/v1` | API REST de Node.js / Express |
+| 📚 **Documentación Swagger** | `http://localhost:3001/api/docs` | Swagger UI interactivo |
+| 🗄️ **Base de Datos PostgreSQL** | `localhost:5433` | Host DB (`ecommerce_db`, user: `postgres`, pass: `123456`) |
+
+Para detener y limpiar la infraestructura de contenedores:
+```bash
+docker compose down
+```
+
+---
+
+## 💻 Instalación y Desarrollo Local
 
 ### 1. Clonar el repositorio
 
@@ -79,332 +124,135 @@ cd carrito-compras-react
 ### 2. Configurar la base de datos PostgreSQL
 
 ```sql
-CREATE USER ecommerce_user WITH PASSWORD 'secure_password_123';
-CREATE DATABASE ecommerce_db OWNER ecommerce_user;
-GRANT ALL PRIVILEGES ON DATABASE ecommerce_db TO ecommerce_user;
+CREATE USER postgres WITH PASSWORD '123456';
+CREATE DATABASE ecommerce_db OWNER postgres;
 ```
 
-### 3. Configurar variables de entorno
+### 3. Instalar dependencias
 
 ```bash
-# Backend
-cd backend
-cp .env.example .env   # Linux/Mac
-copy .env.example .env # Windows PowerShell
-```
-
-Edita `backend/.env` con tus valores (ver sección [Variables de entorno](#-variables-de-entorno)).
-
-### 4. Instalar dependencias
-
-```bash
-# Backend
+# Dependencias Backend
 cd backend
 npm install
 
-# Frontend
+# Dependencias Frontend
 cd ../frontend
 npm install
 ```
 
-### 5. Generar cliente Prisma y migrar base de datos
+### 4. Inicializar Prisma y sembrar datos iniciales
 
 ```bash
 cd backend
-npm run prisma:generate
-npm run prisma:migrate
-
-# Opcional: cargar datos de prueba
-npm run prisma:seed
+npx prisma generate
+npx prisma db push
+npx prisma db seed
 ```
 
-### 6. Ejecutar en modo desarrollo
-
-Abre **dos terminales**:
+### 5. Ejecutar en modo desarrollo
 
 ```bash
-# Terminal 1 — Backend
+# Terminal 1 — Backend (http://localhost:3000)
 cd backend
 npm run dev
-# → http://localhost:3000
-# → Swagger: http://localhost:3000/api/docs
 
-# Terminal 2 — Frontend
+# Terminal 2 — Frontend (http://localhost:5173)
 cd frontend
 npm run dev
-# → http://localhost:5173
-```
-
-Verifica que el backend responde:
-
-```bash
-curl http://localhost:3000/health
 ```
 
 ---
 
-## 🔐 Variables de entorno
+## 👤 Credenciales de Acceso y Roles
 
-### Backend (`backend/.env`)
+> ℹ️ Las siguientes cuentas de demostración son generadas automáticamente por la semilla de datos (`seed.ts`):
 
-```env
-PORT=3000
-DATABASE_URL="postgresql://ecommerce_user:secure_password_123@localhost:5432/ecommerce_db"
-JWT_SECRET="tu_jwt_secret_aqui_minimo_32_caracteres"
-JWT_REFRESH_SECRET="tu_refresh_secret_aqui_minimo_32_caracteres"
-FRONTEND_URL="http://localhost:5173"
-
-# Opcionales
-SMTP_HOST=smtp.tuproveedor.com
-SMTP_USER=tu@email.com
-SMTP_PASS=tu_contraseña
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-TAX_PERCENTAGE=18
-```
-
-> ⚠️ **Seguridad:** Los JWT secrets deben tener mínimo 32 caracteres. Nunca los subas al repositorio.
+| Rol de Usuario | Email Oficial (NexTouch LLC) | Contraseña | Email Legacy | Alcance de Permisos |
+| :--- | :--- | :--- | :--- | :--- |
+| 🛡️ **Administrador Global** | `admin@nextouch.com` | `Admin123!` | `admin@ecommerce.com` | Acceso ilimitado a todas las funciones del sistema y Backoffice. |
+| 📈 **Gerente de Ventas** | `ventas@nextouch.com` | `Ventas123!` | `ventas@ecommerce.com` | Gestión de ventas, listado de órdenes y clientes en `/admin`. |
+| 📦 **Gerente de Inventario** | `inventario@nextouch.com` | `Inventario123!` | `inventario@ecommerce.com` | Control de stock, alertas de reposición y proveedores. |
+| 💼 **Vendedor** | `vendedor@nextouch.com` | `Vendedor123!` | `vendedor@ecommerce.com` | Consulta de productos, precios y creación de órdenes. |
+| 🛒 **Cliente Demo** | `cliente1@nextouch.com` | `Cliente123!` | `cliente1@ecommerce.com` | Navegación, compra, seguimiento de pedidos y comprobantes PDF. |
 
 ---
 
-## 👤 Credenciales de prueba
+## 📡 Especificación de la API (Endpoints)
 
-> Estas cuentas se crean al ejecutar `npm run prisma:seed`.
+La API sigue las convenciones RESTful. Documentación Swagger disponible en `/api/docs`.
 
-| Rol | Email | Contraseña |
-|-----|-------|-----------|
-| Administrador | admin@ecommerce.com | Admin123! |
-| Gerente de ventas | ventas@ecommerce.com | Ventas123! |
-| Gerente de inventario | inventario@ecommerce.com | Inventario123! |
-| Vendedor | vendedor@ecommerce.com | Vendedor123! |
-| Cliente | cliente1@ecommerce.com | Cliente123! |
-
----
-
-## ☁️ Despliegue en servidor
-
-### Opción A — VPS (Ubuntu/Debian)
-
-#### 1. Preparar el servidor
-
-```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y nodejs npm postgresql git nginx
-```
-
-#### 2. Instalar Node.js 20 LTS (via nvm)
-
-```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-source ~/.bashrc
-nvm install 20
-nvm use 20
-```
-
-#### 3. Clonar y configurar el proyecto
-
-```bash
-cd /var/www
-git clone https://github.com/Felixby2004/carrito-compras-react.git
-cd carrito-compras-react
-```
-
-Configura las variables de entorno en `backend/.env` con valores de **producción**:
-
-```env
-NODE_ENV=production
-PORT=3000
-DATABASE_URL="postgresql://ecommerce_user:TU_PASSWORD_SEGURO@localhost:5432/ecommerce_db"
-JWT_SECRET="secreto_muy_largo_y_aleatorio_para_produccion"
-JWT_REFRESH_SECRET="otro_secreto_muy_largo_y_aleatorio"
-FRONTEND_URL="https://tudominio.com"
-```
-
-#### 4. Instalar dependencias y construir
-
-```bash
-# Backend
-cd backend
-npm install
-npm run prisma:generate
-npm run prisma:migrate
-npm run prisma:seed  # solo la primera vez
-npm run build
-
-# Frontend
-cd ../frontend
-npm install
-npm run build
-# Los archivos estáticos quedan en frontend/dist/
-```
-
-#### 5. Configurar PM2 (proceso persistente para el backend)
-
-```bash
-npm install -g pm2
-cd /var/www/carrito-compras-react/backend
-pm2 start npm --name "ecommerce-backend" -- start
-pm2 startup   # para que arranque automáticamente al reiniciar
-pm2 save
-```
-
-#### 6. Configurar Nginx
-
-Crea el archivo `/etc/nginx/sites-available/ecommerce`:
-
-```nginx
-server {
-    listen 80;
-    server_name tudominio.com www.tudominio.com;
-
-    # Frontend (archivos estáticos)
-    root /var/www/carrito-compras-react/frontend/dist;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # Proxy al backend
-    location /api/ {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-```bash
-sudo ln -s /etc/nginx/sites-available/ecommerce /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
-```
-
-#### 7. Habilitar HTTPS con Certbot (Let's Encrypt)
-
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d tudominio.com -d www.tudominio.com
-```
-
-El certificado se renueva automáticamente. ✅
-
----
-
-### Opción B — Plataformas cloud gratuitas / low-cost
-
-| Servicio | Qué alojar | Plan gratuito |
-|---------|-----------|--------------|
-| [Render](https://render.com) | Backend (Node.js) | ✅ Sí |
-| [Railway](https://railway.app) | Backend + PostgreSQL | ✅ Sí (limitado) |
-| [Vercel](https://vercel.com) | Frontend (React/Vite) | ✅ Sí |
-| [Supabase](https://supabase.com) | PostgreSQL | ✅ Sí |
-| [Neon](https://neon.tech) | PostgreSQL serverless | ✅ Sí |
-
-#### Desplegar frontend en Vercel
-
-```bash
-npm install -g vercel
-cd frontend
-vercel --prod
-```
-
-#### Desplegar backend en Render
-
-1. Crea un nuevo **Web Service** en Render apuntando a tu repo.
-2. Build command: `cd backend && npm install && npm run build`
-3. Start command: `cd backend && npm start`
-4. Agrega las variables de entorno en el panel de Render.
-
----
-
-## 📁 Estructura del proyecto
+### Endpoints Principales:
 
 ```
-carrito-compras-react/
-├── backend/
-│   ├── prisma/
-│   │   └── schema.prisma
-│   ├── src/
-│   ├── logs/
-│   ├── .env.example
-│   └── package.json
-└── frontend/
-    ├── src/
-    ├── public/
-    └── package.json
+GET    /health                                   --> Verifica el estado de la API
+POST   /api/v1/auth/login                        --> Autenticación de usuario
+POST   /api/v1/auth/register                     --> Registro de nuevos usuarios
+POST   /api/v1/auth/refresh-token                --> Renovación de tokens JWT
+
+GET    /api/v1/productos                         --> Obtiene catálogo paginado con filtros
+GET    /api/v1/productos/categorias/con-productos--> Categorías que contienen productos activos
+GET    /api/v1/productos/:id                     --> Detalle de un producto específico
+
+POST   /api/v1/ordenes                           --> Creación de pedido (cliente/invitado)
+GET    /api/v1/ordenes/mis-ordenes               --> Historial de pedidos del cliente autenticado
+GET    /api/v1/ordenes/mis-ordenes/:id           --> Detalle de pedido del cliente
+GET    /api/v1/ordenes/mis-ordenes/:id/factura   --> Descarga de comprobante en PDF
+PUT    /api/v1/ordenes/mis-ordenes/:id/cancelar  --> Cancelación de orden por el cliente
+
+GET    /api/v1/ordenes/admin                     --> Listado general de órdenes (Admin)
+GET    /api/v1/ordenes/admin/estadisticas        --> Indicadores KPI para el Dashboard
 ```
 
 ---
 
-## 📡 API Reference
+## 📄 Generación de Comprobantes PDF
 
-La documentación completa de la API está disponible en Swagger UI una vez que el backend está corriendo:
+El sistema cuenta con un motor embebido basado en **PDFKit** para emitir comprobantes de pago oficiales en formato PDF:
 
-```
-http://localhost:3000/api/docs
-```
-
-Endpoints principales:
-
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/health` | Estado del servidor |
-| GET | `/api/v1/productos` | Listar productos |
-| POST | `/api/v1/auth/login` | Iniciar sesión |
-| POST | `/api/v1/auth/register` | Registrar usuario |
+* **Branding Institucional:** Incorpora automáticamente el isotipo en PNG con fondo transparente de **NexTouch LLC**.
+* **Estructura Estándar:** Datos de emisión, desglose de ítems, subtotal, IGV (18%), costo de envío y monto total pagado.
+* **Descarga Directa:** Generación al vuelo a través de las rutas `/mis-ordenes/:id/factura` y `/admin/:id/documentos/factura`.
 
 ---
 
-## 🔧 Solución de problemas
+## ☁️ Despliegue en Producción
 
-| Problema | Causa y solución |
-|---------|-----------------|
-| No conecta a la BD | PostgreSQL no está corriendo o `DATABASE_URL` es incorrecto |
-| CORS error | Verifica `FRONTEND_URL` en `backend/.env` y reinicia el backend |
-| JWT_SECRET inválido | Define `JWT_SECRET` y `JWT_REFRESH_SECRET` (mínimo 32 caracteres) |
-| Prisma migrate falla | Asegúrate de que la BD exista y el usuario tenga permisos |
-| Frontend no llama al backend | El proxy Vite apunta a `http://localhost:3000`; verifica que el backend esté activo |
-| No recibo correo | Revisa spam o configura correctamente SMTP en `.env` |
-| Pago rechazado | Verifica datos de tarjeta o usa modo prueba de Stripe |
-| Error en reportes PDF | Verifica conexión con el servidor |
+### Frontend (Vercel)
+1. Conecta el repositorio en Vercel.
+2. Define la variable de entorno `VITE_API_URL` apuntando a tu API en producción (ej. `https://nextouch-api.onrender.com/api/v1`).
+3. Build Command: `npm run build` | Output Directory: `dist`.
 
-### Comandos útiles de diagnóstico
-
-```bash
-# Ver logs del backend en producción
-pm2 logs ecommerce-backend
-
-# Reiniciar backend
-pm2 restart ecommerce-backend
-
-# Ver estado de PostgreSQL
-sudo systemctl status postgresql
-
-# Probar conexión a la API
-curl http://localhost:3000/health
-```
+### Backend (Render / Railway)
+1. Crea un Web Service en Render con entorno Node.js.
+2. Configura las variables de entorno principales:
+   ```env
+   NODE_ENV=production
+   PORT=3000
+   DATABASE_URL=postgresql://user:pass@host:5432/dbname?sslmode=require
+   JWT_SECRET=tu_clave_secreta_de_minimo_32_caracteres_aqui
+   JWT_REFRESH_SECRET=tu_clave_refresh_secreta_de_minimo_32_caracteres
+   FRONTEND_URL=https://tu-frontend.vercel.app
+   ```
+3. Build Command: `cd backend && npm install && npx prisma generate && npm run build`
+4. Start Command: `cd backend && npm start`
 
 ---
 
-## 🗄️ Mantenimiento
+## 🔧 Solución de Problemas y Diagnóstico
 
-```bash
-# Respaldo de la base de datos
-pg_dump ecommerce_db > backup_$(date +%Y%m%d).sql
-
-# Restaurar respaldo
-psql ecommerce_db < backup_20260427.sql
-```
-
-Los logs del backend se almacenan en `backend/logs/`.
+| Síntoma | Diagnóstico | Solución |
+| :--- | :--- | :--- |
+| **Error 401 en Refresh Token** | Token expirado o ruta mal invocada. | El cliente axios en `client.ts` maneja el refresco automático y limpia el estado sin colgar la interfaz. |
+| **Error 404 al filtrar por estado** | Falta de la constante `ESTADOS_PERMITIDOS` en controlador. | Solucionado en `orden.controller.ts`. Reinicia el backend con `docker compose restart backend`. |
+| **Pantalla en blanco al ingresar a Admin** | Verificación sincrónica antes de cargar usuario en memoria. | Resuelto en `AdminRoute.tsx` mediante pantalla de carga con indicador `hasToken`. |
+| **Provincias o Distritos vacíos** | Dataset de Ubigeo incompleto. | Resuelto en `frontend/src/data/ubigeo.ts` cargando las provincias y distritos de los 25 departamentos de Perú. |
 
 ---
 
-## 📄 Licencia
+## 📄 Licencia y Contacto
 
-Este proyecto es de uso privado. Versión 1.0 — Abril 2026.
+© 2026 **NexTouch LLC**. Todos los derechos reservados.
+
+- **Empresa:** NexTouch LLC
+- **Soporte Técnico:** `contacto@nextouch.com`
+- **Repositorio:** [github.com/Felixby2004/carrito-compras-react](https://github.com/Felixby2004/carrito-compras-react)

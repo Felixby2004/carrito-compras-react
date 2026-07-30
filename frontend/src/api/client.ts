@@ -49,9 +49,19 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     console.error('❌ API Client: Error response', error.response?.status, error.config?.url);
-    console.error('❌ API Client: Error details:', error.response?.data || error.message);
     const originalRequest = error.config;
     
+    // Evitar loop si el endpoint que falló con 401 es /auth/refresh-token
+    const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh-token');
+
+    if (isRefreshRequest) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      const { clearAuth } = useAuthStore.getState();
+      clearAuth();
+      return Promise.reject(error);
+    }
+
     // Si el error es 401 y no hemos intentado reintentar la petición
     if (error.response?.status === 401 && !originalRequest._retry) {
       console.log('🔄 API Client: 401 received, trying refresh token...');
@@ -82,22 +92,18 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         } catch (refreshError) {
           console.error('❌ API Client: Refresh token failed:', refreshError);
-          // Si el refresh falla, redirigir a login o limpiar tokens
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           const { clearAuth } = useAuthStore.getState();
           clearAuth();
-          window.location.href = '/login';
           return Promise.reject(refreshError);
         }
       } else {
         console.log('❌ API Client: No refresh token available!');
-        // No refresh token available, clear auth and redirect
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         const { clearAuth } = useAuthStore.getState();
         clearAuth();
-        window.location.href = '/login';
       }
     }
     

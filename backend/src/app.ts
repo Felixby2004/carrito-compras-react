@@ -25,9 +25,9 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'eMarket Perú API',
+      title: 'NexTouch LLC API',
       version: '1.0.0',
-      description: 'API para eMarket Perú',
+      description: 'API para NexTouch LLC',
     },
     servers: [
       {

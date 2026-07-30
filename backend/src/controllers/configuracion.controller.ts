@@ -19,13 +19,13 @@ const temaDefault = {
   colorPrimario: '#2563eb',
   colorSecundario: '#0f172a',
   colorAcento: '#f59e0b',
-  logoUrl: null,
-  nombreTienda: 'eMarket Perú',
+  logoUrl: '/logo.png',
+  nombreTienda: 'NexTouch LLC',
 };
 
 const normalizeNombreTienda = (nombreTienda?: string | null) => {
   if (!nombreTienda) return undefined;
-  return nombreTienda === 'E-Commerce' ? 'eMarket Perú' : nombreTienda;
+  return (nombreTienda === 'E-Commerce' || nombreTienda === 'eMarket Perú') ? 'NexTouch LLC' : nombreTienda;
 };
 
 const normalizeTema = (tema: any) => {

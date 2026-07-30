@@ -52,8 +52,8 @@ function AppContent() {
     colorPrimario: '#2563eb',
     colorSecundario: '#0f172a',
     colorAcento: '#f59e0b',
-    logoUrl: null,
-    nombreTienda: 'eMarket Perú',
+    logoUrl: '/logo.png',
+    nombreTienda: 'NexTouch LLC',
   });
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -112,12 +112,12 @@ function AppContent() {
           colorPrimario: '#2563eb',
           colorSecundario: '#0f172a',
           colorAcento: '#f59e0b',
-          logoUrl: null,
-          nombreTienda: 'eMarket Perú',
+          logoUrl: '/logo.png',
+          nombreTienda: 'NexTouch LLC',
           ...data.data
         };
-        if (loadedTema.nombreTienda === 'E-Commerce') {
-          loadedTema.nombreTienda = 'eMarket Perú';
+        if (loadedTema.nombreTienda === 'E-Commerce' || loadedTema.nombreTienda === 'eMarket Perú') {
+          loadedTema.nombreTienda = 'NexTouch LLC';
         }
         setTema(loadedTema);
         document.documentElement.style.setProperty('--color-primary', loadedTema.colorPrimario);
@@ -164,10 +164,10 @@ function AppContent() {
                   <img src={tema.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
                 ) : (
                   <div className="h-12 w-12 rounded-2xl bg-gradient-primary shadow-glow flex items-center justify-center text-white font-black text-xl">
-                    {tema.nombreTienda?.charAt(0) || 'e'}
+                    {tema.nombreTienda?.charAt(0) || 'N'}
                   </div>
                 )}
-                <span className="text-slate-800">{tema.nombreTienda || 'eMarket Perú'}</span>
+                <span className="text-slate-800">{tema.nombreTienda || 'NexTouch LLC'}</span>
               </Link>
             </div>
 
@@ -324,9 +324,12 @@ function AppContent() {
       <footer className={`bg-slate-900 text-slate-200 py-10 ${isAdminRoute ? 'lg:pl-72' : ''}`}>
         <div className="container mx-auto px-4 grid gap-6 md:grid-cols-3">
           <div>
-            <h2 className="text-xl font-bold text-white">eMarket Perú</h2>
+            <div className="flex items-center gap-3 mb-2">
+              <img src="/logo.png" alt="NexTouch LLC" className="h-10 w-auto object-contain brightness-110" />
+              <h2 className="text-xl font-bold text-white">NexTouch LLC</h2>
+            </div>
             <p className="mt-2 text-sm text-slate-400 max-w-sm">
-              Tu marketplace local con envíos rápidos, ofertas exclusivas y atención dedicada para clientes en todo el Perú.
+              Tu eMarket con envíos rápidos, ofertas exclusivas y atención dedicada.
             </p>
           </div>
           <div>
@@ -339,9 +342,9 @@ function AppContent() {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-white">Contacto</h3>
-            <p className="mt-3 text-sm text-slate-400">soporte@emarketperu.com</p>
-            <p className="mt-1 text-sm text-slate-400">Lima, Perú</p>
-            <p className="mt-3 text-xs text-slate-500">© {new Date().getFullYear()} eMarket Perú. Todos los derechos reservados.</p>
+            <p className="mt-3 text-sm text-slate-400">contacto@nextouch.com</p>
+            <p className="mt-1 text-sm text-slate-400">NexTouch LLC</p>
+            <p className="mt-3 text-xs text-slate-500">© {new Date().getFullYear()} NexTouch LLC. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>

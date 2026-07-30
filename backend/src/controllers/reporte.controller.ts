@@ -6,7 +6,7 @@ import { AppError } from '../middlewares/errorHandler';
 const prisma = new PrismaClient();
 
 const empresa = {
-  nombre: 'eMarket Perú',
+  nombre: 'NexTouch LLC',
   ruc: '12345678901',
 };
 

@@ -666,9 +666,13 @@ export function CheckoutPage() {
                             disabled={!nuevaDireccion.departamento}
                           >
                             <option value="">Provincia</option>
-                            {provincias[departamentos.find(d => d.nombre === nuevaDireccion.departamento)?.id || '']?.map(prov => (
-                              <option key={prov.id} value={prov.nombre}>{prov.nombre}</option>
-                            ))}
+                            {(() => {
+                              const depId = departamentos.find(d => d.nombre === nuevaDireccion.departamento)?.id;
+                              const provList = depId ? (provincias[depId] || [{ id: `${depId}01`, nombre: nuevaDireccion.departamento }]) : [];
+                              return provList.map(prov => (
+                                <option key={prov.id} value={prov.nombre}>{prov.nombre}</option>
+                              ));
+                            })()}
                           </select>
                           <select
                             value={nuevaDireccion.distrito}
@@ -677,9 +681,13 @@ export function CheckoutPage() {
                             disabled={!nuevaDireccion.provincia}
                           >
                             <option value="">Distrito</option>
-                            {distritos[Object.values(provincias).flat().find(p => p.nombre === nuevaDireccion.provincia)?.id || '']?.map(dist => (
-                              <option key={dist.id} value={dist.nombre}>{dist.nombre}</option>
-                            ))}
+                            {(() => {
+                              const provId = Object.values(provincias).flat().find(p => p.nombre === nuevaDireccion.provincia)?.id;
+                              const distList = provId ? (distritos[provId] || [{ id: `${provId}01`, nombre: nuevaDireccion.provincia }]) : (nuevaDireccion.provincia ? [{ id: 'dist_def', nombre: nuevaDireccion.provincia }] : []);
+                              return distList.map(dist => (
+                                <option key={dist.id} value={dist.nombre}>{dist.nombre}</option>
+                              ));
+                            })()}
                           </select>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
