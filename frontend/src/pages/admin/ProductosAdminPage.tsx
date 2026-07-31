@@ -431,7 +431,7 @@ export function ProductosAdminPage() {
                           <img 
                             src={fixImageUrl(producto.imagenes[0].url)} 
                             alt={producto.nombre} 
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain p-1"
                           />
                         ) : (
                           <div className="text-slate-400">
@@ -798,7 +798,7 @@ export function ProductosAdminPage() {
                           <img
                             src={fixImageUrl(img.url)}
                             alt="Producto"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain p-1"
                           />
                           
                           {/* Delete Button */}

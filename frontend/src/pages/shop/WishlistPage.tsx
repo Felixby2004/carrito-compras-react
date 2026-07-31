@@ -122,7 +122,7 @@ export function WishlistPage() {
                     <img
                       src={imagen}
                       alt={producto.nombre}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-48 object-contain p-2 bg-slate-50/50 group-hover:scale-105 transition-transform duration-300"
                     />
                   </Link>
                   {/* Botón quitar de wishlist */}

@@ -203,7 +203,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <img
                       src={fixImageUrl(item.imagen)}
                       alt={item.nombre}
-                      className="w-20 h-20 object-cover rounded-lg"
+                      className="w-20 h-20 object-contain p-1 bg-slate-50 rounded-lg"
                     />
                   </div>
                   <div className="flex-1 min-w-0">

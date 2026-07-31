@@ -257,7 +257,7 @@ export function ProductoDetallePage() {
                     selectedImage === idx ? 'border-blue-500' : 'border-gray-200'
                   }`}
                 >
-                  <img src={img.url} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-cover" />
+                  <img src={img.url} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-contain p-1 bg-slate-50" />
                 </button>
               ))}
             </div>
@@ -462,7 +462,7 @@ export function ProductoDetallePage() {
                 <img
                   src={fixImageUrl(rel.imagenes?.[0]?.url)}
                   alt={rel.nombre}
-                  className="w-full h-40 object-cover rounded mb-3"
+                  className="w-full h-48 object-contain p-2 bg-slate-50 rounded mb-3"
                 />
                 <h3 className="font-semibold text-center hover:text-blue-600">{rel.nombre}</h3>
                 <p className="text-center text-blue-600 font-bold mt-1">

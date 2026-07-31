@@ -191,7 +191,7 @@ export function ProductCard({ producto, viewMode = 'grid', onAddToCart }: Produc
           <img 
             src={imageError ? DEFAULT_FALLBACK : imagenPrincipal} 
             alt={producto.nombre} 
-            className="w-full h-64 object-contain p-4 bg-slate-50/50 transition-all duration-700 group-hover:scale-105"
+            className="w-full h-64 sm:h-72 object-contain p-4 bg-slate-50/50 transition-all duration-700 group-hover:scale-105"
             onError={(e) => {
               if (!imageError) {
                 setImageError(true);
