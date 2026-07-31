@@ -21,10 +21,10 @@ const sendVerificationEmail = async (email, token) => {
     const mailOptions = {
         from: config_1.default.emailFrom,
         to: email,
-        subject: 'Verifica tu cuenta - eMarket Perú',
+        subject: 'Verifica tu cuenta - NexTouch LLC',
         html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Bienvenido a eMarket Perú</h2>
+        <h2>Bienvenido a NexTouch LLC</h2>
         <p>Gracias por registrarte. Por favor, verifica tu correo electrónico haciendo clic en el siguiente enlace:</p>
         <a href="${verificationUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verificar Email</a>
         <p>O copia y pega este enlace en tu navegador:</p>
@@ -47,7 +47,7 @@ const sendPasswordResetEmail = async (email, token) => {
     const mailOptions = {
         from: config_1.default.emailFrom,
         to: email,
-        subject: 'Recuperación de contraseña - eMarket Perú',
+        subject: 'Recuperación de contraseña - NexTouch LLC',
         html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Recuperación de Contraseña</h2>

@@ -31,6 +31,13 @@ async function main() {
     });
   }
 
+  let unidad = await prisma.cat_unidades_medida.findFirst();
+  if (!unidad) {
+    unidad = await prisma.cat_unidades_medida.create({
+      data: { nombre: 'Unidad', abreviatura: 'UND' }
+    });
+  }
+
   // 3. Crear el producto iPhone 17 Pro Max
   const sku = 'APL-IP17PM-256SLV';
   let producto = await prisma.cat_productos.findUnique({
@@ -44,14 +51,14 @@ async function main() {
       data: {
         categoria_id: categoria.id,
         marca_id: marca.id,
+        unidad_medida_id: unidad.id,
         sku: sku,
         nombre: 'iPhone 17 Pro Max',
-        descripcion: 'iPhone 17 Pro Max 256GB Silver - Pantalla Super Retina XDR OLED 6.9", Chip A19 Pro, Titanio de grado aeroespacial.',
-        precio_base: 5499.00,
-        porcentaje_descuento: 0,
-        precio_final: 5499.00,
+        descripcion_corta: 'iPhone 17 Pro Max 256GB Silver - Titanio y A19 Pro',
+        descripcion_larga: 'iPhone 17 Pro Max 256GB Silver - Pantalla Super Retina XDR OLED 6.9", Chip A19 Pro, Titanio de grado aeroespacial.',
+        precio_costo: 4200.00,
+        precio_venta: 5499.00,
         estado: 'activo',
-        imagen_principal_url: imagenUrl,
         imagenes: {
           create: [
             { url: imagenUrl, es_principal: true, orden: 1 }

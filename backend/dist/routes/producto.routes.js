@@ -6,33 +6,30 @@ const auth_middleware_1 = require("../middlewares/auth.middleware");
 const rbac_middleware_1 = require("../middlewares/rbac.middleware");
 const router = (0, express_1.Router)();
 const productoController = new producto_controller_1.ProductoController();
-// Rutas públicas
+// Rutas de imágenes sin ID de producto (deben ir ANTES de /:id para evitar capturar "imagenes" como parametro)
+router.put('/imagenes/:imagenId/principal', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('productos', 'editar'), productoController.setImagenPrincipal.bind(productoController));
+router.delete('/imagenes/:imagenId', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('productos', 'editar'), productoController.eliminarImagen.bind(productoController));
+// Rutas públicas estáticas
 router.get('/', productoController.getProductos.bind(productoController));
 router.get('/destacados', productoController.getDestacados.bind(productoController));
 router.get('/ofertas', productoController.getOfertas.bind(productoController));
 router.get('/nuevos', productoController.getNuevos.bind(productoController));
-// router.get('/todos', productoController.getTodosProductos.bind(productoController));
+router.get('/todos', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('productos', 'leer'), productoController.getTodosProductos.bind(productoController));
+router.get('/categorias/con-productos', productoController.getCategorias.bind(productoController));
 router.get('/categorias', productoController.getCategorias.bind(productoController));
 router.get('/subcategorias', productoController.getSubcategorias.bind(productoController));
 router.get('/marcas', productoController.getMarcas.bind(productoController));
 router.get('/unidades-medida', productoController.getUnidadesMedida.bind(productoController));
 router.get('/atributos', productoController.getAtributos.bind(productoController));
+// Rutas públicas parametrizadas
 router.get('/:id/relacionados', productoController.getRelacionados.bind(productoController));
 router.get('/:id/imagenes', productoController.getImagenes.bind(productoController));
 router.get('/:id', productoController.getProductoById.bind(productoController));
-// Rutas protegidas
+// Rutas protegidas por ID de producto
 router.post('/', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('productos', 'crear'), productoController.createProducto.bind(productoController));
 router.put('/:id', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('productos', 'editar'), productoController.updateProducto.bind(productoController));
 router.delete('/:id', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('productos', 'eliminar'), productoController.deleteProducto.bind(productoController));
-// Rutas para imágenes (requieren autenticación)
+// Subida de imágenes asociadas a un producto
 router.post('/:id/imagenes', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('productos', 'editar'), producto_controller_1.uploadCloudinary.array('imagenes', 10), productoController.subirImagenes.bind(productoController));
-// router.post(
-//   '/:id/imagenes/url',
-//   authenticate,
-//   requirePermission('productos', 'editar'),
-//   productoController.agregarImagenUrl.bind(productoController)
-// );
-router.put('/imagenes/:imagenId/principal', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('productos', 'editar'), productoController.setImagenPrincipal.bind(productoController));
-router.get('/:id/imagenes', productoController.getImagenes.bind(productoController));
-router.delete('/imagenes/:imagenId', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('productos', 'editar'), productoController.eliminarImagen.bind(productoController));
+router.post('/:id/imagenes/url', auth_middleware_1.authenticate, (0, rbac_middleware_1.requirePermission)('productos', 'editar'), productoController.agregarImagenUrl.bind(productoController));
 exports.default = router;

@@ -9,7 +9,7 @@ const pdfkit_1 = __importDefault(require("pdfkit"));
 const errorHandler_1 = require("../middlewares/errorHandler");
 const prisma = new client_1.PrismaClient();
 const empresa = {
-    nombre: 'eMarket Perú',
+    nombre: 'NexTouch LLC',
     ruc: '12345678901',
 };
 class ReporteController {

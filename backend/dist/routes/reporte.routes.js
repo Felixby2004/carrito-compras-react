@@ -6,7 +6,7 @@ const auth_middleware_1 = require("../middlewares/auth.middleware");
 const router = (0, express_1.Router)();
 const controller = new reporte_controller_1.ReporteController();
 router.use(auth_middleware_1.authenticate);
-router.get('/operacional/:reporte', controller.reporteOperacional.bind(controller));
 router.get('/operacional/factura/:ordenId', controller.facturaIndividual.bind(controller));
 router.get('/operacional/comprobante/:ordenId', controller.comprobanteSimplificado.bind(controller));
+router.get('/operacional/:reporte', controller.reporteOperacional.bind(controller));
 exports.default = router;
