@@ -341,7 +341,7 @@ function AppContent() {
               <h2 className="text-xl font-bold text-white">NexTouch LLC</h2>
             </div>
             <p className="mt-2 text-sm text-slate-400 max-w-sm">
-              Tu eMarket con envíos rápidos, ofertas exclusivas y atención dedicada.
+              Tu tienda NexTouch LLC con envíos rápidos, ofertas exclusivas y atención dedicada.
             </p>
           </div>
           <div>
