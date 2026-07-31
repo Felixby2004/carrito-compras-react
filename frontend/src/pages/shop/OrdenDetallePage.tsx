@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { notify } from '../../utils/notify';
 
 type Orden = any;
@@ -33,7 +33,6 @@ function badge(estado: string) {
 }
 
 export function OrdenDetallePage() {
-  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [orden, setOrden] = useState<Orden | null>(null);
@@ -125,9 +124,9 @@ export function OrdenDetallePage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="mb-4">
-        <button onClick={() => navigate('/mis-ordenes')} className="text-blue-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
+        <Link to="/mis-ordenes" className="text-blue-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
           ← Volver a mis órdenes
-        </button>
+        </Link>
       </div>
 
       <div className="bg-white rounded-lg shadow p-6 mb-6">
