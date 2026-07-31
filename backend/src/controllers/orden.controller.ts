@@ -637,11 +637,13 @@ export class OrdenController {
       }
       if (fecha_desde || fecha_hasta) {
         where.fecha_orden = {};
-        if (fecha_desde) where.fecha_orden.gte = new Date(String(fecha_desde));
+        if (fecha_desde) {
+          const fDesde = String(fecha_desde);
+          where.fecha_orden.gte = new Date(fDesde.includes('T') ? fDesde : `${fDesde}T00:00:00.000`);
+        }
         if (fecha_hasta) {
-          const hasta = new Date(String(fecha_hasta));
-          hasta.setHours(23, 59, 59, 999);
-          where.fecha_orden.lte = hasta;
+          const fHasta = String(fecha_hasta);
+          where.fecha_orden.lte = new Date(fHasta.includes('T') ? fHasta : `${fHasta}T23:59:59.999`);
         }
       }
 
