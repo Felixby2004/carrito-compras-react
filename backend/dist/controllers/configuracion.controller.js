@@ -30,6 +30,7 @@ const normalizeTema = (tema) => {
         return tema;
     return {
         ...tema,
+        logoUrl: (tema.logoUrl && !tema.logoUrl.includes('norte') && !tema.logoUrl.includes('emarket')) ? tema.logoUrl : '/logo.png',
         nombreTienda: normalizeNombreTienda(tema.nombreTienda) ?? tema.nombreTienda,
     };
 };

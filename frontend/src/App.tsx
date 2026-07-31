@@ -119,6 +119,9 @@ function AppContent() {
         if (loadedTema.nombreTienda === 'E-Commerce' || loadedTema.nombreTienda === 'eMarket Perú') {
           loadedTema.nombreTienda = 'NexTouch LLC';
         }
+        if (!loadedTema.logoUrl || loadedTema.logoUrl.includes('norte') || loadedTema.logoUrl.includes('emarket')) {
+          loadedTema.logoUrl = '/logo.png';
+        }
         setTema(loadedTema);
         document.documentElement.style.setProperty('--color-primary', loadedTema.colorPrimario);
         document.documentElement.style.setProperty('--color-secondary', loadedTema.colorSecundario);
