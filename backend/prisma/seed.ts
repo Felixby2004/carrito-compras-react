@@ -73,9 +73,9 @@ async function main() {
   await createProductos(categorias, marcas, unidades);
 
   // 11. Crear configuración del sistema
-  await createConfiguracion();
-
   await createResenas();
+
+  await createIphoneOrder();
   
   console.log('✅ Seed completado exitosamente');
 }
@@ -519,6 +519,171 @@ async function createConfiguracion() {
     });
     console.log(`  - Configuración creada: ${confData.clave} = ${confData.valor}`);
   }
+}
+
+async function createIphoneOrder() {
+  console.log('📝 Creando pedido de prueba iPhone 17 Pro Max (22 de Junio de 2026)...');
+
+  const usuario = await prisma.seg_usuarios.findFirst({
+    where: {
+      OR: [
+        { email: 'cliente1@nextouch.com' },
+        { email: 'cliente1@ecommerce.com' }
+      ]
+    }
+  });
+
+  if (!usuario) {
+    console.log('  ⚠️ Usuario cliente no encontrado para orden de prueba.');
+    return;
+  }
+
+  let cliente = await prisma.cli_clientes.findUnique({
+    where: { usuario_id: usuario.id }
+  });
+
+  if (!cliente) {
+    cliente = await prisma.cli_clientes.create({
+      data: {
+        usuario_id: usuario.id,
+        telefono: '999888777',
+        segmento: 'nuevo'
+      }
+    });
+  }
+
+  let producto = await prisma.cat_productos.findFirst({
+    where: { nombre: { contains: 'iPhone 17 Pro Max', mode: 'insensitive' } }
+  });
+
+  if (!producto) {
+    const sku = 'APL-IP17PM-256SLV';
+    let marca = await prisma.cat_marcas.findFirst({ where: { nombre: { equals: 'Apple', mode: 'insensitive' } } });
+    if (!marca) marca = await prisma.cat_marcas.create({ data: { nombre: 'Apple' } });
+
+    let categoria = await prisma.cat_categorias.findFirst({ where: { nombre: { equals: 'Electrónicos', mode: 'insensitive' } } });
+    if (!categoria) categoria = await prisma.cat_categorias.create({ data: { nombre: 'Electrónicos', slug: 'electronicos' } });
+
+    let subcategoria = await prisma.cat_subcategorias.findFirst({ where: { nombre: { equals: 'Teléfonos', mode: 'insensitive' } } });
+    if (!subcategoria) subcategoria = await prisma.cat_subcategorias.create({ data: { nombre: 'Teléfonos', slug: 'telefonos', categoria_id: categoria.id } });
+
+    let unidad = await prisma.cat_unidades_medida.findFirst();
+    if (!unidad) unidad = await prisma.cat_unidades_medida.create({ data: { nombre: 'Unidad', abreviatura: 'UND' } });
+
+    const imagenUrl = 'https://res.cloudinary.com/pzk6vh2k/image/upload/v1785457438/silver-hero-zoom_enqjs1.webp';
+
+    producto = await prisma.cat_productos.create({
+      data: {
+        sku: sku,
+        nombre: 'iPhone 17 Pro Max',
+        descripcion_corta: 'iPhone 17 Pro Max 256GB Silver - Titanio y A19 Pro',
+        descripcion_larga: 'iPhone 17 Pro Max 256GB Silver. Pantalla Super Retina XDR OLED de 6.9 pulgadas, Chip A19 Pro, Titanio de grado aeroespacial y sistema de cámaras de nivel profesional.',
+        categoria_id: categoria.id,
+        subcategoria_id: subcategoria.id,
+        marca_id: marca.id,
+        unidad_medida_id: unidad.id,
+        precio_costo: 4200.00,
+        precio_venta: 5499.00,
+        peso: 0.22,
+        estado: 'activo',
+        activo: true,
+        imagenes: {
+          create: [{ url: imagenUrl, es_principal: true, orden: 0 }]
+        },
+        stock: {
+          create: { stock_fisico: 25, stock_reservado: 0, stock_minimo: 5 }
+        }
+      }
+    });
+  }
+
+  const fechaDeseada = new Date('2026-06-22T10:00:00.000Z');
+  const subtotal = 5499.00;
+  const impuesto = Number((subtotal * 0.18).toFixed(2));
+  const total = Number((subtotal + impuesto).toFixed(2));
+  const ordenNumero = `ORD-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 1000)}`;
+
+  let metodoEnvio = await prisma.ord_metodos_envio.findFirst();
+  if (!metodoEnvio) {
+    metodoEnvio = await prisma.ord_metodos_envio.create({
+      data: { nombre: 'Envío Estándar', costo: 0, tiempo_estimado: '2-3 días hábiles', activo: true }
+    });
+  }
+
+  const orden = await prisma.ord_ordenes.create({
+    data: {
+      orden_numero: ordenNumero,
+      cliente_id: cliente.id,
+      fecha_orden: fechaDeseada,
+      created_at: fechaDeseada,
+      updated_at: fechaDeseada,
+      subtotal: subtotal,
+      impuesto: impuesto,
+      descuento: 0,
+      costo_envio: 0,
+      total: total,
+      estado: 'pagada',
+      metodo_pago: 'tarjeta',
+      metodo_envio_id: metodoEnvio.id,
+      created_by: usuario.id,
+      items: {
+        create: [
+          {
+            producto_id: producto.id,
+            nombre_producto: producto.nombre,
+            cantidad: 1,
+            precio_unitario: 5499.00,
+            subtotal: 5499.00,
+            created_at: fechaDeseada
+          }
+        ]
+      },
+      direccion_envio: {
+        create: {
+          cliente_id: cliente.id,
+          destinatario: 'Cliente Uno',
+          direccion_completa: 'Av. Javier Prado Este 1234, Dpto 501',
+          departamento: 'Lima',
+          ciudad: 'Lima',
+          codigo_postal: '15036',
+          telefono: '999888777'
+        }
+      },
+      pagos: {
+        create: [
+          {
+            monto: total,
+            metodo: 'tarjeta',
+            estado_pago: 'completado',
+            fecha_pago: fechaDeseada,
+            transaccion_id: `TRX-${Date.now()}`,
+            created_at: fechaDeseada
+          }
+        ]
+      },
+      historial_estados: {
+        create: [
+          {
+            estado_anterior: 'pendiente_pago',
+            estado_nuevo: 'pagada',
+            comentario: 'Pago completado con tarjeta de crédito',
+            fecha_cambio: fechaDeseada,
+            usuario_id: usuario.id
+          }
+        ]
+      }
+    }
+  });
+
+  await prisma.cli_clientes.update({
+    where: { id: cliente.id },
+    data: {
+      total_gastado: { increment: total },
+      fecha_ultima_compra: fechaDeseada
+    }
+  });
+
+  console.log(`  - Orden de prueba iPhone 17 Pro Max creada: ID ${orden.id} | Número: ${orden.orden_numero} | Fecha: 22/06/2026`);
 }
 
 main()
