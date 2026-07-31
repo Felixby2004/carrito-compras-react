@@ -353,7 +353,21 @@ async function createProductos(categorias: any, marcas: any, unidades: any) {
       peso: 0.172,
       stock: 30,
       stock_minimo: 8,
-      imagen_url: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=600&q=80',
+      imagen_url: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      sku: 'APL-IP17PM-256SLV',
+      nombre: 'iPhone 17 Pro Max',
+      descripcion_corta: 'iPhone 17 Pro Max 256GB Silver - Titanio y A19 Pro',
+      categoria: 'Electrónicos',
+      subcategoria: 'Teléfonos',
+      marca: 'Apple',
+      precio_costo: 4200.00,
+      precio_venta: 5499.00,
+      peso: 0.221,
+      stock: 25,
+      stock_minimo: 5,
+      imagen_url: 'https://res.cloudinary.com/pzk6vh2k/image/upload/v1785457438/silver-hero-zoom_enqjs1.webp',
     },
     {
       sku: 'NKE-AIR-003',
@@ -498,7 +512,10 @@ async function createConfiguracion() {
   
   for (const confData of configData) {
     await prisma.configuracion_sistema.create({
-      data: confData,
+      data: {
+        ...confData,
+        updated_at: new Date(),
+      },
     });
     console.log(`  - Configuración creada: ${confData.clave} = ${confData.valor}`);
   }

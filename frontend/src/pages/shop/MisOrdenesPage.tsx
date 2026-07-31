@@ -160,9 +160,11 @@ export function MisOrdenesPage() {
         setOrdenes([]);
         return;
       }
-      setOrdenes(data.data || []);
+      const arrayData = Array.isArray(data.data) ? data.data : (Array.isArray(data.data?.ordenes) ? data.data.ordenes : []);
+      setOrdenes(arrayData);
     } catch (err) {
       console.error('Error cargando órdenes:', err);
+      setOrdenes([]);
       notify('No se pudieron cargar tus órdenes', 'error');
     } finally {
       setLoading(false);
@@ -318,14 +320,14 @@ export function MisOrdenesPage() {
           </>
         )}
 
-        {!loading && ordenes.length === 0 && (
+        {!loading && (!Array.isArray(ordenes) || ordenes.length === 0) && (
           <div className="bg-white rounded-lg shadow p-6 text-center">
             <div className="text-4xl mb-3">📦</div>
             <p className="text-slate-700 font-medium">No tienes órdenes para los filtros seleccionados.</p>
           </div>
         )}
 
-        {!loading && ordenes.map((orden) => {
+        {!loading && Array.isArray(ordenes) && ordenes.map((orden) => {
           const estadoConfig = getEstadoConfig(orden.estado);
           return (
             <div

@@ -664,6 +664,7 @@ model configuracion_sistema {
   clave       String   @unique @db.VarChar(100)
   valor       String   @db.Text
   descripcion String?  @db.Text
+  updated_at  DateTime @default(now()) @updatedAt
 
   @@map("configuracion_sistema")
 }

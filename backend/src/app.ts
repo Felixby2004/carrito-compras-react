@@ -107,13 +107,16 @@ app.use(cors({
   maxAge: 86400,
 }));
 
-// Servir archivos estáticos con CORS
-app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
-  setHeaders: (res) => {
+// Servir archivos estáticos con CORS desde uploads y public/uploads
+const staticOptions = {
+  setHeaders: (res: any) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   },
-}));
+};
+app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads'), staticOptions));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), staticOptions));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'), staticOptions));
 
 // Body parser
 app.use(express.json({ limit: '50mb' }));

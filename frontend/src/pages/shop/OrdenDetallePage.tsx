@@ -39,12 +39,13 @@ export function OrdenDetallePage() {
   const [orden, setOrden] = useState<Orden | null>(null);
   const [cancelando, setCancelando] = useState(false);
 
-  const token = useMemo(() => localStorage.getItem('accessToken'), []);
+  const getToken = () => localStorage.getItem('accessToken');
 
   const cargar = async () => {
     if (!id) return;
     setLoading(true);
     try {
+      const token = getToken();
       if (!token) {
         notify('Inicia sesión para ver tu orden', 'info');
         return;
@@ -69,6 +70,7 @@ export function OrdenDetallePage() {
     if (!id) return;
     setCancelando(true);
     try {
+      const token = getToken();
       if (!token) {
         notify('Inicia sesión para cancelar', 'info');
         return;
@@ -93,6 +95,7 @@ export function OrdenDetallePage() {
   };
 
   const cargarTracking = async () => {
+    const token = getToken();
     if (!id || !token) return null;
     const res = await fetch(`${API_URL}/ordenes/mis-ordenes/${id}/tracking`, {
       headers: { Authorization: `Bearer ${token}` },

@@ -273,8 +273,20 @@ function AppContent() {
               </ErrorBoundary>
             ) : <Navigate to="/admin" replace />
           } />
-          <Route path="/mis-ordenes" element={!isAdmin ? <MisOrdenesPage /> : <Navigate to="/admin" replace />} />
-          <Route path="/mis-ordenes/:id" element={!isAdmin ? <OrdenDetallePage /> : <Navigate to="/admin" replace />} />
+          <Route path="/mis-ordenes" element={
+            !isAdmin ? (
+              <ErrorBoundary>
+                <MisOrdenesPage />
+              </ErrorBoundary>
+            ) : <Navigate to="/admin" replace />
+          } />
+          <Route path="/mis-ordenes/:id" element={
+            !isAdmin ? (
+              <ErrorBoundary>
+                <OrdenDetallePage />
+              </ErrorBoundary>
+            ) : <Navigate to="/admin" replace />
+          } />
           <Route path="/wishlist" element={!isAdmin ? <WishlistPage /> : <Navigate to="/admin" replace />} />
           
           {/* Rutas de administrador - anidadas */}

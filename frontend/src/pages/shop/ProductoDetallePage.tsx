@@ -204,9 +204,9 @@ export function ProductoDetallePage() {
   const tieneDescuento = producto.descuento_porcentaje > 0;
   const stockDisponible = producto.stock_disponible || 0;
   const imagenes = producto.imagenes?.length > 0 
-    ? producto.imagenes.map(img => ({ ...img, url: fixImageUrl(img.url) }))
-    : [{ url: 'https://placehold.co/600x600?text=Sin+imagen', es_principal: true }];
-  const imagenPrincipal = imagenes[selectedImage]?.url;
+    ? producto.imagenes.map(img => ({ ...img, url: fixImageUrl(img.url || (img as any).imagen_url) }))
+    : [{ url: fixImageUrl((producto as any).imagen_principal_url || (producto as any).imagen_url || (producto as any).imagen), es_principal: true }];
+  const imagenPrincipal = imagenes[selectedImage]?.url || fixImageUrl(null);
   const enWishlist = producto ? isInWishlist(producto.id) : false;
 
   return (

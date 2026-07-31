@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, Heart, Sparkles } from 'lucide-react';
 import type { Producto } from '../../types';
 import { useProductoStore } from '../../stores/productoStore';
+import { useCartStore } from '../../stores/cartStore';
 import { useWishlistStore } from '../../stores/wishlistStore';
 import { useAuthStore } from '../../stores/authStore';
 import { notify } from '../../utils/notify';
@@ -17,6 +18,7 @@ interface ProductCardProps {
 
 export function ProductCard({ producto, viewMode = 'grid', onAddToCart }: ProductCardProps) {
   const getPrecio = useProductoStore((state) => state.getPrecio);
+  const addItem = useCartStore((state) => state.addItem);
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -30,7 +32,9 @@ export function ProductCard({ producto, viewMode = 'grid', onAddToCart }: Produc
     ? producto.precio_venta
     : Number(producto.precio_venta) || 0;
 
-  const imagenPrincipal = fixImageUrl(producto.imagenes?.[0]?.url);
+  const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80';
+  const rawImgUrl = producto.imagenes?.[0]?.url || (producto as any).imagen_principal_url || (producto as any).imagen_url || (producto as any).imagen;
+  const imagenPrincipal = rawImgUrl ? fixImageUrl(rawImgUrl) : DEFAULT_FALLBACK;
   const stockDisponible = typeof producto.stock_disponible === 'number'
     ? producto.stock_disponible
     : Number(producto.stock_disponible) || 0;
@@ -44,12 +48,17 @@ export function ProductCard({ producto, viewMode = 'grid', onAddToCart }: Produc
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (sinStock) {
-      notify('Producto agotado', 'error');
-      return;
-    }
-    if (onAddToCart) {
-      await onAddToCart(producto);
+    if (sinStock) return;
+    try {
+      if (onAddToCart) {
+        await onAddToCart(producto);
+      } else {
+        await addItem(producto.id, 1);
+        notify(`${producto.nombre} agregado al carrito`, 'success');
+      }
+    } catch (error: any) {
+      console.error('Error agregando al carrito:', error);
+      notify(error.response?.data?.message || 'Error al agregar al carrito', 'error');
     }
   };
 
@@ -68,10 +77,15 @@ export function ProductCard({ producto, viewMode = 'grid', onAddToCart }: Produc
       <div className="flex gap-6 bg-white/80 backdrop-blur-soft rounded-2xl shadow-soft-lg hover:shadow-glow transition-all duration-500 p-6 border border-white/50 hover:border-indigo-100 group">
         <div className="relative flex-shrink-0 overflow-hidden rounded-2xl shadow-soft">
           <img 
-            src={imageError ? 'https://via.placeholder.com/160x160?text=Producto' : imagenPrincipal} 
+            src={imageError ? DEFAULT_FALLBACK : imagenPrincipal} 
             alt={producto.nombre} 
-            className="w-40 h-40 object-cover transition-all duration-700 group-hover:scale-110"
-            onError={() => setImageError(true)}
+            className="w-40 h-40 object-contain p-2 bg-slate-50/50 transition-all duration-700 group-hover:scale-105"
+            onError={(e) => {
+              if (!imageError) {
+                setImageError(true);
+                (e.target as HTMLImageElement).src = DEFAULT_FALLBACK;
+              }
+            }}
           />
           {tieneDescuento && (
             <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-rose-600 text-white text-sm font-black px-3 py-1 rounded-full shadow-lg animate-float">
@@ -175,10 +189,15 @@ export function ProductCard({ producto, viewMode = 'grid', onAddToCart }: Produc
       <Link to={`/producto/${producto.id}`} className="block">
         <div className="relative overflow-hidden rounded-t-3xl">
           <img 
-            src={imageError ? 'https://via.placeholder.com/300x300?text=Producto' : imagenPrincipal} 
+            src={imageError ? DEFAULT_FALLBACK : imagenPrincipal} 
             alt={producto.nombre} 
-            className="w-full h-64 object-cover transition-all duration-700 group-hover:scale-110"
-            onError={() => setImageError(true)}
+            className="w-full h-64 object-contain p-4 bg-slate-50/50 transition-all duration-700 group-hover:scale-105"
+            onError={(e) => {
+              if (!imageError) {
+                setImageError(true);
+                (e.target as HTMLImageElement).src = DEFAULT_FALLBACK;
+              }
+            }}
           />
           
           {/* Overlay con botón de agregar al carrito en hover */}

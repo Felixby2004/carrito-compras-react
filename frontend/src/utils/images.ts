@@ -1,30 +1,19 @@
+const DEFAULT_PRODUCT_FALLBACK = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80';
+
 /**
- * Utilidad para normalizar las URLs de las imágenes.
- * Si la URL es relativa (empieza con /uploads), le añade el backendUrl.
- * Si ya es una URL absoluta, la deja como está.
+ * Utilidad genérica para normalizar las URLs de las imágenes de productos.
  */
 export function fixImageUrl(url: string | null | undefined): string {
-  if (!url) return 'https://placehold.co/300x300?text=Sin+imagen';
-  
-  // Si ya es una URL absoluta (http:// o https://), no hacemos nada
+  if (!url) return DEFAULT_PRODUCT_FALLBACK;
+
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
   
-  // Obtener la URL base del backend desde las variables de entorno
-  // VITE_API_URL suele ser algo como http://127.0.0.1:3000/api/v1
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api/v1';
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
   
-  // Extraer el origen (protocolo + host)
-  try {
-    const urlObj = new URL(apiUrl);
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    
-    // Si la url empieza con /uploads o uploads, la normalizamos
-    const cleanPath = url.startsWith('/') ? url : `/${url}`;
-    return `${baseUrl}${cleanPath}`;
-  } catch (error) {
-    console.error('Error parsing VITE_API_URL:', error);
-    return url;
-  }
+  return `${protocol}//${hostname}:3001${cleanPath}`;
 }
+
